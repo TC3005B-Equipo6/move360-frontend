@@ -1,10 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Header } from "../components/Header/Header";
+import { Header } from "./Header";
 
 const meta = {
-  title: "UI/Header",
+  title: "Components/Header",
   component: Header,
-  tags: ["autodocs"],
   decorators: [
     (Story) => (
       <div style={{ maxWidth: "700px", margin: "0 auto" }}>
