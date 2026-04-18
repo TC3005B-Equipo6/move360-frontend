@@ -1,14 +1,15 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import styles from "./ActionMenu.module.css";
 import { icons } from "../../icons";
 
 export interface ActionMenuProps {
   onDelete: () => void;
   onEdit: () => void;
+  onClose?: () => void;
   className?: string;
 }
 
-export const ActionMenu = ({ onDelete, onEdit, className = "" }: ActionMenuProps) => {
+export const ActionMenu = ({ onDelete, onEdit, onClose, className = "" }: ActionMenuProps) => {
   const TrashIcon = icons.trash;
   const EditIcon = icons.edit;
   const menuRef = useRef<HTMLDivElement>(null);
@@ -21,6 +22,19 @@ export const ActionMenu = ({ onDelete, onEdit, className = "" }: ActionMenuProps
     const y = Math.min(0, window.innerHeight - rect.bottom - 8);
     setOffset({ x, y });
   }, []);
+
+  useEffect(() => {
+    if (!onClose) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (menuRef.current?.contains(target)) return;
+      if (target.closest("[data-action-menu-trigger]")) return;
+      onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [onClose]);
 
   const classes = [styles.menu, className].filter(Boolean).join(" ");
 

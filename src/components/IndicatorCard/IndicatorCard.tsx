@@ -8,6 +8,7 @@ export interface IndicatorCardProps {
   label: string;
   tone: IndicatorTone;
   onMenuClick?: () => void;
+  isMenuOpen?: boolean;
   className?: string;
 }
 
@@ -16,10 +17,14 @@ export const IndicatorCard = ({
   label,
   tone,
   onMenuClick,
+  isMenuOpen = false,
   className = "",
 }: IndicatorCardProps) => {
   const MoreIcon = icons.more;
   const classes = [styles.card, styles[tone], className].filter(Boolean).join(" ");
+  const menuButtonClasses = [styles.menuButton, isMenuOpen ? styles.menuButtonOpen : ""]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={classes}>
@@ -27,8 +32,9 @@ export const IndicatorCard = ({
         <button
           type="button"
           aria-label="More options"
-          className={styles.menuButton}
+          className={menuButtonClasses}
           onClick={onMenuClick}
+          data-action-menu-trigger
         >
           <MoreIcon size={20} />
         </button>
