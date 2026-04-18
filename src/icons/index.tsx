@@ -8,6 +8,9 @@ import {
   MdAdd,
   MdBarChart,
   MdAttachFile,
+  MdMoreHoriz,
+  MdDeleteOutline,
+  MdModeEditOutline,
 } from "react-icons/md";
 
 
@@ -21,5 +24,8 @@ export const icons = {
   plus: MdAdd,
   dashboard: MdBarChart,
   report: MdAttachFile,
+  more: MdMoreHoriz,
+  trash: MdDeleteOutline,
+  edit: MdModeEditOutline,
 } as const;
 export type IconName = keyof typeof icons;
