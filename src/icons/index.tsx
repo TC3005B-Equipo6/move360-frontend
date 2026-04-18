@@ -1,4 +1,14 @@
-import { MdHome, MdExplore, MdSearch, MdStar, MdHelp, MdLogout, MdAdd, MdOutlinePieChart, MdAttachFile } from "react-icons/md";
+import {
+  MdHome,
+  MdExplore,
+  MdSearch,
+  MdStar,
+  MdHelp,
+  MdLogout,
+  MdAdd,
+  MdBarChart,
+  MdAttachFile,
+} from "react-icons/md";
 
 
 export const icons = {
@@ -9,7 +19,7 @@ export const icons = {
   help: MdHelp,
   logout: MdLogout,
   plus: MdAdd,
-  dashboard: MdOutlinePieChart,
+  dashboard: MdBarChart,
   report: MdAttachFile,
 } as const;
 export type IconName = keyof typeof icons;
