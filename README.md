@@ -71,8 +71,3 @@ export default defineConfig([
   },
 ])
 ```
-
-#Storybook
-## Initializing Storybook
-Run the following command in order to run storybook
-npm run storybook
