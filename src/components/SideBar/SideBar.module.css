@@ -1,0 +1,18 @@
+.sidebar {
+  background: white;
+  border-radius: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
+  width: 100px;
+  padding-top: 50px;
+  padding-bottom: 20px;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}

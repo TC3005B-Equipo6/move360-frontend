@@ -1,0 +1,31 @@
+.button {
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  width: 70px;
+  height: 70px;
+}
+
+.button.enabled:not(.selected):hover { 
+  background-color: #f0f0f0;
+}
+
+.enabled {
+  background-color: white;
+  color: #64748B;
+  font-weight: 700;
+}
+
+.disabled {
+  background-color: white;
+  color: #E2E2E2;
+  font-weight: 700;
+  cursor: not-allowed;
+}
+
+.selected {
+  background-color: #E7EEF6;
+  color: #1F4E79;
+  font-weight: 700;
+}
