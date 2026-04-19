@@ -6,7 +6,13 @@ const meta = {
   component: Input,
   decorators: [
     (Story) => (
-      <div style={{ padding: "16px", maxWidth: "360px" }}>
+      <div
+      style={{
+        minHeight: "100vh", 
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 10}}>
         <Story />
       </div>
     ),
@@ -17,27 +23,19 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Email: Story = {
+export const Usuario: Story = {
   args: {
-    label: "Email",
-    placeholder: "Enter your email",
+    label: "Usuario",
+    placeholder: "ejemplo@move360.com",
     type: "email",
     autoComplete: "email",
   },
 };
 
-export const Password: Story = {
+export const Contraseña: Story = {
   args: {
-    label: "Password",
-    placeholder: "Enter your password",
+    label: "Contraseña",
+    placeholder: "Introduce tu contraseña",
     type: "password",
-  },
-};
-
-export const Search: Story = {
-  args: {
-    label: "Search",
-    placeholder: "Search...",
-    type: "search",
   },
 };
