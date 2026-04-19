@@ -7,7 +7,14 @@ const meta = {
   component: SideBarButton,
   decorators: [
     (Story) => (
-      <div style={{ padding: "16px", maxWidth: "360px" }}>
+      <div
+      style={{
+        minHeight: "100vh", 
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#EEF2F7",
+        padding: 10}}>
         <Story />
       </div>
     ),
@@ -17,12 +24,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  args: { tooltip: "Home", iconName: "home", onPress: () => console.log("Home clicked") },
-};
-
-
-export const Interactive: StoryObj<typeof meta> = {
+export const Default: StoryObj<typeof meta> = {
   render: (args: SideBarButtonProps) => {
     const [selected, setSelected] = useState(Boolean(args.selected));
     return (
