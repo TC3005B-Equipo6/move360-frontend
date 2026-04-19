@@ -9,19 +9,20 @@
   font-size: 14px;
   font-weight: 500;
   color: #1f1f1f;
+  font-family: "Inter", sans-serif;
 }
 
 .input {
-  border: 1px solid #ccc;
+  border: 1px solid #E7EEF6;
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 16px;
   font-family: inherit;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: "Inter", sans-serif;
 }
 
 .input:focus {
-  border-color: #4293f5;
-  box-shadow: 0 0 0 3px rgba(66, 147, 245, 0.15);
+  border-color: #1F4E79;
 }
