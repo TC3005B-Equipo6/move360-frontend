@@ -1,12 +1,10 @@
 .button {
   border: none;
   border-radius: 50px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
   transition: opacity 0.2s ease, transform 0.2s ease;
-  padding: 8px;
+  width: 70px;
+  height: 70px;
 }
 
 .button.enabled:not(.selected):hover { 
