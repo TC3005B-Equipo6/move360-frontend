@@ -15,6 +15,19 @@ export const Default: Story = {
     onDelete: () => console.log("Eliminar"),
     onEdit: () => console.log("Editar"),
   },
+  decorators: [
+    (Story) => (
+      <div
+      style={{
+        minHeight: "100vh", 
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 10}}>
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export const CercaDelBordeDerecho: Story = {
