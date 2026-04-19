@@ -11,6 +11,9 @@ import {
   MdMoreHoriz,
   MdDeleteOutline,
   MdModeEditOutline,
+  MdSettings,
+  MdSort,
+  MdCalendarMonth
 } from "react-icons/md";
 
 
@@ -27,5 +30,8 @@ export const icons = {
   more: MdMoreHoriz,
   trash: MdDeleteOutline,
   edit: MdModeEditOutline,
+  settings: MdSettings,
+  sort: MdSort,
+  calendar: MdCalendarMonth,
 } as const;
 export type IconName = keyof typeof icons;
