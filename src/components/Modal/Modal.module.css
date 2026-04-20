@@ -9,23 +9,13 @@
 }
 
 .modal {
-  background: #f4f4f4;
-  border-radius: 20px;
+  width: 440px;
+  background: #ffffff;
+  border-radius: 15px;
   padding: 30px;
   display: flex;
   flex-direction: column;
-}
-
-.sm {
-  width: 420px;
-}
-
-.md {
-  width: 600px;
-}
-
-.lg {
-  width: 760px;
+  font-family: "Inter", sans-serif;
 }
 
 .header {
@@ -35,7 +25,7 @@
 }
 
 .title {
-  color: #2b5c8a;
+  color: #1f4e79;
   font-size: 18px;
   font-weight: 600;
   margin: 0;
@@ -44,9 +34,12 @@
 .close {
   background: none;
   border: none;
-  font-size: 28px;
   cursor: pointer;
-  color: #2b5c8a;
+  color: #1f4e79;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
 }
 
 .contentCentered {
@@ -67,17 +60,19 @@
 
 .icon {
   margin-bottom: 10px;
+  color: #1f4e79;
+  display: inline-flex;
 }
 
 .message {
-  font-size: 22px;
-  color: #2b5c8a;
+  font-size: 20px;
+  color: #1f4e79;
   margin: 0;
 }
 
 .secondary {
   font-size: 18px;
-  color: #2b5c8a;
+  color: #1f4e79;
   margin: 0;
 }
 
@@ -91,43 +86,4 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-}
-
-
-.formStack {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.label {
-  font-size: 14px;
-  color: #4b5563;
-}
-
-.input,
-.select,
-.textarea {
-  width: 100%;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 10px;
-  font-size: 14px;
-}
-
-.textarea {
-  min-height: 90px;
-}
-
-
-.infoBox {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 12px;
-  text-align: center;
-}
-
-.ticketTitle {
-  font-size: 20px;
-  font-weight: bold;
 }

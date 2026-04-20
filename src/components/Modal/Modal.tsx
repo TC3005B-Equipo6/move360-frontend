@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import styles from "./Modal.module.css";
 import { Button } from "../Button/Button";
+import { icons, type IconName } from "../../icons";
 
 export interface ModalProps {
   title?: string;
@@ -13,11 +14,10 @@ export interface ModalProps {
   onClose?: () => void;
   showCloseIcon?: boolean;
   confirmVariant?: "blue" | "red";
-  icon?: ReactNode;
-
+  iconName?: IconName;
   children?: ReactNode;
   footer?: ReactNode;
-  size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
 export const Modal = ({
@@ -31,29 +31,32 @@ export const Modal = ({
   onClose,
   showCloseIcon = true,
   confirmVariant = "blue",
-  icon,
+  iconName,
   children,
   footer,
-  size = "md",
+  className = "",
 }: ModalProps) => {
-  const modalClass = `${styles.modal} ${styles[size]}`;
+  const modalClasses = [styles.modal, className].filter(Boolean).join(" ");
+  const CloseIcon = icons.close;
+  const Icon = iconName ? icons[iconName] : null;
 
   const hasCustomContent = Boolean(children);
   const hasDefaultFooter = Boolean(onConfirm || onCancel);
 
   return (
     <div className={styles.overlay}>
-      <div className={modalClass}>
+      <div className={modalClasses}>
         <div className={styles.header}>
           {title ? <h3 className={styles.title}>{title}</h3> : <div />}
 
           {showCloseIcon && (
             <button
               type="button"
+              aria-label="Cerrar"
               className={styles.close}
               onClick={onClose}
             >
-              ×
+              <CloseIcon size={24} />
             </button>
           )}
         </div>
@@ -67,7 +70,11 @@ export const Modal = ({
             children
           ) : (
             <>
-              {icon && <div className={styles.icon}>{icon}</div>}
+              {Icon && (
+                <div className={styles.icon}>
+                  <Icon size={40} />
+                </div>
+              )}
 
               {message && <p className={styles.message}>{message}</p>}
 
@@ -105,5 +112,3 @@ export const Modal = ({
     </div>
   );
 };
-
-export default Modal;
