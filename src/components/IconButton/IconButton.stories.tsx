@@ -12,7 +12,6 @@ const meta: Meta<typeof IconButton> = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#EEF2F7",
         padding: 10}}>
         <Story />
       </div>
@@ -29,7 +28,8 @@ export const Default: Story = {
     iconName: "sort",
     size: "large",
     label: "Nombre",
-    type: "button"
+    type: "button",
+    color: "primary"
   },
 };
 
@@ -38,6 +38,7 @@ export const Calendar: Story = {
     iconName: "calendar",
     size: "large",
     label: "Inicio",
+    color: "primary",
     type: "button"
   },
 };
@@ -47,6 +48,7 @@ export const Small: Story = {
     iconName: "settings",
     size: "small",
     label: "",
+    color: "secondary",
     type: "button"
   },
 };

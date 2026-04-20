@@ -4,6 +4,7 @@ import { icons, type IconName } from "../../icons";
 
 export interface IconButtonProps {
     size?: "small" | "large";
+    color?: "primary" | "secondary";
     onPress?: () => void;
     iconName?: IconName;
     label?: string;
@@ -12,15 +13,17 @@ export interface IconButtonProps {
 
 export const IconButton = ({
     size = "small",
+    color = "primary",
     onPress,
     iconName = "sort",
-    label = "Nombre",
+    label = "",
     type = "button",
 }: IconButtonProps) => {
     const Icon = icons[iconName];
     const classes = [
         styles.button,
         styles[size],
+        styles[color],
     ]
         .filter(Boolean)
         .join(" ");
