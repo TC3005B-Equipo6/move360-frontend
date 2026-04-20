@@ -13,7 +13,9 @@ import {
   MdModeEditOutline,
   MdSettings,
   MdSort,
-  MdCalendarMonth
+  MdCalendarMonth,
+  MdClose,
+  MdCheckCircleOutline,
 } from "react-icons/md";
 
 
@@ -33,5 +35,7 @@ export const icons = {
   settings: MdSettings,
   sort: MdSort,
   calendar: MdCalendarMonth,
+  close: MdClose,
+  checkCircle: MdCheckCircleOutline,
 } as const;
 export type IconName = keyof typeof icons;
