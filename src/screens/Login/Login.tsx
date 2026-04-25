@@ -4,6 +4,7 @@ import { Input } from "../../components/Input/Input";
 import { Button } from "../../components/Button/Button";
 import styles from "./Login.module.css";
 import { login } from "../../services/authService";
+import { validateToken } from "../../services/authService";
 
 export default function LoginScreen() {
   const navigate = useNavigate();
@@ -26,6 +27,8 @@ export default function LoginScreen() {
       const token = await login(user, password);
 
       localStorage.setItem("token", token);
+
+      await validateToken();
 
       navigate("/home");
     } catch {
