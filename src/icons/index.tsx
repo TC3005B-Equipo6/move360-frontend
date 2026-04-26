@@ -16,7 +16,9 @@ import {
   IoCalendarOutline,
   IoClose,
   IoCheckmarkCircleOutline,
-  IoDocumentOutline,
+  IoDocumentOutline,                                                                                                                                                               
+  IoEyeOutline,                                                                                                                                                  
+  IoEyeOffOutline, 
 } from "react-icons/io5";
 
 import { MdModeEditOutline } from "react-icons/md";
@@ -42,5 +44,7 @@ export const icons = {
   close: IoClose,
   checkCircle: IoCheckmarkCircleOutline,
   file: IoDocumentOutline,
+  eyeOn: IoEyeOutline,                                                                                                                                           
+  eyeOff: IoEyeOffOutline,
 } as const;
 export type IconName = keyof typeof icons;
