@@ -15,7 +15,7 @@ export const Dashboard: Story = {
     title: "Dashboard Línea 5",
     date: "23-02-2026",
     author: "Eleanor Alarcón",
-    iconName: "dashboard",
+    iconName: "barchart",
     onPress: () => console.log("Abrir dashboard"),
   },
 };
@@ -25,7 +25,7 @@ export const Reporte: Story = {
     title: "Líneas 1 A 5 Reporte Operaciones",
     date: "08-11-2025",
     author: "Eleanor Alarcón",
-    iconName: "report",
+    iconName: "file",
     onPress: () => console.log("Abrir reporte"),
   },
 };
@@ -35,7 +35,7 @@ export const TituloLargo: Story = {
     title: "Tendencias Enero 2026 Línea 5 Con Un Título Extra Largo Para Probar Truncado",
     date: "23-02-2026",
     author: "Omar Estrada",
-    iconName: "dashboard",
+    iconName: "barchart",
     onPress: () => console.log("Click"),
   },
 };
