@@ -31,9 +31,14 @@ export default function LoginScreen() {
       await validateToken();
 
       navigate("/home");
-    } catch {
-      setError("Usuario o contraseña incorrectos");
-    } finally {
+    } catch (error: any) {
+      if (error.code === "auth/invalid-credential") {
+        setError("Usuario o contraseña incorrectos");
+      } else if (error.response?.status === 401) {
+        setError("Token inválido");
+      } else {
+        setError("Ocurrió un error");
+      }
     }
   };
 
