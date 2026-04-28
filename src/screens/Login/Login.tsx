@@ -2,7 +2,7 @@ import { useState, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/Button/Button";
 import { Input } from "../../components/Input/Input";
-import { login, validateToken } from "../../services/authService";
+import { login, validateToken } from "../../services/auth/authService";
 import styles from "./Login.module.css";
 
 export default function LoginScreen() {
