@@ -1,4 +1,5 @@
 import {
+  IoChevronDownOutline,
   IoHomeOutline,
   IoCompassOutline,
   IoSearchOutline,
@@ -31,6 +32,7 @@ export const icons = {
   star: IoStarOutline,
   help: IoHelpCircleOutline,
   logout: IoLogOutOutline,
+  chevronDown: IoChevronDownOutline,
   plus: IoAddOutline,
   piechart: IoPieChartOutline,
   barchart: IoBarChartOutline,
