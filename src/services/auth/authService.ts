@@ -1,4 +1,4 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "./auth";
 import api from "../api";
 
@@ -17,4 +17,9 @@ return token;
 export const validateToken = async () => {
   const response = await api.get("/auth/validate");
   return response.data;
+};
+
+export const logout = async () => {
+  await signOut(auth);
+  localStorage.removeItem("token");
 };
