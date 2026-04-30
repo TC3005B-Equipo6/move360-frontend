@@ -1,6 +1,10 @@
+import { useState } from "react";
 import styles from "./SideBar.module.css";
 import { SideBarButton, type SideBarButtonProps } from "../SideBarButton/SideBarButton";
+import { Modal } from "../Modal/Modal";
+import { Button } from "../Button/Button";
 import { useLocation, useNavigate } from "react-router-dom";
+import { logout } from "../../services/auth/authService";
 
 export interface SidebarItem {
   id: string;
@@ -14,6 +18,12 @@ export interface SidebarProps {
 export const Sidebar = ({ className = "" }: { className?: string }) => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleConfirmLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   const top: SidebarItem[] = [
     { id: "home", 
@@ -40,23 +50,39 @@ export const Sidebar = ({ className = "" }: { className?: string }) => {
         tooltip: "Help", iconName: "help", selected: false 
       } as SideBarButtonProps },
     { id: "logout",
-      props:
-      { tooltip: "Log out", iconName: "logout", selected: false
-
+      props: {
+        tooltip: "Log out", iconName: "logout", selected: false, onPress: () => setShowLogoutModal(true)
       } as SideBarButtonProps },
   ];
   return (
-    <nav className={`${styles.sidebar} ${className}`}>
-      <div className={styles.items}>
-        {top.map((it) => (
-          <SideBarButton key={it.id} {...it.props} />
-        ))}
-      </div>
-      <div className={styles.items}>
-        {bottom.map((it) => (
-          <SideBarButton key={it.id} {...it.props} />
-        ))}
-      </div>
-    </nav>
+    <>
+      <nav className={`${styles.sidebar} ${className}`}>
+        <div className={styles.items}>
+          {top.map((it) => (
+            <SideBarButton key={it.id} {...it.props} />
+          ))}
+        </div>
+        <div className={styles.items}>
+          {bottom.map((it) => (
+            <SideBarButton key={it.id} {...it.props} />
+          ))}
+        </div>
+      </nav>
+
+      {showLogoutModal && (
+        <Modal
+          title="Cerrar sesión"
+          message="¿Estás seguro de que deseas"
+          secondaryMessage="cerrar sesión?"
+          onClose={() => setShowLogoutModal(false)}
+          footer={
+            <>
+              <Button variant="white" size="large" label="Cancelar" onPress={() => setShowLogoutModal(false)} />
+              <Button variant="red" size="large" label="Cerrar sesión" onPress={handleConfirmLogout} />
+            </>
+          }
+        />
+      )}
+    </>
   );
 }
