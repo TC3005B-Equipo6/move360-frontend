@@ -4,6 +4,7 @@ export interface ProfileCardProps {
   name: string;
   role: string;
   className?: string;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 const AVATAR_PALETTE = [
@@ -30,11 +31,11 @@ const getAvatarColor = (name: string): string => {
   return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
 };
 
-export const ProfileCard = ({ name, role, className = "" }: ProfileCardProps) => {
+export const ProfileCard = ({ name, role, className = "",  onClick }: ProfileCardProps) => {
   const classes = [styles.card, className].filter(Boolean).join(" ");
 
   return (
-    <div className={classes}>
+    <div className={classes} onClick={onClick}>
       <div className={styles.avatar} style={{ backgroundColor: getAvatarColor(name) }}>
         <span className={styles.initials}>{getInitials(name)}</span>
       </div>
