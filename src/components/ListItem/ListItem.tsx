@@ -1,4 +1,3 @@
-import styles from "./ListItem.module.css";
 import { icons, type IconName } from "../../icons";
 
 export interface ListItemProps {
@@ -21,17 +20,22 @@ export const ListItem = ({
   className = "",
 }: ListItemProps) => {
   const Icon = icons[iconName];
-  const classes = [styles.item, className].filter(Boolean).join(" ");
+  const classes = [
+    "flex items-center justify-between w-full px-[25px] py-[10px] bg-[#f0f4fa] border-0 rounded-lg cursor-pointer font-[Inter,sans-serif] transition-colors duration-150 text-left hover:bg-[#dde6f2] active:bg-[#a8bcd8]",
+    className,
+  ].filter(Boolean).join(" ");
 
   return (
     <button type="button" onClick={onPress} className={classes}>
-      <span className={styles.left}>
-        <Icon size={32} className={styles.icon} />
-        <span className={styles.title}>{title}</span>
+      <span className="inline-flex items-center gap-3 min-w-0 flex-1">
+        <Icon size={32} className="text-[#0f3460] shrink-0" />
+        <span className="text-[#0f3460] text-[30px] font-medium capitalize overflow-hidden text-ellipsis whitespace-nowrap">
+          {title}
+        </span>
       </span>
-      <span className={styles.right}>
-        <span className={styles.date}>{date}</span>
-        <span className={styles.author}>{author}</span>
+      <span className="inline-flex items-center gap-5 shrink-0">
+        <span className="text-[#0f3460] text-[30px] font-medium capitalize whitespace-nowrap">{date}</span>
+        <span className="text-[#64748b] text-[25px] font-medium capitalize whitespace-nowrap">{author}</span>
       </span>
     </button>
   );

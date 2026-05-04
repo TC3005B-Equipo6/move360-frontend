@@ -1,5 +1,4 @@
 import { useState } from "react";
-import styles from "./SideBar.module.css";
 import { SideBarButton, type SideBarButtonProps } from "../SideBarButton/SideBarButton";
 import { Modal } from "../Modal/Modal";
 import { Button } from "../Button/Button";
@@ -56,13 +55,13 @@ export const Sidebar = ({ className = "" }: { className?: string }) => {
   ];
   return (
     <>
-      <nav className={`${styles.sidebar} ${className}`}>
-        <div className={styles.items}>
+      <nav className={`bg-white rounded-[50px] flex flex-col justify-between h-full w-[100px] pt-[50px] pb-5 box-border ${className}`}>
+        <div className="flex flex-col items-center gap-5">
           {top.map((it) => (
             <SideBarButton key={it.id} {...it.props} />
           ))}
         </div>
-        <div className={styles.items}>
+        <div className="flex flex-col items-center gap-5">
           {bottom.map((it) => (
             <SideBarButton key={it.id} {...it.props} />
           ))}

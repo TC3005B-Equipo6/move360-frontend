@@ -1,5 +1,3 @@
-import styles from "./ProfileCard.module.css";
-
 export interface ProfileCardProps {
   name: string;
   role: string;
@@ -31,17 +29,23 @@ const getAvatarColor = (name: string): string => {
   return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
 };
 
-export const ProfileCard = ({ name, role, className = "",  onClick }: ProfileCardProps) => {
-  const classes = [styles.card, className].filter(Boolean).join(" ");
+export const ProfileCard = ({ name, role, className = "", onClick }: ProfileCardProps) => {
+  const classes = [
+    "inline-flex items-center justify-center gap-2.5 px-5 bg-white rounded-[25px] font-[Inter,sans-serif] h-[100px] cursor-pointer",
+    className,
+  ].filter(Boolean).join(" ");
 
   return (
     <div className={classes} onClick={onClick}>
-      <div className={styles.avatar} style={{ backgroundColor: getAvatarColor(name) }}>
-        <span className={styles.initials}>{getInitials(name)}</span>
+      <div
+        className="flex items-center justify-center w-[50px] h-[50px] rounded-full shrink-0"
+        style={{ backgroundColor: getAvatarColor(name) }}
+      >
+        <span className="text-white text-xs font-semibold whitespace-nowrap">{getInitials(name)}</span>
       </div>
-      <div className={styles.info}>
-        <p className={styles.name}>{name}</p>
-        <p className={styles.role}>{role}</p>
+      <div className="flex flex-col items-start gap-px uppercase whitespace-nowrap">
+        <p className="m-0 text-[#111827] text-lg font-semibold">{name}</p>
+        <p className="m-0 text-[#9ca3af] text-[15px] font-normal">{role}</p>
       </div>
     </div>
   );
