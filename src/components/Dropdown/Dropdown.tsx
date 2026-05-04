@@ -1,4 +1,3 @@
-import styles from "./Dropdown.module.css";
 import { icons } from "../../icons";
 
 export interface SelectOption {
@@ -25,32 +24,29 @@ export const SelectField = ({
 }: SelectFieldProps) => {
   const ChevronDown = icons.chevronDown;
 
-  const classes = [styles.wrapper, className]
-    .filter(Boolean)
-    .join(" ");
+  const classes = ["flex flex-col gap-4 w-full", className].filter(Boolean).join(" ");
 
   return (
     <div className={classes}>
-      <label className={styles.label}>{label}</label>
+      <label className="font-[Inter,sans-serif] text-lg font-normal tracking-[-0.5px] text-[#111111] uppercase m-0">
+        {label}
+      </label>
 
-      <div className={styles.container}>
+      <div className="relative w-full">
         <select
-          className={styles.select}
+          className="w-full h-[35px] border border-[#cccccc] rounded-xl py-0 pl-4 pr-12 font-[Inter,sans-serif] text-base font-light tracking-[-0.4px] text-[#222222] bg-white appearance-none outline-none cursor-pointer focus:border-[#1f4e79] disabled:bg-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-80"
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
         >
           {options.map((option) => (
-            <option
-              key={option.value}
-              value={option.value}
-            >
+            <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
         </select>
 
-        <span className={styles.icon}>
+        <span className="absolute top-1/2 right-6 -translate-y-1/2 pointer-events-none text-[#222222] flex items-center justify-center">
           <ChevronDown size={32} strokeWidth={2} />
         </span>
       </div>

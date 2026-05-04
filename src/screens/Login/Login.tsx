@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/Button/Button";
 import { Input } from "../../components/Input/Input";
 import { login, validateToken } from "../../services/auth/authService";
-import styles from "./Login.module.css";
 
 export default function LoginScreen() {
   const navigate = useNavigate();
@@ -47,14 +46,16 @@ export default function LoginScreen() {
   };
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.card}>
-        <div className={styles.left}>
-          <img src="/move360.png" alt="move360" className={styles.logo} />
+    <div className="min-h-screen w-screen bg-[#154b7c] flex justify-center items-center p-8 box-border">
+      <div className="w-[1080px] max-w-full h-[640px] bg-white rounded-[28px] overflow-hidden grid grid-cols-[48%_52%]">
+        <div className="pt-[34px] pb-[34px] px-[58px] flex flex-col">
+          <img src="/move360.png" alt="move360" className="w-[145px] mb-[70px]" />
 
-          <h1>BIENVENIDO</h1>
+          <h1 className="w-full max-w-[330px] font-[Inter,sans-serif] text-[50px] font-bold leading-none tracking-[-1.68px] text-black m-0 mb-[42px] text-center">
+            BIENVENIDO
+          </h1>
 
-          <form className={styles.form} onSubmit={handleSubmit}>
+          <form className="w-full max-w-[330px]" onSubmit={handleSubmit}>
             <Input
               label="Correo"
               type="email"
@@ -73,15 +74,23 @@ export default function LoginScreen() {
               onChange={(e) => setPassword(e.currentTarget.value)}
             />
 
-            {error && <p className={styles.error}>{error}</p>}
+            {error && (
+              <p className="text-center text-[15px] text-[#d92d20] font-medium mt-1 mb-0">{error}</p>
+            )}
 
-            <Button type="submit" label="INICIAR SESIÓN" />
+            <Button
+              type="submit"
+              label="INICIAR SESIÓN"
+              className="!w-[180px] !h-[48px] !rounded-[14px] !block mx-auto mt-5"
+            />
 
-            <p className={styles.forgot}>¿Olvidaste tu contraseña?</p>
+            <p className="text-center text-[15px] font-bold text-[#154b7c] cursor-pointer mt-[15px] mx-auto mb-0">
+              ¿Olvidaste tu contraseña?
+            </p>
           </form>
         </div>
 
-        <div className={styles.right}></div>
+        <div className="bg-[url('/city.png')] bg-cover bg-center bg-no-repeat" />
       </div>
     </div>
   );
