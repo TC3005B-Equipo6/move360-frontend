@@ -1,0 +1,155 @@
+{
+  "sources": [
+    {
+      "name": "INEGI",
+
+      "datasets": [
+        {
+          "id": "metro",
+
+          "label": "Metro",
+
+          "columns": [
+            "Anio",
+            "Mes",
+            "Kilómetros recorridos",
+            "Pasajeros transportados",
+            "Energía eléctrica consumida"
+          ],
+
+          "preview": [
+            {
+              "Anio": 2021,
+              "Mes": "Enero",
+              "Kilómetros recorridos": 100000,
+              "Pasajeros transportados": 4000000,
+              "Energía eléctrica consumida": 9000
+            },
+
+            {
+              "Anio": 2021,
+              "Mes": "Febrero",
+              "Kilómetros recorridos": 120000,
+              "Pasajeros transportados": 4500000,
+              "Energía eléctrica consumida": 9500
+            }
+          ]
+        },
+
+        {
+          "id": "metrobus",
+
+          "label": "Metrobús",
+
+          "columns": [
+            "Anio",
+            "Mes",
+            "Rutas",
+            "Autobuses operación lunes-viernes",
+            "Autobuses operación sábado-domingo",
+            "Kilómetros recorridos",
+            "Pasajeros transportados total",
+            "Pasajeros tarifa completa"
+          ],
+
+          "preview": [
+            {
+              "Anio": 2021,
+              "Mes": "Enero",
+              "Rutas": 13,
+              "Autobuses operación lunes-viernes": 164,
+              "Autobuses operación sábado-domingo": 108,
+              "Kilómetros recorridos": 1853112,
+              "Pasajeros transportados total": 3855569,
+              "Pasajeros tarifa completa": 3855569
+            },
+
+            {
+              "Anio": 2021,
+              "Mes": "Febrero",
+              "Rutas": 15,
+              "Autobuses operación lunes-viernes": 186,
+              "Autobuses operación sábado-domingo": 126,
+              "Kilómetros recorridos": 1730848,
+              "Pasajeros transportados total": 3925456,
+              "Pasajeros tarifa completa": 3848419
+            }
+          ]
+        },
+
+        {
+          "id": "rtp",
+
+          "label": "RTP",
+
+          "columns": [
+            "Anio",
+            "Mes",
+            "Rutas",
+            "Personal ocupado",
+            "Pasajeros transportados",
+            "Kilómetros recorridos"
+          ],
+
+          "preview": [
+            {
+              "Anio": 2021,
+              "Mes": "Enero",
+              "Rutas": 120,
+              "Personal ocupado": 4000,
+              "Pasajeros transportados": 1200000,
+              "Kilómetros recorridos": 500000
+            },
+
+            {
+              "Anio": 2021,
+              "Mes": "Febrero",
+              "Rutas": 122,
+              "Personal ocupado": 4100,
+              "Pasajeros transportados": 1300000,
+              "Kilómetros recorridos": 520000
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "SEMOVI",
+
+      "datasets": [
+        {
+          "id": "cablebus",
+
+          "label": "Cablebús",
+
+          "columns": [
+            "Anio",
+            "Mes",
+            "Línea",
+            "Pasajeros",
+            "Kilómetros recorridos"
+          ],
+
+          "preview": [
+            {
+              "Anio": 2024,
+              "Mes": "Enero",
+              "Línea": "L1",
+              "Pasajeros": 450000,
+              "Kilómetros recorridos": 80000
+            },
+
+            {
+              "Anio": 2024,
+              "Mes": "Febrero",
+              "Línea": "L1",
+              "Pasajeros": 470000,
+              "Kilómetros recorridos": 83000
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
