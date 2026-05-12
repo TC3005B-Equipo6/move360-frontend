@@ -36,7 +36,7 @@ export const Modal = ({
   className = "",
 }: ModalProps) => {
   const modalClasses = [
-    "w-[440px] bg-white rounded-[15px] p-[30px] flex flex-col font-[Inter,sans-serif]",
+    "w-[440px] max-h-[95vh] bg-white rounded-[15px] p-[30px] flex flex-col font-[Inter,sans-serif]",
     className,
   ].filter(Boolean).join(" ");
   const CloseIcon = icons.close;
