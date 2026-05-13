@@ -6,7 +6,8 @@ import {
   type LayoutItem,
 } from "react-grid-layout";
 import { AddButton } from "../AddButton/AddButton";
-import { AddItemModal } from "./AddItemModal";
+import { AddItemModal, type AddItemChoice } from "./AddItemModal";
+import { ChartFlowModal } from "./ChartFlowModal";
 import { DashboardItem } from "./DashboardItem";
 import { CELL_SIZE, GRID_COLUMNS, GUTTER, ITEM_SIZES, type ItemType } from "./grid.config";
 import { findFirstFreeSlot } from "./layout/findFirstFreeSlot";
@@ -14,9 +15,14 @@ import { fromRGL, toRGL } from "./layout/mapping";
 import { resolveCollisions } from "./layout/resolveCollisions";
 import { detectSwapTarget } from "./layout/swapDetection";
 import { loadDashboard, saveDashboard } from "../../services/dashboards";
-import type { DashboardItem as Item } from "./types";
+import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./types";
+import { IndicatorModal } from "../Indicator/IndicatorModal";
+import type { IndicatorWidget } from "../Indicator/types";
 
-const DASHBOARD_ID = "demo";
+interface Props {
+  dashboardId?: string;
+}
+
 const GRID_WIDTH = GRID_COLUMNS * CELL_SIZE + (GRID_COLUMNS - 1) * GUTTER + 2 * GUTTER;
 
 // noOverlapCompactor: type=null + allowOverlap=true. RGL no empuja items durante el drag
@@ -43,14 +49,15 @@ function computeReflowLayout(
   return resolveCollisions(placed, newItem.i);
 }
 
-export const DashboardGrid = () => {
-  const [items, setItems] = useState<Item[]>(() => loadDashboard(DASHBOARD_ID).items);
+export const DashboardGrid = ({ dashboardId = "demo" }: Props) => {
+  const [items, setItems] = useState<Item[]>(() => loadDashboard(dashboardId).items);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [pendingChoice, setPendingChoice] = useState<AddItemChoice | null>(null);
   const layoutBeforeDrag = useRef<LayoutItem[] | null>(null);
 
   useEffect(() => {
-    saveDashboard(DASHBOARD_ID, { id: DASHBOARD_ID, items });
-  }, [items]);
+    saveDashboard(dashboardId, { id: dashboardId, items });
+  }, [dashboardId, items]);
 
   // Una fila extra después de la última ocupada (vacía siempre visible al final).
   const occupiedRows = items.reduce(
@@ -60,12 +67,34 @@ export const DashboardGrid = () => {
   const visibleRows = occupiedRows + 1;
   const minHeight = visibleRows * CELL_SIZE + (visibleRows + 1) * GUTTER;
 
-  const handleAdd = (type: ItemType) => {
+  const handlePick = (choice: AddItemChoice) => {
+    setPendingChoice(choice);
+    setPickerOpen(false);
+  };
+
+  const closeConfigModal = () => setPendingChoice(null);
+
+  const placeItem = (type: ItemType, config: IndicatorConfig | ChartConfig) => {
     const { w, h } = ITEM_SIZES[type];
     const { col, row } = findFirstFreeSlot(items, w, h);
-    const newItem: Item = { id: crypto.randomUUID(), type, row, col };
+    const newItem: Item = { id: crypto.randomUUID(), type, row, col, config };
     setItems((prev) => [...prev, newItem]);
-    setPickerOpen(false);
+    setPendingChoice(null);
+  };
+
+  const handleIndicatorSave = (widget: IndicatorWidget) => {
+    const config: IndicatorConfig = {
+      value: widget.value,
+      label: widget.label,
+      isPositive: widget.isPositive,
+      backgroundColor: widget.backgroundColor,
+      textColor: widget.textColor,
+    };
+    placeItem("indicator", config);
+  };
+
+  const handleChartSave = ({ type, config }: { type: ItemType; config: ChartConfig }) => {
+    placeItem(type, config);
   };
 
   const handleDelete = (id: string) => {
@@ -118,7 +147,14 @@ export const DashboardGrid = () => {
         <AddButton onPress={() => setPickerOpen(true)} />
       </div>
 
-      {pickerOpen && <AddItemModal onSelect={handleAdd} onClose={() => setPickerOpen(false)} />}
+      {pickerOpen && <AddItemModal onSelect={handlePick} onClose={() => setPickerOpen(false)} />}
+
+      {pendingChoice === "indicator" && (
+        <IndicatorModal onClose={closeConfigModal} onSave={handleIndicatorSave} />
+      )}
+      {pendingChoice === "chart" && (
+        <ChartFlowModal onClose={closeConfigModal} onSave={handleChartSave} />
+      )}
     </div>
   );
 };

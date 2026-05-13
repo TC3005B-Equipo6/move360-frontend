@@ -1,9 +1,10 @@
 import { forwardRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Chart } from "../Chart/Chart";
 import { IndicatorCard } from "../IndicatorCard/IndicatorCard";
+import { IndicatorPreview } from "../Indicator/IndicatorPreview";
 import { ActionMenu } from "../ActionMenu/ActionMenu";
 import { icons } from "../../icons";
-import type { DashboardItem as Item } from "./types";
+import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./types";
 import { MOCK_DONUT, MOCK_INDICATOR } from "./mocks";
 
 interface Props {
@@ -38,8 +39,35 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
     onDelete(item.id);
   };
 
+  const menuButton = (
+    <button
+      type="button"
+      aria-label="More options"
+      data-action-menu-trigger
+      className="item-menu absolute top-4 right-4 inline-flex items-center justify-center w-8 h-8 p-0 bg-white/80 hover:bg-white border-0 rounded-full text-[#5f6f8a] cursor-pointer shadow-sm"
+      onClick={toggleMenu}
+    >
+      <MoreIcon size={20} />
+    </button>
+  );
+
   const renderContent = () => {
     if (item.type === "indicator") {
+      if (item.config) {
+        const cfg = item.config as IndicatorConfig;
+        return (
+          <div className="relative w-full h-full flex items-center justify-center">
+            <IndicatorPreview
+              value={cfg.value}
+              label={cfg.label}
+              isPositive={cfg.isPositive}
+              backgroundColor={cfg.backgroundColor}
+              textColor={cfg.textColor}
+            />
+            {menuButton}
+          </div>
+        );
+      }
       return (
         <IndicatorCard
           value={MOCK_INDICATOR.value}
@@ -50,18 +78,26 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
         />
       );
     }
+
+    if (item.config) {
+      const cfg = item.config as ChartConfig;
+      return (
+        <div className="relative w-full h-full">
+          <Chart
+            type={cfg.config.chartType}
+            data={cfg.data}
+            series={cfg.series}
+            size={chartSizeMap[item.type]}
+            title={cfg.config.datasetId || cfg.config.source}
+          />
+          {menuButton}
+        </div>
+      );
+    }
     return (
       <div className="relative w-full h-full">
         <Chart type="donut" data={MOCK_DONUT} size={chartSizeMap[item.type]} title="Gráfica" />
-        <button
-          type="button"
-          aria-label="More options"
-          data-action-menu-trigger
-          className="item-menu absolute top-4 right-4 inline-flex items-center justify-center w-8 h-8 p-0 bg-white/80 hover:bg-white border-0 rounded-full text-[#5f6f8a] cursor-pointer shadow-sm"
-          onClick={toggleMenu}
-        >
-          <MoreIcon size={20} />
-        </button>
+        {menuButton}
       </div>
     );
   };

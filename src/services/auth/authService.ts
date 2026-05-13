@@ -15,7 +15,7 @@ return token;
 
 
 export const validateToken = async () => {
-  const response = await api.get("/auth/validate");
+  const response = await api.get("/auth");
   return response.data;
 };
 
