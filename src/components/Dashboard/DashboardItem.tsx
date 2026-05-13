@@ -8,7 +8,6 @@ import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./type
 interface Props {
   item: Item;
   onDelete: (id: string) => void;
-  // RGL inyecta estas props vía cloneElement; las recibimos y reenviamos al DOM root.
   style?: CSSProperties;
   className?: string;
   onMouseDown?: (e: React.MouseEvent) => void;
@@ -57,7 +56,7 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
           <IndicatorPreview
             value={cfg.value}
             label={cfg.label}
-            isPositive={cfg.isPositive}
+            tone={cfg.tone}
             backgroundColor={cfg.backgroundColor}
             textColor={cfg.textColor}
           />
