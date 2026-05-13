@@ -15,9 +15,8 @@ import { fromRGL, toRGL } from "./layout/mapping";
 import { resolveCollisions } from "./layout/resolveCollisions";
 import { detectSwapTarget } from "./layout/swapDetection";
 import { loadDashboard, saveDashboard } from "../../services/dashboards";
-import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./types";
-import { IndicatorModal } from "../Indicator/IndicatorModal";
-import type { IndicatorWidget } from "../Indicator/types";
+import type { DashboardItem as Item, ChartConfig, IndicatorConfig, IndicatorWidget } from "./types";
+import { IndicatorModal } from "../IndicatorModal/IndicatorModal";
 
 interface Props {
   dashboardId?: string;

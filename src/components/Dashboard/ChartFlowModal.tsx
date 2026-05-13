@@ -3,7 +3,7 @@ import { BarChart3, LineChart } from "lucide-react";
 import { Modal } from "../Modal/Modal";
 import { Button } from "../Button/Button";
 import SegmentedControl from "../SegmentedControl/SegmentedControl";
-import chartData from "../Indicator/ChartDatasets.json";
+import chartData from "./ChartDatasets.json";
 import type { ChartConfig } from "./types";
 import type { ItemType } from "./grid.config";
 
@@ -114,6 +114,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
       <div className="flex flex-col h-full min-h-0 gap-5">
         <div className="flex justify-center">
           <SegmentedControl
+            label="TAMAÑO"
             value={size ?? undefined}
             onChange={(v) => setSize(v as ChartSize)}
             options={SIZE_OPTIONS.map((o) => ({ label: o.label, value: o.value }))}

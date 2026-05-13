@@ -16,7 +16,7 @@ export const IndicatorPreview = ({
   return (
     <div
       className="w-[200px] h-[200px] rounded-[32px] flex flex-col items-center justify-center text-center px-6"
-      style={{ backgroundColor, color: textColor}}
+      style={{ backgroundColor, color: textColor }}
     >
       <span className="text-[45px] font-bold leading-none">
         {isPositive ? "+" : "-"}
