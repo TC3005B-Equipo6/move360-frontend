@@ -10,12 +10,12 @@ export function toRGL(items: DashboardItem[]): LayoutItem[] {
 }
 
 export function fromRGL(layout: Layout, items: DashboardItem[]): DashboardItem[] {
-  const byId = new Map(items.map((it) => [it.id, it.type] as const));
+  const byId = new Map(items.map((it) => [it.id, it] as const));
   return layout
     .map((l) => {
-      const type = byId.get(l.i);
-      if (!type) return null;
-      return { id: l.i, type, row: l.y, col: l.x };
+      const original = byId.get(l.i);
+      if (!original) return null;
+      return { ...original, row: l.y, col: l.x };
     })
     .filter((it): it is DashboardItem => it !== null);
 }

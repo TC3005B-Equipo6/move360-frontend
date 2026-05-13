@@ -10,10 +10,11 @@ interface Props {
   options: Option[];
   value?: string;
   onChange?: (value: string) => void;
+  label?: string;
 }
 
-const SegmentedControl: React.FC<Props> = ({ options, value, onChange }) => {
-  const [selected, setSelected] = useState(value || options[0]?.value);
+const SegmentedControl: React.FC<Props> = ({ options, value, onChange, label = "TIPO" }) => {
+  const [selected, setSelected] = useState<string | undefined>(value);
 
   const selectedIndex = options.findIndex((o) => o.value === selected);
 
@@ -24,16 +25,18 @@ const SegmentedControl: React.FC<Props> = ({ options, value, onChange }) => {
 
   return (
     <div className="font-sans">
-      <span className="block mb-2 text-sm font-semibold text-[#444]">TIPO</span>
+      <span className="block mb-2 text-sm font-semibold text-[#444]">{label}</span>
 
       <div className="relative flex bg-[#f1f4f8] rounded-2xl p-1 w-fit">
-        <div
-          className="absolute top-1 bottom-1 left-1 bg-[#d6dee9] rounded-xl transition-transform duration-[250ms] z-0"
-          style={{
-            width: `${100 / options.length}%`,
-            transform: `translateX(${selectedIndex * 100}%)`,
-          }}
-        />
+        {selectedIndex >= 0 && (
+          <div
+            className="absolute top-1 bottom-1 left-1 bg-[#d6dee9] rounded-xl transition-transform duration-[250ms] z-0"
+            style={{
+              width: `${100 / options.length}%`,
+              transform: `translateX(${selectedIndex * 100}%)`,
+            }}
+          />
+        )}
 
         {options.map((option) => (
           <button

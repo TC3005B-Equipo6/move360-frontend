@@ -1,6 +1,7 @@
 import { Sidebar } from '../../components/SideBar/SideBar';
 import { Header } from '../../components/Header/Header';
 import { ProfileCard } from '../../components/ProfileCard/ProfileCard';
+import { DashboardGrid } from '../../components/Dashboard/DashboardGrid';
 
 export default function HomeScreen() {
   return (
@@ -11,7 +12,9 @@ export default function HomeScreen() {
           <Header title="Bienvenido" />
           <ProfileCard name="Juan Pérez" role={''} />
         </div>
-        <div>Aquí va el contenido principal</div>
+        <div className="w-full flex-1 min-h-0">
+          <DashboardGrid dashboardId="home" />
+        </div>
       </div>
     </div>
   );
