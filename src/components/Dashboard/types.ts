@@ -1,11 +1,19 @@
 import type { ItemType } from "./grid.config";
+import type { IndicatorTone } from "../Indicator/Indicator";
 
 export interface IndicatorWidget {
   id: string;
   type: "indicator";
   value: number;
   label: string;
-  isPositive: boolean;
+  name: string;
+  tone?: IndicatorTone;
+  operation: "porcentaje" | "total";
+  source?: string;
+  table?: string;
+  column?: string;
+  startDate: Date;
+  endDate: Date;
   backgroundColor: string;
   textColor: string;
 }

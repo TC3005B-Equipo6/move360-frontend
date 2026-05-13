@@ -29,7 +29,7 @@ export const Positivo: Story = {
   args: {
     value: 12,
     label: "Usuarios con descuento",
-    isPositive: true,
+    tone: "direct",
     backgroundColor: "#DDF3E4",
     textColor: "#166534",
   },
@@ -39,7 +39,7 @@ export const Negativo: Story = {
   args: {
     value: 8,
     label: "Tiempo de recorrido promedio",
-    isPositive: false,
+    tone: "inverse",
     backgroundColor: "#F8D7DA",
     textColor: "#B42318",
   },

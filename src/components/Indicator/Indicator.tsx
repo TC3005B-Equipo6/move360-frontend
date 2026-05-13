@@ -1,4 +1,4 @@
-export type IndicatorTone = "positive" | "negative" | "neutral";
+export type IndicatorTone = "direct" | "inverse";
 
 
 export interface IndicatorProps {
@@ -13,19 +13,18 @@ export interface IndicatorProps {
 }
 
 const tones: Record<IndicatorTone, string> = {
-  positive: "bg-[#dcfce7] text-[#166534]",
-  negative: "bg-[#ffd5d5] text-[#a42020]",
-  neutral: "bg-[#ffebaf] text-[#b46e0b]",
+  direct: "bg-[#dcfce7] text-[#166534]",
+  inverse: "bg-[#ffd5d5] text-[#a42020]",
 };
 
 export const Indicator = ({
   value,
   tone,
   label,
-  name,
-  startDate,
-  endDate,
-  isMenuOpen,
+  name: _name,
+  startDate: _startDate,
+  endDate: _endDate,
+  isMenuOpen: _isMenuOpen,
   className = "",
 }: IndicatorProps) => {
   const classes = [

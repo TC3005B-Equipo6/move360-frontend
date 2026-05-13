@@ -24,9 +24,6 @@ interface Props {
 
 const GRID_WIDTH = GRID_COLUMNS * CELL_SIZE + (GRID_COLUMNS - 1) * GUTTER + 2 * GUTTER;
 
-// noOverlapCompactor: type=null + allowOverlap=true. RGL no empuja items durante el drag
-// (deja overlaps visuales mientras el cursor está encima); el push lo aplicamos nosotros
-// en onDragStop con resolveCollisions (push mínimo + cascada).
 const compactor = getCompactor(null, true);
 
 function computeReflowLayout(
@@ -58,7 +55,6 @@ export const DashboardGrid = ({ dashboardId = "demo" }: Props) => {
     saveDashboard(dashboardId, { id: dashboardId, items });
   }, [dashboardId, items]);
 
-  // Una fila extra después de la última ocupada (vacía siempre visible al final).
   const occupiedRows = items.reduce(
     (max, it) => Math.max(max, it.row + ITEM_SIZES[it.type].h),
     0,
@@ -85,7 +81,14 @@ export const DashboardGrid = ({ dashboardId = "demo" }: Props) => {
     const config: IndicatorConfig = {
       value: widget.value,
       label: widget.label,
-      isPositive: widget.isPositive,
+      name: widget.name,
+      tone: widget.tone,
+      operation: widget.operation,
+      source: widget.source,
+      table: widget.table,
+      column: widget.column,
+      startDate: widget.startDate,
+      endDate: widget.endDate,
       backgroundColor: widget.backgroundColor,
       textColor: widget.textColor,
     };
