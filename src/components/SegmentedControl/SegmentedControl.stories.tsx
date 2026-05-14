@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import React from "react";
 import SegmentedControl from "./SegmentedControl";
 import { BarChart2, TrendingUp, Table, Settings } from "lucide-react";

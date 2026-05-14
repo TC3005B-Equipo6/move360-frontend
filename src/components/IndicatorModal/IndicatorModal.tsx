@@ -80,6 +80,15 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
       title={isEditMode ? "Editar indicador" : "Crear indicador"}
       onClose={onClose}
       className="w-[950px] rounded-[32px]"
+      footer={
+        <>
+          <Button label="Cancelar" variant="white" onPress={onClose} />
+          <Button
+            label={isEditMode ? "Guardar cambios" : "Guardar"}
+            onPress={handleSave}
+          />
+        </>
+      }
     >
       <div className="flex items-start gap-10 pt-2">
         <div className="flex-1 flex flex-col gap-6">
@@ -233,13 +242,6 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
             </div>
           )}
 
-          <div className="flex justify-end gap-4 pt-6">
-            <Button label="Cancelar" variant="white" onPress={onClose} />
-            <Button
-              label={isEditMode ? "Guardar cambios" : "Guardar"}
-              onPress={handleSave}
-            />
-          </div>
         </div>
         <div className="flex items-center justify-center min-w-[320px]">
           <IndicatorPreview

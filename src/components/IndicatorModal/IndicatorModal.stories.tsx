@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { IndicatorModal } from "./IndicatorModal";
 
 const meta: Meta<typeof IndicatorModal> = {

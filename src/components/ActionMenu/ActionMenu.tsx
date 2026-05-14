@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { icons } from "../../icons";
 
 export interface ActionMenuProps {
@@ -12,14 +12,14 @@ export const ActionMenu = ({ onDelete, onEdit, onClose, className = "" }: Action
   const TrashIcon = icons.trash;
   const EditIcon = icons.edit;
   const menuRef = useRef<HTMLDivElement>(null);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   useLayoutEffect(() => {
-    const rect = menuRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    const node = menuRef.current;
+    if (!node) return;
+    const rect = node.getBoundingClientRect();
     const x = Math.min(0, window.innerWidth - rect.right - 8);
     const y = Math.min(0, window.innerHeight - rect.bottom - 8);
-    setOffset({ x, y });
+    node.style.transform = `translate(${x}px, ${y}px)`;
   }, []);
 
   useEffect(() => {
@@ -44,7 +44,6 @@ export const ActionMenu = ({ onDelete, onEdit, onClose, className = "" }: Action
     <div
       ref={menuRef}
       className={classes}
-      style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
       role="menu"
     >
       <button

@@ -24,20 +24,23 @@ const chartSizeMap = {
   chartLg: "lg",
 } as const;
 
-type RenderIndicatorConfig = Partial<IndicatorConfig> & {
+type RenderIndicatorConfig = Partial<Omit<IndicatorConfig, "tone">> & {
   value: number;
   label: string;
+  tone?: IndicatorTone | "positive" | "neutral" | "negative";
   isPositive?: boolean;
 };
 
-const toDate = (value?: string) => {
+const toDate = (value?: string | Date) => {
+  if (value instanceof Date) return value;
   const date = value ? new Date(value) : new Date();
   return Number.isNaN(date.getTime()) ? new Date() : date;
 };
 
 const getIndicatorTone = (cfg: RenderIndicatorConfig): IndicatorTone => {
-  if (cfg.tone) return cfg.tone;
-  return cfg.isPositive === false ? "negative" : "positive";
+  if (cfg.tone === "inverse" || cfg.tone === "negative") return "inverse";
+  if (cfg.tone === "direct" || cfg.tone === "positive" || cfg.tone === "neutral") return "direct";
+  return cfg.isPositive === false ? "inverse" : "direct";
 };
 
 const getMetricLabel = (columns: string[]) => {
