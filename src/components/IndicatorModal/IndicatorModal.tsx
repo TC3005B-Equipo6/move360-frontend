@@ -6,6 +6,7 @@ import { colorOptions, type ColorKey } from "../IndicatorColorPicker/colors";
 import { IndicatorTypeToggle } from "../IndicatorTypeToggle/IndicatorTypeToggle";
 import { IndicatorPreview } from "../IndicatorPreview/IndicatorPreview";
 import type { IndicatorWidget } from "../Dashboard/types";
+import type { IndicatorTone } from "../Indicator/Indicator";
 
 interface Props {
   onClose: () => void;
@@ -19,16 +20,19 @@ export const IndicatorModal = ({ onClose, onSave }: Props) => {
   const [selectedColor, setSelectedColor] = useState<ColorKey>("green");
 
   const currentColors = colorOptions[selectedColor];
+  const toneByColor: Record<ColorKey, IndicatorTone> = {
+    green: "positive",
+    red: "negative",
+    yellow: "neutral",
+  };
 
   const handleSave = () => {
     const newIndicator: IndicatorWidget = {
       id: crypto.randomUUID(),
       type: "indicator",
       value,
-      isPositive,
       label,
-      backgroundColor: currentColors.background,
-      textColor: currentColors.text,
+      tone: toneByColor[selectedColor],
     };
     onSave(newIndicator);
   };

@@ -1,6 +1,6 @@
 import { forwardRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Chart } from "../Chart/Chart";
-import { IndicatorPreview } from "../IndicatorPreview/IndicatorPreview";
+import { Indicator, type IndicatorTone } from "../Indicator/Indicator";
 import { ActionMenu } from "../ActionMenu/ActionMenu";
 import { icons } from "../../icons";
 import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./types";
@@ -8,6 +8,7 @@ import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./type
 interface Props {
   item: Item;
   onDelete: (id: string) => void;
+  readonly?: boolean;
   // RGL inyecta estas props vía cloneElement; las recibimos y reenviamos al DOM root.
   style?: CSSProperties;
   className?: string;
@@ -23,8 +24,30 @@ const chartSizeMap = {
   chartLg: "lg",
 } as const;
 
+type RenderIndicatorConfig = Partial<IndicatorConfig> & {
+  value: number;
+  label: string;
+  isPositive?: boolean;
+};
+
+const toDate = (value?: string) => {
+  const date = value ? new Date(value) : new Date();
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+};
+
+const getIndicatorTone = (cfg: RenderIndicatorConfig): IndicatorTone => {
+  if (cfg.tone) return cfg.tone;
+  return cfg.isPositive === false ? "negative" : "positive";
+};
+
+const getMetricLabel = (columns: string[]) => {
+  const [firstColumn] = columns;
+  if (!firstColumn || firstColumn === "value") return "Afluencia";
+  return firstColumn;
+};
+
 export const DashboardItem = forwardRef<HTMLDivElement, Props>(function DashboardItem(
-  { item, onDelete, style, className, onMouseDown, onMouseUp, onTouchEnd, children },
+  { item, onDelete, readonly = false, style, className, onMouseDown, onMouseUp, onTouchEnd, children },
   ref,
 ) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -51,17 +74,19 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
 
   const renderContent = () => {
     if (item.type === "indicator") {
-      const cfg = item.config as IndicatorConfig;
+      const cfg = item.config as RenderIndicatorConfig;
       return (
         <div className="relative w-full h-full flex items-center justify-center">
-          <IndicatorPreview
+          <Indicator
             value={cfg.value}
             label={cfg.label}
-            isPositive={cfg.isPositive}
-            backgroundColor={cfg.backgroundColor}
-            textColor={cfg.textColor}
+            tone={getIndicatorTone(cfg)}
+            name={cfg.name ?? cfg.label}
+            startDate={toDate(cfg.startDate)}
+            endDate={toDate(cfg.endDate)}
+            isMenuOpen={menuOpen || Boolean(cfg.isMenuOpen)}
           />
-          {menuButton}
+          {!readonly && menuButton}
         </div>
       );
     }
@@ -75,8 +100,9 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
           series={cfg.series}
           size={chartSizeMap[item.type]}
           title={cfg.config.datasetId || cfg.config.source}
+          metricLabel={getMetricLabel(cfg.config.columns)}
         />
-        {menuButton}
+        {!readonly && menuButton}
       </div>
     );
   };
@@ -91,7 +117,7 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
       onTouchEnd={onTouchEnd}
     >
       {renderContent()}
-      {menuOpen && (
+      {!readonly && menuOpen && (
         <div className="item-menu absolute top-12 right-3 z-20">
           <ActionMenu onDelete={handleDelete} onEdit={closeMenu} onClose={closeMenu} />
         </div>

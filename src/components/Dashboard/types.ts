@@ -1,20 +1,27 @@
 import type { ItemType } from "./grid.config";
+import type { IndicatorTone } from "../Indicator/Indicator";
 
 export interface IndicatorWidget {
   id: string;
   type: "indicator";
   value: number;
   label: string;
-  isPositive: boolean;
-  backgroundColor: string;
-  textColor: string;
+  tone: IndicatorTone;
 }
 
-export type IndicatorConfig = Omit<IndicatorWidget, "id" | "type">;
+export interface IndicatorConfig {
+  value: number;
+  tone: IndicatorTone;
+  label: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isMenuOpen: boolean;
+}
 
 export interface ChartConfig {
   config: {
-    chartType: "bar" | "line";
+    chartType: "bar" | "line" | "donut";
     source: string;
     datasetId: string;
     columns: string[];
