@@ -4,6 +4,13 @@ import { Button } from "../../components/Button/Button";
 import { Input } from "../../components/Input/Input";
 import { login, validateToken } from "../../services/auth/authService";
 
+type LoginError = {
+  code?: string;
+  response?: {
+    status?: number;
+  };
+};
+
 export default function LoginScreen() {
   const navigate = useNavigate();
 
@@ -28,16 +35,17 @@ export default function LoginScreen() {
       await validateToken();
 
       navigate("/home");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const loginError = error as LoginError;
       if (
-        error.code === "auth/invalid-credential" ||
-        error.code === "auth/wrong-password" ||
-        error.code === "auth/user-not-found"
+        loginError.code === "auth/invalid-credential" ||
+        loginError.code === "auth/wrong-password" ||
+        loginError.code === "auth/user-not-found"
       ) {
         setError("Correo o contraseña incorrectos");
-      } else if (error.code === "auth/invalid-email") {
+      } else if (loginError.code === "auth/invalid-email") {
         setError("Ingresa un correo válido");
-      } else if (error.response?.status === 401) {
+      } else if (loginError.response?.status === 401) {
         setError("Token inválido");
       } else {
         setError("Ocurrió un error");

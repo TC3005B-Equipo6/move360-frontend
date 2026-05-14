@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { BarChart3, LineChart } from "lucide-react";
 import { Modal } from "../Modal/Modal";
 import { Button } from "../Button/Button";
@@ -41,26 +41,19 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
   const currentSource = sources.find((s) => s.name === source);
 
   const [datasetId, setDatasetId] = useState("");
-  useEffect(() => {
-    if (currentSource?.datasets?.length) {
-      setDatasetId(currentSource.datasets[0].id);
-    }
-  }, [source]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const currentDataset = currentSource?.datasets.find((d) => d.id === datasetId);
+  const selectedDataset = currentSource?.datasets.find((d) => d.id === datasetId);
+  const currentDataset = selectedDataset ?? currentSource?.datasets[0];
+  const currentDatasetId = currentDataset?.id ?? "";
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [compareEnabled, setCompareEnabled] = useState(false);
   const [compareTable, setCompareTable] = useState("");
   const [startDate, setStartDate] = useState("2025-01");
   const [endDate, setEndDate] = useState("2025-12");
 
-  const compatibleTables = useMemo(() => {
-    if (!currentSource) return [];
-    return currentSource.datasets.filter((d) => {
-      if (d.id === datasetId) return false;
-      return selectedColumns.some((column) => d.columns.includes(column));
-    });
-  }, [currentSource, datasetId, selectedColumns]);
+  const compatibleTables = currentSource?.datasets.filter((d) => {
+    if (d.id === currentDatasetId) return false;
+    return selectedColumns.some((column) => d.columns.includes(column));
+  }) ?? [];
 
   const toggleColumn = (column: string) => {
     setSelectedColumns((prev) =>
@@ -91,7 +84,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
       config: {
         chartType: effectiveType,
         source,
-        datasetId,
+        datasetId: currentDatasetId,
         columns: selectedColumns,
         compareEnabled,
         compareTable,
@@ -166,7 +159,12 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
                   <label className="text-sm font-semibold text-[#1F4E79]">Fuente</label>
                   <select
                     value={source}
-                    onChange={(e) => setSource(e.target.value)}
+                    onChange={(e) => {
+                      setSource(e.target.value);
+                      setDatasetId("");
+                      setSelectedColumns([]);
+                      setCompareTable("");
+                    }}
                     className="h-12 rounded-2xl border border-[#DCE4EE] bg-white px-4 outline-none focus:border-[#1F4E79]"
                   >
                     {sources.map((item) => (
@@ -181,10 +179,11 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-[#1F4E79]">Tabla</label>
                 <select
-                  value={datasetId}
+                  value={currentDatasetId}
                   onChange={(e) => {
                     setDatasetId(e.target.value);
                     setSelectedColumns([]);
+                    setCompareTable("");
                   }}
                   className="h-12 rounded-2xl border border-[#DCE4EE] bg-white px-4 outline-none focus:border-[#1F4E79]"
                 >

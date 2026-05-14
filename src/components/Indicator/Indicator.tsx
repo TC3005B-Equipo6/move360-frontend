@@ -21,10 +21,6 @@ export const Indicator = ({
   value,
   tone,
   label,
-  name: _name,
-  startDate: _startDate,
-  endDate: _endDate,
-  isMenuOpen: _isMenuOpen,
   className = "",
 }: IndicatorProps) => {
   const classes = [

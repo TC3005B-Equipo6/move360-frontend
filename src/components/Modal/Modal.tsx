@@ -36,7 +36,7 @@ export const Modal = ({
   className = "",
 }: ModalProps) => {
   const modalClasses = [
-    "w-[440px] max-h-[95vh] bg-white rounded-[15px] p-[30px] flex flex-col font-[Inter,sans-serif]",
+    "w-[440px] max-h-[95vh] bg-white rounded-[15px] p-[30px] flex flex-col overflow-hidden font-[Inter,sans-serif]",
     className,
   ].filter(Boolean).join(" ");
   const CloseIcon = icons.close;
@@ -48,7 +48,7 @@ export const Modal = ({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-6">
       <div className={modalClasses}>
-        <div className="flex justify-between items-center">
+        <div className="flex shrink-0 justify-between items-center">
           {title ? <h3 className="text-[#1f4e79] text-lg font-semibold m-0">{title}</h3> : <div />}
 
           {showCloseIcon && (
@@ -63,7 +63,13 @@ export const Modal = ({
           )}
         </div>
 
-        <div className={hasCustomContent ? "my-5 flex-1" : "my-5 flex-1 flex flex-col justify-center items-center gap-2.5 text-center"}>
+        <div
+          className={
+            hasCustomContent
+              ? "my-5 min-h-0 flex-1 overflow-y-auto pr-1"
+              : "my-5 min-h-0 flex-1 flex flex-col justify-center items-center gap-2.5 text-center"
+          }
+        >
           {hasCustomContent ? (
             children
           ) : (
@@ -84,9 +90,9 @@ export const Modal = ({
         </div>
 
         {footer ? (
-          <div className="flex justify-end gap-3">{footer}</div>
+          <div className="flex shrink-0 justify-end gap-3">{footer}</div>
         ) : hasDefaultFooter ? (
-          <div className="flex justify-center gap-3">
+          <div className="flex shrink-0 justify-center gap-3">
             {onCancel && (
               <Button variant="white" size="medium" label={cancelText} onPress={onCancel} />
             )}

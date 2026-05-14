@@ -20,12 +20,18 @@ export interface IndicatorWidget {
 
 export interface IndicatorConfig {
   value: number;
-  tone: IndicatorTone;
   label: string;
   name: string;
-  startDate: string;
-  endDate: string;
-  isMenuOpen: boolean;
+  tone?: IndicatorTone;
+  operation?: "porcentaje" | "total";
+  source?: string;
+  table?: string;
+  column?: string;
+  startDate: Date | string;
+  endDate: Date | string;
+  backgroundColor?: string;
+  textColor?: string;
+  isMenuOpen?: boolean;
 }
 
 export interface ChartConfig {
