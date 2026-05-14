@@ -46,7 +46,7 @@ export const Modal = ({
   const hasDefaultFooter = Boolean(onConfirm || onCancel);
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-6">
+    <div className="fixed inset-0 z-[1000] bg-black/40 flex items-center justify-center p-6">
       <div className={modalClasses}>
         <div className="flex shrink-0 justify-between items-center">
           {title ? <h3 className="text-[#1f4e79] text-lg font-semibold m-0">{title}</h3> : <div />}
