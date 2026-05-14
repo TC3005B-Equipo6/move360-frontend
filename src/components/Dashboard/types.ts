@@ -6,7 +6,16 @@ export interface IndicatorWidget {
   type: "indicator";
   value: number;
   label: string;
-  tone: IndicatorTone;
+  name: string;
+  tone?: IndicatorTone;
+  operation: "porcentaje" | "total";
+  source?: string;
+  table?: string;
+  column?: string;
+  startDate: Date;
+  endDate: Date;
+  backgroundColor: string;
+  textColor: string;
 }
 
 export interface IndicatorConfig {

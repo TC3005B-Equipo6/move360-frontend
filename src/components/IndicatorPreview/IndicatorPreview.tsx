@@ -1,7 +1,9 @@
+import type { IndicatorTone } from "../Indicator/Indicator";
+
 interface Props {
   value: number;
   label: string;
-  isPositive: boolean;
+  tone?: IndicatorTone;
   backgroundColor: string;
   textColor: string;
 }
@@ -9,7 +11,7 @@ interface Props {
 export const IndicatorPreview = ({
   value,
   label,
-  isPositive,
+  tone,
   backgroundColor,
   textColor,
 }: Props) => {
@@ -19,7 +21,7 @@ export const IndicatorPreview = ({
       style={{ backgroundColor, color: textColor }}
     >
       <span className="text-[45px] font-bold leading-none">
-        {isPositive ? "+" : "-"}
+        {tone === "direct" ? "+" : "-"}
         {value}%
       </span>
 
