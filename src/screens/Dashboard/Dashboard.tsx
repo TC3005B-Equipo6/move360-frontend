@@ -13,7 +13,7 @@ export default function DashboardScreen() {
           <ProfileCard name="Juan Pérez" role={''} />
         </div>
         <div className="w-full flex-1 min-h-0">
-          <DashboardGrid />
+          <DashboardGrid dashboardId="home" />
         </div>
       </div>
     </div>

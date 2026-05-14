@@ -20,6 +20,8 @@ import { IndicatorModal } from "../IndicatorModal/IndicatorModal";
 
 interface Props {
   dashboardId?: string;
+  readonly?: boolean;
+  initialItems?: Item[];
 }
 
 const GRID_WIDTH = GRID_COLUMNS * CELL_SIZE + (GRID_COLUMNS - 1) * GUTTER + 2 * GUTTER;
@@ -45,15 +47,15 @@ function computeReflowLayout(
   return resolveCollisions(placed, newItem.i);
 }
 
-export const DashboardGrid = ({ dashboardId = "demo" }: Props) => {
-  const [items, setItems] = useState<Item[]>(() => loadDashboard(dashboardId).items);
+export const DashboardGrid = ({ dashboardId = "demo", readonly = false, initialItems }: Props) => {
+  const [items, setItems] = useState<Item[]>(() => initialItems ?? loadDashboard(dashboardId).items);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingChoice, setPendingChoice] = useState<AddItemChoice | null>(null);
   const layoutBeforeDrag = useRef<LayoutItem[] | null>(null);
 
   useEffect(() => {
-    saveDashboard(dashboardId, { id: dashboardId, items });
-  }, [dashboardId, items]);
+    if (!readonly) saveDashboard(dashboardId, { id: dashboardId, items });
+  }, [dashboardId, items, readonly]);
 
   const occupiedRows = items.reduce(
     (max, it) => Math.max(max, it.row + ITEM_SIZES[it.type].h),
@@ -130,7 +132,7 @@ export const DashboardGrid = ({ dashboardId = "demo" }: Props) => {
             containerPadding: [GUTTER, GUTTER],
           }}
           dragConfig={{
-            enabled: true,
+            enabled: !readonly,
             bounded: true,
             cancel: ".item-menu, [data-action-menu-trigger]",
           }}
@@ -140,21 +142,23 @@ export const DashboardGrid = ({ dashboardId = "demo" }: Props) => {
           onDragStop={handleDragStop}
         >
           {items.map((item) => (
-            <DashboardItem key={item.id} item={item} onDelete={handleDelete} />
+            <DashboardItem key={item.id} item={item} onDelete={handleDelete} readonly={readonly} />
           ))}
         </GridLayout>
       </div>
 
-      <div className="fixed bottom-8 right-8 z-30">
-        <AddButton onPress={() => setPickerOpen(true)} />
-      </div>
+      {!readonly && (
+        <div className="fixed bottom-8 right-8 z-30">
+          <AddButton onPress={() => setPickerOpen(true)} />
+        </div>
+      )}
 
-      {pickerOpen && <AddItemModal onSelect={handlePick} onClose={() => setPickerOpen(false)} />}
+      {!readonly && pickerOpen && <AddItemModal onSelect={handlePick} onClose={() => setPickerOpen(false)} />}
 
-      {pendingChoice === "indicator" && (
+      {!readonly && pendingChoice === "indicator" && (
         <IndicatorModal onClose={closeConfigModal} onSave={handleIndicatorSave} />
       )}
-      {pendingChoice === "chart" && (
+      {!readonly && pendingChoice === "chart" && (
         <ChartFlowModal onClose={closeConfigModal} onSave={handleChartSave} />
       )}
     </div>
