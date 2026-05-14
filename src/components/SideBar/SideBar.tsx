@@ -35,7 +35,7 @@ export const Sidebar = ({ className = "" }: { className?: string }) => {
       } as SideBarButtonProps },
     { id: "favorites",
       props: {
-        tooltip: "Favorites", iconName: "piechart", selected: pathname === "/graphs", onPress: () => navigate("/graphs")
+        tooltip: "Favorites", iconName: "piechart", selected: pathname === "/graphs", onPress: () => navigate("/dashboard")
       } as SideBarButtonProps },
     { id: "favorites",
       props: {

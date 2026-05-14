@@ -10,7 +10,7 @@
           "label": "Metro",
 
           "columns": [
-            "Anio",
+            "Año",
             "Mes",
             "Kilómetros recorridos",
             "Pasajeros transportados",
@@ -19,7 +19,7 @@
 
           "preview": [
             {
-              "Anio": 2021,
+              "Año": 2021,
               "Mes": "Enero",
               "Kilómetros recorridos": 100000,
               "Pasajeros transportados": 4000000,
@@ -27,7 +27,7 @@
             },
 
             {
-              "Anio": 2021,
+              "Año": 2021,
               "Mes": "Febrero",
               "Kilómetros recorridos": 120000,
               "Pasajeros transportados": 4500000,
@@ -54,7 +54,7 @@
 
           "preview": [
             {
-              "Anio": 2021,
+              "Año": 2021,
               "Mes": "Enero",
               "Rutas": 13,
               "Autobuses operación lunes-viernes": 164,
@@ -65,7 +65,7 @@
             },
 
             {
-              "Anio": 2021,
+              "Año": 2021,
               "Mes": "Febrero",
               "Rutas": 15,
               "Autobuses operación lunes-viernes": 186,
@@ -93,7 +93,7 @@
 
           "preview": [
             {
-              "Anio": 2021,
+              "Año": 2021,
               "Mes": "Enero",
               "Rutas": 120,
               "Personal ocupado": 4000,
@@ -102,7 +102,7 @@
             },
 
             {
-              "Anio": 2021,
+              "Año": 2021,
               "Mes": "Febrero",
               "Rutas": 122,
               "Personal ocupado": 4100,
@@ -133,7 +133,7 @@
 
           "preview": [
             {
-              "Anio": 2024,
+              "Año": 2024,
               "Mes": "Enero",
               "Línea": "L1",
               "Pasajeros": 450000,
@@ -141,7 +141,7 @@
             },
 
             {
-              "Anio": 2024,
+              "Año": 2024,
               "Mes": "Febrero",
               "Línea": "L1",
               "Pasajeros": 470000,
