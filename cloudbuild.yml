@@ -3,7 +3,7 @@ substitutions:
   _REPOSITORY: move360
   _IMAGE: move360-frontend
   _SERVICE: move360-frontend
-  _PROJECT_ID: TU_PROJECT_ID
+  _PROJECT_ID: project-fa58d7d7-fa9b-4aba-82e
 
 options:
   logging: CLOUD_LOGGING_ONLY
