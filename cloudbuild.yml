@@ -10,7 +10,7 @@ options:
 
 steps:
   - id: install-dependencies
-    name: node:20-alpine
+    name: node:24.14.0-alpine
     entrypoint: sh
     args:
       - -c
@@ -18,7 +18,7 @@ steps:
         npm ci
 
   - id: build-react
-    name: node:20-alpine
+    name: node:24.14.0-alpine
     entrypoint: sh
     args:
       - -c
