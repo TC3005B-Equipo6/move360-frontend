@@ -42,7 +42,7 @@
           "label": "Metrobús",
 
           "columns": [
-            "Anio",
+            "Año",
             "Mes",
             "Rutas",
             "Autobuses operación lunes-viernes",
@@ -83,7 +83,7 @@
           "label": "RTP",
 
           "columns": [
-            "Anio",
+            "Año",
             "Mes",
             "Rutas",
             "Personal ocupado",
@@ -124,7 +124,7 @@
           "label": "Cablebús",
 
           "columns": [
-            "Anio",
+            "Año",
             "Mes",
             "Línea",
             "Pasajeros",
