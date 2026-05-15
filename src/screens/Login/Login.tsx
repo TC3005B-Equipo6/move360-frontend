@@ -17,6 +17,11 @@ export default function LoginScreen() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isMissingUser = Boolean(error) && !user;
+  const isMissingPassword = Boolean(error) && !password;
+  const formError = error && user && password ? error : "";
 
   const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -28,6 +33,7 @@ export default function LoginScreen() {
 
     try {
       setError("");
+      setIsSubmitting(true);
 
       const token = await login(user, password);
 
@@ -50,56 +56,91 @@ export default function LoginScreen() {
       } else {
         setError("Ocurrió un error");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-screen bg-[#154b7c] flex justify-center items-center p-8 box-border">
-      <div className="w-[1080px] max-w-full h-[640px] bg-white rounded-[28px] overflow-hidden grid grid-cols-[48%_52%]">
-        <div className="pt-[34px] pb-[34px] px-[58px] flex flex-col">
-          <img src="/move360.png" alt="move360" className="w-[145px] mb-[70px]" />
+    <main className="min-h-screen w-full bg-primary p-4 text-content-primary antialiased sm:p-6 lg:p-8">
+      <div className="mx-auto grid min-h-[calc(100vh-2rem)] w-full max-w-[1120px] overflow-hidden rounded-2xl bg-surface-raised shadow-xl ring-1 ring-border-subtle sm:min-h-[calc(100vh-3rem)] lg:min-h-[640px] lg:grid-cols-[minmax(420px,0.9fr)_1.1fr]">
+        <section className="flex min-h-[620px] flex-col justify-center px-6 py-8 sm:px-10 lg:px-14">
+          <div className="w-full max-w-[380px]">
+            <img src="/move360.png" alt="Move360" className="mb-12 w-[142px]" />
 
-          <h1 className="w-full max-w-[330px] font-[Inter,sans-serif] text-[50px] font-bold leading-none tracking-[-1.68px] text-black m-0 mb-[42px] text-center">
-            BIENVENIDO
-          </h1>
+            <div className="mb-9">
+              <p className="mb-3 text-caption font-bold uppercase text-accent">Análisis de movilidad</p>
+              <h1 className="m-0 max-w-[360px] text-h1 font-bold text-content-primary [text-wrap:balance]">
+                Bienvenido a Move360
+              </h1>
+              <p className="mt-3 max-w-[340px] text-body-sm text-content-secondary [text-wrap:pretty]">
+                Ingresa para consultar y construir tableros de movilidad con datos de la Ciudad de México.
+              </p>
+            </div>
 
-          <form className="w-full max-w-[330px]" onSubmit={handleSubmit}>
-            <Input
-              label="Correo"
-              type="email"
-              autoComplete="username"
-              placeholder="ejemplo@move360.com"
-              value={user}
-              onChange={(e) => setUser(e.currentTarget.value)}
-            />
+            <form className="flex w-full flex-col gap-5" onSubmit={handleSubmit} noValidate>
+              <Input
+                label="Correo"
+                type="email"
+                autoComplete="username"
+                placeholder="ejemplo@move360.com"
+                value={user}
+                disabled={isSubmitting}
+                error={isMissingUser ? "Ingresa tu correo" : undefined}
+                onChange={(e) => {
+                  setUser(e.currentTarget.value);
+                  if (error) setError("");
+                }}
+              />
 
-            <Input
-              label="Contraseña"
-              type="password"
-              autoComplete="current-password"
-              showPasswordToggle
-              value={password}
-              onChange={(e) => setPassword(e.currentTarget.value)}
-            />
+              <Input
+                label="Contraseña"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Ingresa tu contraseña"
+                showPasswordToggle
+                value={password}
+                disabled={isSubmitting}
+                error={isMissingPassword ? "Ingresa tu contraseña" : undefined}
+                onChange={(e) => {
+                  setPassword(e.currentTarget.value);
+                  if (error) setError("");
+                }}
+              />
 
-            {error && (
-              <p className="text-center text-[15px] text-[#d92d20] font-medium mt-1 mb-0">{error}</p>
-            )}
+              {formError && (
+                <p className="m-0 rounded-md bg-danger-subtle px-3 py-2 text-body-sm font-medium text-danger" role="alert">
+                  {formError}
+                </p>
+              )}
 
-            <Button
-              type="submit"
-              label="INICIAR SESIÓN"
-              className="!w-[180px] !h-[48px] !rounded-[14px] !block mx-auto mt-5"
-            />
+              <Button
+                type="submit"
+                label={isSubmitting ? "Iniciando sesión" : "Iniciar sesión"}
+                size="large"
+                isLoading={isSubmitting}
+                className="mt-1 w-full"
+              />
 
-            <p className="text-center text-[15px] font-bold text-[#154b7c] cursor-pointer mt-[15px] mx-auto mb-0">
-              ¿Olvidaste tu contraseña?
-            </p>
-          </form>
+              <button
+                type="button"
+                className="min-h-10 self-center rounded-sm px-2 text-body-sm font-semibold text-primary transition-[color,transform] duration-200 ease-out hover:text-primary-hover active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <div className="relative hidden min-h-[640px] overflow-hidden bg-primary lg:block">
+          <img
+            src="/city.png"
+            alt=""
+            className="h-full w-full object-cover opacity-95"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/70 via-primary/20 to-accent/30" />
         </div>
-
-        <div className="bg-[url('/city.png')] bg-cover bg-center bg-no-repeat" />
       </div>
-    </div>
+    </main>
   );
 }

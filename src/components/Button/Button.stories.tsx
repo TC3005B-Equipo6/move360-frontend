@@ -6,13 +6,7 @@ const meta: Meta<typeof Button> = {
   component: Button,
   decorators: [
     (Story) => (
-      <div
-      style={{
-        minHeight: "100vh", 
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 10}}>
+      <div className="flex min-h-screen items-center justify-center bg-surface-base p-6">
         <Story />
       </div>
     ),
@@ -28,7 +22,25 @@ export const IniciarSesion: Story = {
     variant: "blue",
     size: "large",
     label: "Iniciar sesión",
-    onPress: () => console.log("Iniciar sesión"),
+    onPress: () => console.log("Iniciar sesion"),
+  },
+};
+
+export const Cargando: Story = {
+  args: {
+    variant: "blue",
+    size: "large",
+    label: "Iniciando sesión",
+    isLoading: true,
+  },
+};
+
+export const Deshabilitado: Story = {
+  args: {
+    variant: "blue",
+    size: "large",
+    label: "Continuar",
+    disabled: true,
   },
 };
 
@@ -36,7 +48,7 @@ export const GenerarReporte: Story = {
   args: {
     variant: "white",
     label: "Generar reporte",
-    size: "large"
+    size: "large",
   },
 };
 
@@ -44,7 +56,7 @@ export const GuardarUsuario: Story = {
   args: {
     variant: "blue",
     label: "Guardar usuario",
-    size: "large"
+    size: "large",
   },
 };
 
@@ -52,7 +64,7 @@ export const Guardar: Story = {
   args: {
     variant: "blue",
     label: "Guardar",
-    size: "medium"
+    size: "medium",
   },
 };
 
@@ -60,7 +72,7 @@ export const Agregar: Story = {
   args: {
     variant: "blue",
     label: "Agregar",
-    size: "medium"
+    size: "medium",
   },
 };
 
@@ -68,7 +80,7 @@ export const Aceptar: Story = {
   args: {
     variant: "blue",
     label: "Aceptar",
-    size: "medium"
+    size: "medium",
   },
 };
 
@@ -76,7 +88,7 @@ export const Enviar: Story = {
   args: {
     variant: "blue",
     label: "Enviar",
-    size: "medium"
+    size: "medium",
   },
 };
 
@@ -84,7 +96,7 @@ export const Cancelar: Story = {
   args: {
     variant: "white",
     label: "Cancelar",
-    size: "medium"
+    size: "medium",
   },
 };
 
@@ -92,7 +104,7 @@ export const Eliminar: Story = {
   args: {
     variant: "red",
     label: "Eliminar",
-    size: "medium"
+    size: "medium",
   },
 };
 
@@ -100,6 +112,6 @@ export const Desactivar: Story = {
   args: {
     variant: "red",
     label: "Desactivar",
-    size: "medium"
+    size: "medium",
   },
 };

@@ -5,6 +5,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   className?: string;
   showPasswordToggle?: boolean;
+  error?: string;
 }
 
 export function Input({
@@ -13,6 +14,7 @@ export function Input({
   id,
   type,
   showPasswordToggle = false,
+  error,
   ...props
 }: InputProps) {
   const generatedId = useId();
@@ -23,10 +25,11 @@ export function Input({
   const inputType = canTogglePassword && isPasswordVisible ? "text" : type;
   const PasswordIcon = isPasswordVisible ? icons.eyeOff : icons.eyeOn;
   const inputId = id ?? generatedId;
+  const errorId = `${inputId}-error`;
 
   return (
-    <div className="w-full mb-6 flex flex-col">
-      <label className="mb-1.5 text-base font-medium text-[#1f1f1f] font-[Inter,sans-serif]" htmlFor={inputId}>
+    <div className="flex w-full flex-col gap-2">
+      <label className="text-body-sm font-semibold text-content-primary" htmlFor={inputId}>
         {label}
       </label>
 
@@ -35,8 +38,13 @@ export function Input({
           {...props}
           id={inputId}
           type={inputType}
+          aria-invalid={Boolean(error) || undefined}
+          aria-describedby={error ? errorId : props["aria-describedby"]}
           className={[
-            "w-full border border-[#d7d7d7] rounded-lg px-3 py-[10px] text-base font-[Inter,sans-serif] outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#1f4e79]",
+            "min-h-12 w-full rounded-md bg-surface-raised px-3.5 py-3 text-body text-content-primary shadow-xs outline-none ring-1 ring-inset ring-border placeholder:text-content-muted",
+            "transition-[background-color,box-shadow,color] duration-200 ease-out focus:ring-2 focus:ring-primary",
+            "disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-content-muted",
+            error ? "ring-danger focus:ring-danger" : "",
             canTogglePassword ? "pr-12" : "",
             className,
           ].filter(Boolean).join(" ")}
@@ -45,7 +53,7 @@ export function Input({
         {canTogglePassword && (
           <button
             type="button"
-            className="absolute top-1/2 right-3 -translate-y-1/2 inline-flex items-center justify-center p-0 border-0 bg-transparent text-[#1f4e79] cursor-pointer hover:text-[#154b7c] focus-visible:outline-2 focus-visible:outline-[#1f4e79] focus-visible:outline-offset-4 focus-visible:rounded"
+            className="absolute right-2 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-sm border-0 bg-transparent p-0 text-primary transition-[color,transform] duration-200 ease-out hover:text-primary-hover active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             aria-label={isPasswordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
             aria-pressed={isPasswordVisible}
             onMouseDown={(event) => event.preventDefault()}
@@ -55,6 +63,12 @@ export function Input({
           </button>
         )}
       </div>
+
+      {error && (
+        <p id={errorId} className="m-0 text-caption font-medium text-danger">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

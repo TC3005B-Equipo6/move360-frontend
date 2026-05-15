@@ -1,0 +1,183 @@
+/* Showcase — scoped identity tokens per variant (throwaway prototype, Phase 1).
+   Each variant pairs an IDENTITY (palette / type / radius / shadow / density)
+   with a LAYOUT composed in its own .tsx file. The real app tokens live in
+   src/styles/tokens.css and are NOT affected by anything here. */
+
+/* ── Variant A · "Cívico" — institutional, airy, left sidebar ───────────────── */
+[data-sc-variant="civic"] {
+  --sc-bg: #f5f7fa;
+  --sc-surface: #ffffff;
+  --sc-surface-2: #eef2f7;
+  --sc-ink: #16243a;
+  --sc-ink-2: #4d5d75;
+  --sc-ink-3: #8593a8;
+  --sc-border: #e2e8f0;
+  --sc-primary: #1d4e74;
+  --sc-primary-ink: #ffffff;
+  --sc-accent: #e08a1e;
+  --sc-pos: #2f8f4e;
+  --sc-neg: #c0392b;
+  --sc-radius: 18px;
+  --sc-radius-sm: 11px;
+  --sc-shadow: 0 1px 2px rgba(20, 35, 58, 0.05), 0 8px 24px rgba(20, 35, 58, 0.07);
+  --sc-gap: 28px;
+  --sc-pad: 24px;
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sc-c1: #1d4e74;
+  --sc-c2: #e08a1e;
+  --sc-c3: #4a90b8;
+  --sc-c4: #6aa84f;
+  --sc-c5: #b4477f;
+}
+
+/* ── Variant B · "Consola" — sharp analyst console, compact, top bar ────────── */
+[data-sc-variant="console"] {
+  --sc-bg: #eef0f4;
+  --sc-surface: #ffffff;
+  --sc-surface-2: #e7eaf1;
+  --sc-ink: #1b2330;
+  --sc-ink-2: #54607a;
+  --sc-ink-3: #8a93a6;
+  --sc-border: #d6dbe5;
+  --sc-primary: #2f3aa3;
+  --sc-primary-ink: #ffffff;
+  --sc-accent: #0bb4d4;
+  --sc-pos: #1f9d57;
+  --sc-neg: #d23b3b;
+  --sc-radius: 8px;
+  --sc-radius-sm: 5px;
+  --sc-shadow: 0 1px 2px rgba(15, 20, 35, 0.06);
+  --sc-gap: 16px;
+  --sc-pad: 16px;
+  --sc-font: system-ui, -apple-system, "Segoe UI", Roboto, "Inter", sans-serif;
+  --sc-c1: #2f3aa3;
+  --sc-c2: #0bb4d4;
+  --sc-c3: #f0613e;
+  --sc-c4: #f2b705;
+  --sc-c5: #6b4ea8;
+}
+
+/* ── Variant C · "Enfoque" — RECOMENDADO: layout Enfoque + paleta Cívico ─────
+   Iteración elegida por el usuario: la distribución de Enfoque (rail de iconos
+   colapsable, densidad media, radios medios, sombra en capas) con la PALETA del
+   Cívico (azul institucional + acento ámbar). */
+[data-sc-variant="focus"] {
+  /* palette — from Cívico */
+  --sc-bg: #f5f7fa;
+  --sc-surface: #ffffff;
+  --sc-surface-2: #eef2f7;
+  --sc-ink: #16243a;
+  --sc-ink-2: #4d5d75;
+  --sc-ink-3: #8593a8;
+  --sc-border: #e2e8f0;
+  --sc-primary: #1d4e74;
+  --sc-primary-ink: #ffffff;
+  --sc-accent: #e08a1e;
+  --sc-pos: #2f8f4e;
+  --sc-neg: #c0392b;
+  --sc-c1: #1d4e74;
+  --sc-c2: #e08a1e;
+  --sc-c3: #4a90b8;
+  --sc-c4: #6aa84f;
+  --sc-c5: #b4477f;
+  /* form — from Enfoque */
+  --sc-radius: 14px;
+  --sc-radius-sm: 9px;
+  --sc-shadow: 0 1px 2px rgba(20, 35, 58, 0.05), 0 6px 16px rgba(20, 35, 58, 0.08);
+  --sc-gap: 22px;
+  --sc-pad: 20px;
+  --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Dashboard-sized showcase grid.
+   These dimensions mirror the current dashboard engine defaults:
+   GRID_COLUMNS = 6, CELL_SIZE = 180, GUTTER = 20. */
+[data-sc-variant] {
+  --sc-grid-cell: 180px;
+  --sc-grid-gap: 20px;
+  --sc-grid-width: calc(var(--sc-grid-cell) * 6 + var(--sc-grid-gap) * 5);
+}
+
+.sc-grid-scroll {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 2px;
+}
+
+.sc-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(6, var(--sc-grid-cell));
+  grid-auto-rows: var(--sc-grid-cell);
+  gap: var(--sc-grid-gap);
+  align-items: stretch;
+  align-content: start;
+  width: var(--sc-grid-width);
+  margin-inline: auto;
+}
+
+.sc-span-indicator {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+.sc-span-chart-sm {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.sc-span-chart-md {
+  grid-column: span 3;
+  grid-row: span 2;
+}
+
+.sc-span-chart-lg {
+  grid-column: span 5;
+  grid-row: span 2;
+}
+
+.sc-chart-frame {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Collapsible icon rail (Variant C) — width toggled by click (.sc-rail--open). */
+.sc-rail {
+  width: 64px;
+  transition: width 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+.sc-rail.sc-rail--open {
+  width: 172px;
+}
+.sc-rail .sc-rail-label {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 160ms cubic-bezier(0.2, 0, 0, 1),
+    transform 160ms cubic-bezier(0.2, 0, 0, 1);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.sc-rail span.sc-rail-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sc-rail .sc-rail-wordmark {
+  max-width: 104px;
+  object-fit: contain;
+}
+.sc-rail.sc-rail--open .sc-rail-label {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* Tabular numerals for any metric that updates / aligns in a column. */
+.sc-num {
+  font-variant-numeric: tabular-nums;
+}
