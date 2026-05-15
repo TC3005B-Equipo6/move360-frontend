@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Button } from "../Button/Button";
-import { icons, type IconName } from "../../icons";
+import { icons, type IconName } from "../../../icons";
 
 export interface ModalProps {
   title?: string;

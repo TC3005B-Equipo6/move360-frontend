@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { icons } from "../../icons";
+import { icons } from "../../../icons";
 
 export interface ActionMenuProps {
   onDelete: () => void;

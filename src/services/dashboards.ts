@@ -1,4 +1,4 @@
-import type { DashboardData } from "../components/Dashboard/types";
+import type { DashboardData } from "../components/dashboard/types";
 
 const storageKey = (id: string) => `move360:dashboard:${id}`;
 

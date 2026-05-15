@@ -1,4 +1,4 @@
-import { icons } from "../../icons";
+import { icons } from "../../../icons";
 
 export interface SelectOption {
   label: string;

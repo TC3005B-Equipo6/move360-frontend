@@ -1,7 +1,7 @@
 import { forwardRef, useState, type CSSProperties, type ReactNode } from "react";
-import { Chart } from "../Chart/Chart";
-import { Indicator, type IndicatorTone } from "../Indicator/Indicator";
-import { ActionMenu } from "../ActionMenu/ActionMenu";
+import { Chart } from "../charts/Chart/Chart";
+import { Indicator, type IndicatorTone } from "../indicators/Indicator/Indicator";
+import { ActionMenu } from "../common/ActionMenu/ActionMenu";
 import { icons } from "../../icons";
 import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./types";
 

@@ -1,5 +1,5 @@
 import { useId, useState, type InputHTMLAttributes } from "react";
-import { icons } from "../../icons";
+import { icons } from "../../../icons";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;

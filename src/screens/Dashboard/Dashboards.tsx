@@ -1,9 +1,9 @@
 
 
-import { Sidebar } from '../../components/SideBar/SideBar';
-import { Header } from '../../components/Header/Header';
-import { ProfileCard } from '../../components/ProfileCard/ProfileCard';
-import { ListItem } from '../../components/ListItem/ListItem';
+import { Sidebar } from '../../components/navigation/SideBar/SideBar';
+import { Header } from '../../components/navigation/Header/Header';
+import { ProfileCard } from '../../components/common/ProfileCard/ProfileCard';
+import { ListItem } from '../../components/common/ListItem/ListItem';
 
 interface Dashboard {
   id: string;

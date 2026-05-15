@@ -1,7 +1,7 @@
-import { Sidebar } from '../../components/SideBar/SideBar';
-import { Header } from '../../components/Header/Header';
-import { ProfileCard } from '../../components/ProfileCard/ProfileCard';
-import { DashboardGrid } from '../../components/Dashboard/DashboardGrid';
+import { Sidebar } from '../../components/navigation/SideBar/SideBar';
+import { Header } from '../../components/navigation/Header/Header';
+import { ProfileCard } from '../../components/common/ProfileCard/ProfileCard';
+import { DashboardGrid } from '../../components/dashboard/DashboardGrid';
 import { HOME_DASHBOARD_ITEMS } from '../../databases/dashboardData';
 
 export default function HomeScreen() {

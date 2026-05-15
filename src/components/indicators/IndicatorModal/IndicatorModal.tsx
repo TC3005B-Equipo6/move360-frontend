@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Modal } from "../Modal/Modal";
-import { Button } from "../Button/Button";
+import { Modal } from "../../common/Modal/Modal";
+import { Button } from "../../common/Button/Button";
 import { IndicatorPreview } from "../IndicatorPreview/IndicatorPreview";
-import type { IndicatorWidget } from "../Dashboard/types";
+import type { IndicatorWidget } from "../../dashboard/types";
 import type { IndicatorTone } from "../Indicator/Indicator";
 
 interface Props {

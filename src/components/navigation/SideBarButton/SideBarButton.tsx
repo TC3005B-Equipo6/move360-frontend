@@ -1,4 +1,4 @@
-import { icons, type IconName } from "../../icons";
+import { icons, type IconName } from "../../../icons";
 
 export interface SideBarButtonProps {
     disabled?: boolean;

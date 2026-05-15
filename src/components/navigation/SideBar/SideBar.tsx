@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { SideBarButton, type SideBarButtonProps } from "../SideBarButton/SideBarButton";
-import { Modal } from "../Modal/Modal";
-import { Button } from "../Button/Button";
+import { Modal } from "../../common/Modal/Modal";
+import { Button } from "../../common/Button/Button";
 import { useLocation, useNavigate } from "react-router-dom";
-import { logout } from "../../services/auth/authService";
+import { logout } from "../../../services/auth/authService";
 
 export interface SidebarItem {
   id: string;

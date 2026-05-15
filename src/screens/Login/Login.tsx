@@ -1,7 +1,7 @@
 import { useState, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../components/Button/Button";
-import { Input } from "../../components/Input/Input";
+import { Button } from "../../components/common/Button/Button";
+import { Input } from "../../components/common/Input/Input";
 import { login, validateToken } from "../../services/auth/authService";
 
 type LoginError = {

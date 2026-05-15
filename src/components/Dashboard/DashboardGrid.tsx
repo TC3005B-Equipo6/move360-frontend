@@ -5,7 +5,7 @@ import {
   type EventCallback,
   type LayoutItem,
 } from "react-grid-layout";
-import { AddButton } from "../AddButton/AddButton";
+import { AddButton } from "../common/AddButton/AddButton";
 import { AddItemModal, type AddItemChoice } from "./AddItemModal";
 import { ChartFlowModal } from "./ChartFlowModal";
 import { DashboardItem } from "./DashboardItem";
@@ -16,7 +16,7 @@ import { resolveCollisions } from "./layout/resolveCollisions";
 import { detectSwapTarget } from "./layout/swapDetection";
 import { loadDashboard, saveDashboard } from "../../services/dashboards";
 import type { DashboardItem as Item, ChartConfig, IndicatorConfig, IndicatorWidget } from "./types";
-import { IndicatorModal } from "../IndicatorModal/IndicatorModal";
+import { IndicatorModal } from "../indicators/IndicatorModal/IndicatorModal";
 
 interface Props {
   dashboardId?: string;

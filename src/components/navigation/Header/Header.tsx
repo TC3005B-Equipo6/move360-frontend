@@ -1,4 +1,4 @@
-import { IconButton } from "../IconButton/IconButton";
+import { IconButton } from "../../common/IconButton/IconButton";
 
 export type HeaderProps = {
   title: string;
