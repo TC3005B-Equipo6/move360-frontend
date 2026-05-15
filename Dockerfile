@@ -3,26 +3,39 @@ FROM node:24.14.0-alpine AS build
 
 WORKDIR /app
 
-# Copy package files and install dependencies
 COPY package.json package-lock.json ./
+
 RUN npm ci
 
-# Copy the rest of the source code
 COPY . .
 
-# Build the React app for production
+# Firebase build args
+ARG VITE_FIREBASE_API_KEY
+ARG VITE_FIREBASE_AUTH_DOMAIN
+ARG VITE_FIREBASE_PROJECT_ID
+ARG VITE_FIREBASE_STORAGE_BUCKET
+ARG VITE_FIREBASE_MESSAGING_SENDER_ID
+ARG VITE_FIREBASE_APP_ID
+ARG VITE_API_URL
+
+# Expose to Vite build
+ENV VITE_FIREBASE_API_KEY=$VITE_FIREBASE_API_KEY
+ENV VITE_FIREBASE_AUTH_DOMAIN=$VITE_FIREBASE_AUTH_DOMAIN
+ENV VITE_FIREBASE_PROJECT_ID=$VITE_FIREBASE_PROJECT_ID
+ENV VITE_FIREBASE_STORAGE_BUCKET=$VITE_FIREBASE_STORAGE_BUCKET
+ENV VITE_FIREBASE_MESSAGING_SENDER_ID=$VITE_FIREBASE_MESSAGING_SENDER_ID
+ENV VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm run build
 
-# Stage 2: Serve with Nginx
+# Stage 2: Nginx
 FROM nginx:alpine
 
-# Copy the React build to Nginx html folder
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 8080
 EXPOSE 8080
 
-# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
