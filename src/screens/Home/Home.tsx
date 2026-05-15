@@ -13,7 +13,7 @@ export default function HomeScreen() {
     <AppLayout
       header={
         <Header
-          title="Movilidad febrero 2026"
+          title="Movilidad Febrero 2026"
           subtitle="Afluencia e incidencias por servicio de transporte · Comparativo contra enero 2026"
           actions={
             <IconButton
