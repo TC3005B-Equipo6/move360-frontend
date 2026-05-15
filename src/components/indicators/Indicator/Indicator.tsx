@@ -10,6 +10,8 @@ export interface IndicatorProps {
   endDate: Date;
   isMenuOpen: boolean;
   className?: string;
+  /** Additive (optional): secondary context rendered under the label. */
+  subtitle?: string;
   /**
    * Additive (optional): period-over-period movement.
    * Sign drives the arrow direction; `tone` ⊕ sign drives the color
@@ -36,6 +38,7 @@ export const Indicator = ({
   value,
   tone,
   label,
+  subtitle,
   className = "",
   delta,
   unit,
@@ -70,9 +73,16 @@ export const Indicator = ({
 
   return (
     <div className={classes}>
-      <p className="m-0 text-caption font-semibold uppercase tracking-wide text-content-muted leading-tight [text-wrap:balance]">
-        {label}
-      </p>
+      <div className="min-w-0 pr-12">
+        <p className="m-0 text-caption font-semibold uppercase tracking-wide text-content-muted leading-tight [text-wrap:balance]">
+          {label}
+        </p>
+        {subtitle && (
+          <p className="m-0 mt-1 text-[11px] font-medium text-content-secondary leading-tight [text-wrap:balance]">
+            {subtitle}
+          </p>
+        )}
+      </div>
       <div className="flex items-baseline gap-1 min-w-0">
         <span className={`text-[36px] font-bold leading-none tabular-nums ${valueColor}`}>
           {formatValue(value)}
@@ -83,6 +93,7 @@ export const Indicator = ({
         <div className={`flex items-center gap-1 text-body-sm font-semibold tabular-nums ${deltaColor}`}>
           {arrowGlyph && <span aria-hidden="true">{arrowGlyph}</span>}
           <span>{formatDelta(delta)}</span>
+          {unit && <span>{unit}</span>}
         </div>
       ) : (
         // Reserve the row so single- and delta-bearing cards align consistently in a grid.

@@ -8,6 +8,9 @@ export interface IndicatorWidget {
   label: string;
   name: string;
   tone?: IndicatorTone;
+  subtitle?: string;
+  delta?: number;
+  unit?: string;
   operation: "porcentaje" | "total";
   source?: string;
   table?: string;
@@ -23,6 +26,9 @@ export interface IndicatorConfig {
   label: string;
   name: string;
   tone?: IndicatorTone;
+  subtitle?: string;
+  delta?: number;
+  unit?: string;
   operation?: "porcentaje" | "total";
   source?: string;
   table?: string;
@@ -45,6 +51,8 @@ export interface ChartConfig {
     startDate: string;
     endDate: string;
   };
+  subtitle?: string;
+  delta?: number;
   data: Array<Record<string, string | number | undefined>>;
   series: {
     key: string;

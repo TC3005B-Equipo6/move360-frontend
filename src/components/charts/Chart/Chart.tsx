@@ -30,6 +30,8 @@ export interface ChartProps {
   title?: string;
   /** Additive: secondary line rendered under the title (e.g. "Marzo 2025 – Febrero 2026"). */
   subtitle?: string;
+  /** Additive: period-over-period percentage movement for the chart total. */
+  delta?: number;
   metricLabel?: string;
   data: ChartItem[];
   size?: "sm" | "md" | "lg";
@@ -93,6 +95,12 @@ const formatRankingNumber = (value: string | number | undefined) => {
   return formatCompactNumber(value).replace(/([A-Za-z]+)$/, " $1");
 };
 
+const deltaFormatter = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 1,
+});
+
+const formatDelta = (delta: number): string => `${deltaFormatter.format(Math.abs(delta))}%`;
+
 const formatScalar = (value: string | number | undefined): string => {
   if (value === undefined) return "";
   const numericValue = Number(value);
@@ -154,6 +162,7 @@ export const Chart = ({
   type,
   title = "Chart",
   subtitle,
+  delta,
   metricLabel = "Valor",
   data,
   size = "md",
@@ -164,6 +173,10 @@ export const Chart = ({
   const isEmpty = !data || data.length === 0;
   const headerHeight = subtitle ? 64 : 44;
   const bodyHeightStyle = { height: `calc(100% - ${headerHeight}px)` };
+  const hasDelta = typeof delta === "number";
+  const deltaSign = hasDelta ? Math.sign(delta) : 0;
+  const deltaColor = deltaSign > 0 ? "text-success" : deltaSign < 0 ? "text-danger" : "text-content-muted";
+  const deltaArrow = deltaSign > 0 ? "▲" : deltaSign < 0 ? "▼" : null;
 
   const renderDonut = () => (
     <div
@@ -340,10 +353,18 @@ export const Chart = ({
 
   return (
     <div className={`box-border overflow-hidden bg-surface-raised border border-subtle rounded-md shadow-sm p-5 ${cardSizes[size]}`}>
-      <div className="mb-4">
-        <h2 className="m-0 text-h3 font-bold text-content-primary leading-tight [text-wrap:balance]">{title}</h2>
-        {subtitle && (
-          <p className="m-0 mt-0.5 text-body-sm text-content-secondary leading-tight">{subtitle}</p>
+      <div className="mb-4 flex items-start justify-between gap-4 pr-10">
+        <div className="min-w-0">
+          <h2 className="m-0 text-h3 font-bold text-content-primary leading-tight [text-wrap:balance]">{title}</h2>
+          {subtitle && (
+            <p className="m-0 mt-0.5 text-body-sm text-content-secondary leading-tight">{subtitle}</p>
+          )}
+        </div>
+        {hasDelta && (
+          <div className={`shrink-0 flex items-center gap-1 text-body-sm font-semibold tabular-nums ${deltaColor}`}>
+            {deltaArrow && <span aria-hidden="true">{deltaArrow}</span>}
+            <span>{formatDelta(delta)}</span>
+          </div>
         )}
       </div>
       {renderBody()}

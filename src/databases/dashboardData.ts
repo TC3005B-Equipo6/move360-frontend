@@ -1,233 +1,232 @@
-import type { DashboardItem } from '../components/dashboard/types';
+import type { DashboardItem } from "../components/dashboard/types";
 
-// ── Datos del periodo Marzo 2025 – Febrero 2026 ──────────────────────────────
+const PERIOD_SUBTITLE = "Febrero 2026 vs enero 2026";
+const MONTH_SUBTITLE = "Febrero 2026";
 
-// Gráfica 1 — tendencia mensual
-export const monthlyData = [
-  { name: 'Mar', value: 151_800_000 },
-  { name: 'Abr', value: 148_200_000 },
-  { name: 'May', value: 149_600_000 },
-  { name: 'Jun', value: 145_100_000 },
-  { name: 'Jul', value: 139_700_000 },
-  { name: 'Ago', value: 142_900_000 },
-  { name: 'Sep', value: 154_800_000 },
-  { name: 'Oct', value: 160_500_000 },
-  { name: 'Nov', value: 165_616_699 },
-  { name: 'Dic', value: 134_600_000 },
-  { name: 'Ene', value: 148_100_000 },
-  { name: 'Feb', value: 159_911_963 },
+type RidershipDatum = {
+  name: string;
+  value: number;
+};
+
+export const metroLineRidershipData: RidershipDatum[] = [
+  { name: "Línea 2", value: 15_358_070 },
+  { name: "Línea 3", value: 13_835_470 },
+  { name: "Línea 1", value: 12_394_876 },
+  { name: "Línea B", value: 9_629_126 },
+  { name: "Línea 12", value: 9_533_153 },
+  { name: "Línea 8", value: 9_105_617 },
+  { name: "Línea 9", value: 6_781_452 },
+  { name: "Línea 7", value: 6_407_752 },
+  { name: "Línea A", value: 6_215_447 },
+  { name: "Línea 5", value: 4_450_687 },
+  { name: "Línea 6", value: 3_005_330 },
+  { name: "Línea 4", value: 1_910_618 },
 ];
 
-// Gráfica 2 — totales por sistema
-export const systemData = [
-  { name: 'Metro',       value: 1_263_959_562 },
-  { name: 'Metrobús',    value:   506_007_414 },
-  { name: 'Tren Ligero', value:    30_861_686 },
+export const metrobusLineRidershipData: RidershipDatum[] = [
+  { name: "Línea 1", value: 12_176_103 },
+  { name: "Línea 5", value: 6_829_647 },
+  { name: "Línea 2", value: 5_380_975 },
+  { name: "Línea 6", value: 5_140_020 },
+  { name: "Línea 3", value: 4_818_568 },
+  { name: "Línea 7", value: 3_266_981 },
+  { name: "Línea 4", value: 2_364_580 },
 ];
 
-// Gráfica 3 — tipo de pago (donut, en %)
-export const paymentData = [
-  { name: 'Prepago',   value: 88.6 },
-  { name: 'Gratuidad', value: 11.4 },
+export const serviceRidershipData: RidershipDatum[] = [
+  { name: "Metro", value: 98_627_598 },
+  { name: "Metrobús", value: 39_976_874 },
+  { name: "RTP", value: 9_604_043 },
+  { name: "Trolebús", value: 9_499_852 },
+  { name: "Cablebús", value: 3_524_583 },
+  { name: "Tren Ligero", value: 2_437_777 },
 ];
 
-// Gráfica 4 — ranking top 10 líneas
-export const rankingData = [
-  { name: 'Metro L2',    value: 214_251_551 },
-  { name: 'Metro L3',    value: 174_541_303 },
-  { name: 'Metrobús L1', value: 150_873_348 },
-  { name: 'Metro L1',    value: 132_638_596 },
-  { name: 'Metro LB',    value: 124_955_025 },
-  { name: 'Metro L12',   value: 119_912_616 },
-  { name: 'Metro L8',    value: 118_200_792 },
-  { name: 'Metro L9',    value:  93_362_377 },
-  { name: 'Metro L7',    value:  87_910_841 },
-  { name: 'Metrobús L5', value:  86_233_112 },
+export const monthlyData: RidershipDatum[] = [
+  { name: "Ene", value: 164_089_265 },
+  { name: "Feb", value: 163_670_727 },
 ];
 
-// ── Layout estático del home (readonly, no se persiste en localStorage) ──────
-//
-// Grid: 6 columnas × CELL_SIZE:180px + GUTTER:20px
-//
-// Fila 0: 6 indicadores de participación (cols 0-5)
-// Fila 1-2: gráfica de línea mensual (chartLg, cols 0-4)
-// Fila 3-4: gráfica de barras por sistema (chartMd, cols 0-2)
-//           + donut tipo de pago (chartMd, cols 3-5)
-// Fila 5-6: ranking top 10 líneas (chartLg, cols 0-4)
+export const systemData = serviceRidershipData;
+
+export const paymentData: RidershipDatum[] = [
+  { name: "Prepago", value: 88.6 },
+  { name: "Gratuidad", value: 11.4 },
+];
+
+export const rankingData = metroLineRidershipData.slice(0, 10);
 
 export const HOME_DASHBOARD_ITEMS: DashboardItem[] = [
-  // ── Indicadores ─────────────────────────────────────────────────────────────
   {
-    id: 'kpi-metro',
-    type: 'indicator',
-    row: 0,
-    col: 0,
-    config: {
-      value: 70.2,
-      tone: 'direct',
-      label: 'Metro',
-      name: 'Metro',
-      startDate: '2025-03-01',
-      endDate: '2026-02-28',
-      isMenuOpen: false,
-    },
-  },
-  {
-    id: 'kpi-metrobus',
-    type: 'indicator',
-    row: 0,
-    col: 1,
-    config: {
-      value: 28.1,
-      tone: 'direct',
-      label: 'Metrobús',
-      name: 'Metrobús',
-      startDate: '2025-03-01',
-      endDate: '2026-02-28',
-      isMenuOpen: false,
-    },
-  },
-  {
-    id: 'kpi-tren-ligero',
-    type: 'indicator',
-    row: 0,
-    col: 2,
-    config: {
-      value: 1.7,
-      tone: 'inverse',
-      label: 'Tren Ligero',
-      name: 'Tren Ligero',
-      startDate: '2025-03-01',
-      endDate: '2026-02-28',
-      isMenuOpen: false,
-    },
-  },
-  {
-    id: 'kpi-prepago',
-    type: 'indicator',
-    row: 0,
-    col: 3,
-    config: {
-      value: 88.6,
-      tone: 'direct',
-      label: 'Prepago',
-      name: 'Prepago',
-      startDate: '2025-03-01',
-      endDate: '2026-02-28',
-      isMenuOpen: false,
-    },
-  },
-  {
-    id: 'kpi-gratuidad',
-    type: 'indicator',
-    row: 0,
-    col: 4,
-    config: {
-      value: 11.4,
-      tone: 'inverse',
-      label: 'Gratuidad',
-      name: 'Gratuidad',
-      startDate: '2025-03-01',
-      endDate: '2026-02-28',
-      isMenuOpen: false,
-    },
-  },
-  {
-    id: 'kpi-total-anual',
-    type: 'indicator',
+    id: "kpi-metro-incidents",
+    type: "indicator",
     row: 0,
     col: 5,
     config: {
-      value: 1800.8,
-      tone: 'direct',
-      label: 'Total anual M',
-      name: 'Total anual',
-      startDate: '2025-03-01',
-      endDate: '2026-02-28',
+      value: 6,
+      delta: 3,
+      tone: "inverse",
+      label: "Incidencias Metro",
+      subtitle: PERIOD_SUBTITLE,
+      name: "Incidencias Metro",
+      startDate: "2026-02-01",
+      endDate: "2026-02-28",
       isMenuOpen: false,
     },
   },
-  // ── Gráfica 1: tendencia mensual ─────────────────────────────────────────────
   {
-    id: 'chart-monthly',
-    type: 'chartLg',
+    id: "kpi-metro-passengers",
+    type: "indicator",
     row: 1,
+    col: 3,
+    config: {
+      value: 98.6,
+      delta: -2.2,
+      unit: "M",
+      tone: "direct",
+      label: "Pasajeros Metro",
+      subtitle: PERIOD_SUBTITLE,
+      name: "Pasajeros Metro",
+      startDate: "2026-02-01",
+      endDate: "2026-02-28",
+      isMenuOpen: false,
+    },
+  },
+  {
+    id: "kpi-metrobus-passenger-trend",
+    type: "indicator",
+    row: 0,
+    col: 4,
+    config: {
+      value: -1.5,
+      delta: -1.5,
+      unit: "%",
+      tone: "direct",
+      label: "Tendencia pasajeros Metrobús",
+      subtitle: PERIOD_SUBTITLE,
+      name: "Tendencia pasajeros Metrobús",
+      startDate: "2026-02-01",
+      endDate: "2026-02-28",
+      isMenuOpen: false,
+    },
+  },
+  {
+    id: "kpi-metro-passenger-trend",
+    type: "indicator",
+    row: 1,
+    col: 4,
+    config: {
+      value: -2.1,
+      delta: -2.1,
+      unit: "%",
+      tone: "direct",
+      label: "Tendencia pasajeros Metro",
+      subtitle: PERIOD_SUBTITLE,
+      name: "Tendencia pasajeros Metro",
+      startDate: "2026-02-01",
+      endDate: "2026-02-28",
+      isMenuOpen: false,
+    },
+  },
+  {
+    id: "kpi-metrobus-passengers",
+    type: "indicator",
+    row: 0,
+    col: 3,
+    config: {
+      value: 40.0,
+      delta: -0.6,
+      unit: "M",
+      tone: "direct",
+      label: "Pasajeros Metrobús",
+      subtitle: PERIOD_SUBTITLE,
+      name: "Pasajeros Metrobús",
+      startDate: "2026-02-01",
+      endDate: "2026-02-28",
+      isMenuOpen: false,
+    },
+  },
+  {
+    id: "kpi-top-metro-line-share",
+    type: "indicator",
+    row: 1,
+    col: 5,
+    config: {
+      value: 15.6,
+      delta: -0.6,
+      unit: "%",
+      tone: "inverse",
+      label: "Concentración top línea Metro",
+      subtitle: "Línea 2 · 15.4M de 98.6M pasajeros",
+      name: "Concentración top línea Metro",
+      startDate: "2026-02-01",
+      endDate: "2026-02-28",
+      isMenuOpen: false,
+    },
+  },
+  {
+    id: "chart-metro-lines",
+    type: "chartMd",
+    row: 2,
     col: 0,
     config: {
       config: {
-        chartType: 'line',
-        source: 'SEMOVI',
-        datasetId: 'Afluencia mensual',
-        columns: ['value'],
-        compareEnabled: false,
-        compareTable: '',
-        startDate: '2025-03',
-        endDate: '2026-02',
+        chartType: "bar",
+        source: "SEMOVI",
+        datasetId: "Afluencia Metro por línea",
+        columns: ["value"],
+        compareEnabled: true,
+        compareTable: "afluenciastc_simple_02_2026.csv",
+        startDate: "2026-02",
+        endDate: "2026-02",
       },
-      data: monthlyData,
+      subtitle: `${MONTH_SUBTITLE} · delta total ${PERIOD_SUBTITLE.toLowerCase()}`,
+      delta: -2.1,
+      data: metroLineRidershipData,
       series: [],
     },
   },
-  // ── Gráfica 2: totales por sistema ───────────────────────────────────────────
   {
-    id: 'chart-system',
-    type: 'chartMd',
-    row: 3,
-    col: 0,
-    config: {
-      config: {
-        chartType: 'bar',
-        source: 'SEMOVI',
-        datasetId: 'Por sistema',
-        columns: ['value'],
-        compareEnabled: false,
-        compareTable: '',
-        startDate: '2025-03',
-        endDate: '2026-02',
-      },
-      data: systemData,
-      series: [],
-    },
-  },
-  // ── Gráfica 3: tipo de pago (donut) ─────────────────────────────────────────
-  {
-    id: 'chart-payment',
-    type: 'chartMd',
-    row: 3,
+    id: "chart-metrobus-lines",
+    type: "chartMd",
+    row: 2,
     col: 3,
     config: {
       config: {
-        chartType: 'donut',
-        source: 'SEMOVI',
-        datasetId: 'Tipo de pago',
-        columns: ['value'],
-        compareEnabled: false,
-        compareTable: '',
-        startDate: '2025-03',
-        endDate: '2026-02',
+        chartType: "bar",
+        source: "SEMOVI",
+        datasetId: "Afluencia Metrobús por línea",
+        columns: ["value"],
+        compareEnabled: true,
+        compareTable: "afluenciamb_simple_02_2026.csv",
+        startDate: "2026-02",
+        endDate: "2026-02",
       },
-      data: paymentData,
+      subtitle: `${MONTH_SUBTITLE} · delta total ${PERIOD_SUBTITLE.toLowerCase()}`,
+      delta: -1.5,
+      data: metrobusLineRidershipData,
       series: [],
     },
   },
-  // ── Gráfica 4: ranking top 10 líneas ────────────────────────────────────────
   {
-    id: 'chart-ranking',
-    type: 'chartLg',
-    row: 5,
+    id: "chart-service-ridership",
+    type: "chartMd",
+    row: 0,
     col: 0,
     config: {
       config: {
-        chartType: 'ranking',
-        source: 'SEMOVI',
-        datasetId: 'Top 10 líneas',
-        columns: ['value'],
-        compareEnabled: false,
-        compareTable: '',
-        startDate: '2025-03',
-        endDate: '2026-02',
+        chartType: "bar",
+        source: "SEMOVI",
+        datasetId: "Afluencia por servicio de transporte",
+        columns: ["value"],
+        compareEnabled: true,
+        compareTable: "src/databases/csv",
+        startDate: "2026-02",
+        endDate: "2026-02",
       },
-      data: rankingData,
+      subtitle: `${MONTH_SUBTITLE} · Metro, Metrobús, RTP, Trolebús, Cablebús y Tren Ligero`,
+      delta: -0.3,
+      data: serviceRidershipData,
       series: [],
     },
   },
