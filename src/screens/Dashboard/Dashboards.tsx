@@ -65,7 +65,7 @@ export default function Dashboards() {
       header={
         <Header
           title="Mis Dashboards"
-          profile={<ProfileCard variant="compact" name="Juan Pérez" />}
+          profile={<ProfileCard variant="compact" name="Juan Pérez" role="Analista de movilidad" />}
         />
       }
     >

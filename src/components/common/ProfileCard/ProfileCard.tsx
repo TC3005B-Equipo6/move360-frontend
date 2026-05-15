@@ -44,7 +44,7 @@ export const ProfileCard = ({
   const container = [
     "inline-flex items-center font-sans ring-1 ring-inset ring-border-subtle bg-surface-raised",
     compact
-      ? "min-h-10 gap-2.5 rounded-md pl-1.5 pr-3 py-1"
+      ? "h-10 w-[184px] gap-2.5 rounded-md pl-1.5 pr-3 py-1"
       : "min-h-16 justify-center gap-3 rounded-lg px-4 py-3 shadow-xs",
     onClick
       ? "cursor-pointer transition-[background-color,box-shadow,transform] duration-200 ease-out hover:bg-primary-subtle hover:shadow-sm active:scale-[0.96]"
@@ -67,23 +67,21 @@ export const ProfileCard = ({
           {getInitials(name)}
         </span>
       </div>
-      <div className="flex min-w-0 flex-col items-start gap-0.5 whitespace-nowrap leading-tight">
+      <div className="flex min-w-0 flex-1 flex-col items-start gap-0.5 whitespace-nowrap leading-tight">
         <p
-          className={`m-0 max-w-[180px] overflow-hidden text-ellipsis font-semibold text-content-primary ${
+          className={`m-0 w-full overflow-hidden text-ellipsis font-semibold text-content-primary ${
             compact ? "text-caption" : "text-body-sm"
           }`}
         >
           {name}
         </p>
-        {hasRole && (
-          <p
-            className={`m-0 max-w-[180px] overflow-hidden text-ellipsis font-medium text-content-muted ${
-              compact ? "text-[11px]" : "text-caption"
-            }`}
-          >
-            {role}
-          </p>
-        )}
+        <p
+          className={`m-0 w-full overflow-hidden text-ellipsis font-medium text-content-muted ${
+            compact ? "text-[11px]" : "text-caption"
+          } ${hasRole ? "" : "invisible"}`}
+        >
+          {hasRole ? role : "Rol"}
+        </p>
       </div>
     </div>
   );

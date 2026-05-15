@@ -10,7 +10,7 @@ export default function DashboardScreen() {
         <Header
           title="Movilidad 2025-2026"
           subtitle="Metro, Metrobús y Tren Ligero · Marzo 2025 – Febrero 2026"
-          profile={<ProfileCard variant="compact" name="Juan Pérez" />}
+          profile={<ProfileCard variant="compact" name="Juan Pérez" role="Analista de movilidad" />}
         />
       }
     >

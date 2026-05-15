@@ -44,6 +44,7 @@ export const Small: Story = {
     iconName: "settings",
     size: "small",
     label: "",
+    "aria-label": "Ajustes",
     color: "secondary",
     type: "button"
   },

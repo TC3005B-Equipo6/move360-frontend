@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { SideBarButton, type SideBarButtonProps } from "../SideBarButton/SideBarButton";
 import { Modal } from "../../common/Modal/Modal";
-import { Button } from "../../common/Button/Button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../../../services/auth/authService";
 
@@ -124,17 +123,33 @@ export const Sidebar = ({ className = "", collapsed, onToggle }: SidebarProps) =
 
       {showLogoutModal && (
         <Modal
-          title="Cerrar sesión"
-          message="¿Estás seguro de que deseas"
-          secondaryMessage="cerrar sesión?"
+          className="w-[430px] px-8 py-8"
           onClose={() => setShowLogoutModal(false)}
           footer={
-            <>
-              <Button variant="white" size="large" label="Cancelar" onPress={() => setShowLogoutModal(false)} />
-              <Button variant="red" size="large" label="Cerrar sesión" onPress={handleConfirmLogout} />
-            </>
+            <div className="flex w-full items-center justify-between gap-4">
+              <button
+                type="button"
+                className="inline-flex min-h-12 w-[150px] cursor-pointer items-center justify-center rounded-md border-0 bg-surface-raised px-5 font-sans text-body font-semibold text-content-secondary shadow-xs ring-1 ring-inset ring-border transition-[background-color,color,box-shadow,transform] duration-200 ease-out hover:bg-surface-sunken hover:text-content-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.96]"
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="inline-flex min-h-12 w-[170px] cursor-pointer items-center justify-center rounded-md border-0 bg-danger px-5 font-sans text-body font-semibold text-content-on-primary shadow-sm transition-[background-color,box-shadow,transform] duration-200 ease-out hover:bg-[#9f2f24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.96]"
+                onClick={handleConfirmLogout}
+              >
+                Cerrar sesión
+              </button>
+            </div>
           }
-        />
+        >
+          <p className="m-0 text-center text-wrap-balance text-h3 font-semibold leading-tight text-content-primary">
+            ¿Estás seguro de que deseas
+            <br />
+            cerrar sesión?
+          </p>
+        </Modal>
       )}
     </>
   );

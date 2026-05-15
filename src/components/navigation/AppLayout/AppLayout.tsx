@@ -38,7 +38,7 @@ export const AppLayout = ({ header, children, className = "" }: AppLayoutProps) 
     <div className={`flex h-screen w-full overflow-hidden bg-surface-base ${className}`}>
       <Sidebar collapsed={collapsed} onToggle={toggleRail} />
       <main className="flex-1 min-w-0 h-full overflow-y-auto flex flex-col gap-[22px] py-[22px] px-[6px]">
-        {header && <header className="shrink-0">{header}</header>}
+        {header && <header className="mx-auto w-full max-w-[1220px] shrink-0 -translate-x-2 px-5">{header}</header>}
         <div className="flex-1 min-h-0">{children}</div>
       </main>
     </div>

@@ -6,6 +6,7 @@ export interface IconButtonProps {
     onPress?: () => void;
     iconName?: IconName;
     label?: string;
+    "aria-label"?: string;
     type?: "button" | "submit" | "reset";
 }
 
@@ -25,6 +26,7 @@ export const IconButton = ({
     onPress,
     iconName = "sort",
     label = "",
+    "aria-label": ariaLabel,
     type = "button",
 }: IconButtonProps) => {
     const Icon = icons[iconName];
@@ -39,7 +41,7 @@ export const IconButton = ({
     ].filter(Boolean).join(" ");
 
     return (
-        <button type={type} className={classes} onClick={onPress}>
+        <button type={type} className={classes} onClick={onPress} aria-label={ariaLabel || label || undefined}>
             <Icon size={iconSize} aria-hidden="true" />
             {label && <span className="whitespace-nowrap">{label}</span>}
         </button>
