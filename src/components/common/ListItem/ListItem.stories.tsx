@@ -4,6 +4,15 @@ import { ListItem } from "./ListItem";
 const meta: Meta<typeof ListItem> = {
   title: "Components/ListItem",
   component: ListItem,
+  decorators: [
+    (Story) => (
+      <div className="min-h-screen bg-surface-base p-6">
+        <div className="max-w-5xl">
+          <Story />
+        </div>
+      </div>
+    ),
+  ],
 };
 
 export default meta;

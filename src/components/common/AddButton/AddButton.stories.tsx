@@ -7,14 +7,7 @@ const meta: Meta<typeof AddButton> = {
   decorators: [
     (Story) => (
       <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#ffffff",
-          padding: 20,
-        }}
+        className="flex min-h-screen items-center justify-center bg-surface-base p-6"
       >
         <Story />
       </div>

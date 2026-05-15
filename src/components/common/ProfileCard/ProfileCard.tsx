@@ -1,17 +1,17 @@
 export interface ProfileCardProps {
   name: string;
-  role: string;
+  role?: string;
   className?: string;
   onClick?: (e: React.MouseEvent) => void;
 }
 
 const AVATAR_PALETTE = [
-  "#7e3e7d",
-  "#3e607e",
-  "#3e7e4f",
-  "#7e6b3e",
-  "#7e3e3e",
-  "#4f3e7e",
+  "bg-primary",
+  "bg-accent",
+  "bg-success",
+  "bg-info",
+  "bg-danger",
+  "bg-surface-inverse",
 ];
 
 const getInitials = (name: string): string => {
@@ -21,7 +21,7 @@ const getInitials = (name: string): string => {
   return (tokens[0][0] + tokens[tokens.length - 1][0]).toUpperCase();
 };
 
-const getAvatarColor = (name: string): string => {
+const getAvatarClass = (name: string): string => {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = (hash + name.charCodeAt(i)) >>> 0;
@@ -30,22 +30,25 @@ const getAvatarColor = (name: string): string => {
 };
 
 export const ProfileCard = ({ name, role, className = "", onClick }: ProfileCardProps) => {
+  const hasRole = Boolean(role?.trim());
   const classes = [
-    "inline-flex items-center justify-center gap-2.5 px-5 bg-white rounded-[25px] font-[Inter,sans-serif] h-[100px] cursor-pointer",
+    "inline-flex min-h-16 items-center justify-center gap-3 rounded-lg bg-surface-raised px-4 py-3 font-sans shadow-xs ring-1 ring-inset ring-border-subtle",
+    onClick ? "cursor-pointer transition-[background-color,box-shadow,transform] duration-200 ease-out hover:bg-primary-subtle hover:shadow-sm active:scale-[0.96]" : "",
     className,
   ].filter(Boolean).join(" ");
 
   return (
     <div className={classes} onClick={onClick}>
-      <div
-        className="flex items-center justify-center w-[50px] h-[50px] rounded-full shrink-0"
-        style={{ backgroundColor: getAvatarColor(name) }}
-      >
+      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${getAvatarClass(name)}`}>
         <span className="text-white text-xs font-semibold whitespace-nowrap">{getInitials(name)}</span>
       </div>
-      <div className="flex flex-col items-start gap-px uppercase whitespace-nowrap">
-        <p className="m-0 text-[#111827] text-lg font-semibold">{name}</p>
-        <p className="m-0 text-[#9ca3af] text-[15px] font-normal">{role}</p>
+      <div className="flex min-w-0 flex-col items-start gap-0.5 whitespace-nowrap">
+        <p className="m-0 max-w-[180px] overflow-hidden text-ellipsis text-body-sm font-semibold text-content-primary">{name}</p>
+        {hasRole && (
+          <p className="m-0 max-w-[180px] overflow-hidden text-ellipsis text-caption font-medium text-content-muted">
+            {role}
+          </p>
+        )}
       </div>
     </div>
   );

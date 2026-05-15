@@ -5,6 +5,15 @@ import { SelectField } from "./Dropdown";
 const meta: Meta<typeof SelectField> = {
   title: "Components/Dropdown",
   component: SelectField,
+  decorators: [
+    (Story) => (
+      <div className="min-h-screen bg-surface-base p-6">
+        <div className="w-full max-w-[420px]">
+          <Story />
+        </div>
+      </div>
+    ),
+  ],
 };
 
 export default meta;
@@ -17,23 +26,21 @@ export const Periodo: Story = {
       const [value, setValue] = useState("ene-jun");
 
       return (
-        <div style={{ width: 420 }}>
-          <SelectField
-            label="PERIODO"
-            value={value}
-            onChange={setValue}
-            options={[
-              {
-                label: "Ene - Jun 2026",
-                value: "ene-jun",
-              },
-              {
-                label: "Jul - Dic 2026",
-                value: "jul-dic",
-              },
-            ]}
-          />
-        </div>
+        <SelectField
+          label="Periodo"
+          value={value}
+          onChange={setValue}
+          options={[
+            {
+              label: "Ene - Jun 2026",
+              value: "ene-jun",
+            },
+            {
+              label: "Jul - Dic 2026",
+              value: "jul-dic",
+            },
+          ]}
+        />
       );
     };
 
@@ -47,27 +54,25 @@ export const Fuente: Story = {
       const [value, setValue] = useState("semovi");
 
       return (
-        <div style={{ width: 420 }}>
-          <SelectField
-            label="FUENTE"
-            value={value}
-            onChange={setValue}
-            options={[
-              {
-                label: "SEMOVI",
-                value: "semovi",
-              },
-              {
-                label: "INEGI",
-                value: "inegi",
-              },
-              {
-                label: "SCT",
-                value: "sct",
-              },
-            ]}
-          />
-        </div>
+        <SelectField
+          label="Fuente"
+          value={value}
+          onChange={setValue}
+          options={[
+            {
+              label: "SEMOVI",
+              value: "semovi",
+            },
+            {
+              label: "INEGI",
+              value: "inegi",
+            },
+            {
+              label: "SCT",
+              value: "sct",
+            },
+          ]}
+        />
       );
     };
 
@@ -77,7 +82,7 @@ export const Fuente: Story = {
 
 export const Disabled: Story = {
   args: {
-    label: "FUENTE",
+    label: "Fuente",
     value: "semovi",
     disabled: true,
     onChange: () => {},

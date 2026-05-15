@@ -7,13 +7,8 @@ const meta: Meta<typeof ProfileCard> = {
   decorators: [
     (Story) => (
       <div
-      style={{
-        minHeight: "100vh", 
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#EEF2F7",
-        padding: 10}}>
+        className="flex min-h-screen items-center justify-center bg-surface-base p-6"
+      >
         <Story />
       </div>
     ),
@@ -49,5 +44,11 @@ export const NombreCorto: Story = {
   args: {
     name: "Ana",
     role: "Usuario",
+  },
+};
+
+export const SinRol: Story = {
+  args: {
+    name: "Juan Pérez",
   },
 };

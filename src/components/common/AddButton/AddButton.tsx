@@ -9,10 +9,12 @@ export interface AddButtonProps {
 export const AddButton = ({ onPress, disabled = false, className = "" }: AddButtonProps) => {
   const PlusIcon = icons.plus;
   const classes = [
-    "inline-flex items-center justify-center w-16 h-16 border-0 rounded-full bg-[#1f4e79] text-white cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.25)] transition-[background-color,transform,box-shadow] duration-200",
-    "hover:enabled:bg-[#163a5c] hover:enabled:shadow-[0_6px_16px_rgba(0,0,0,0.3)]",
-    "active:scale-95 active:shadow-[0_2px_6px_rgba(0,0,0,0.25)]",
-    "disabled:bg-[#94a3b8] disabled:cursor-not-allowed disabled:shadow-none",
+    "inline-flex h-14 w-14 items-center justify-center rounded-full border-0 bg-primary text-content-on-primary shadow-lg",
+    "transition-[background-color,box-shadow,opacity,transform] duration-200 ease-out",
+    "hover:enabled:bg-primary-hover hover:enabled:shadow-xl",
+    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+    "active:scale-[0.96] active:bg-primary-active active:shadow-md",
+    "disabled:cursor-not-allowed disabled:bg-border-strong disabled:opacity-70 disabled:shadow-none disabled:active:scale-100",
     className,
   ].filter(Boolean).join(" ");
 
@@ -24,7 +26,7 @@ export const AddButton = ({ onPress, disabled = false, className = "" }: AddButt
       onClick={onPress}
       disabled={disabled}
     >
-      <PlusIcon size={32} />
+      <PlusIcon size={26} aria-hidden="true" />
     </button>
   );
 };

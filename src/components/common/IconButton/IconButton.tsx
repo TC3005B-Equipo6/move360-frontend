@@ -10,13 +10,13 @@ export interface IconButtonProps {
 }
 
 const sizes: Record<string, string> = {
-    small: "rounded-[20px] justify-center w-[60px] h-[60px]",
-    large: "rounded-[15px] justify-around w-[200px] h-[60px] gap-[30px] px-6 py-3",
+    small: "h-11 w-11 rounded-md justify-center",
+    large: "min-h-11 rounded-md justify-center gap-2.5 px-4 py-2.5 text-body-sm",
 };
 
 const colors: Record<string, string> = {
-    primary: "bg-[#1F4E79] text-white font-medium",
-    secondary: "bg-[#E7EEF6] text-[#1F4E79] font-medium",
+    primary: "bg-primary text-content-on-primary shadow-sm hover:bg-primary-hover active:bg-primary-active",
+    secondary: "bg-primary-subtle text-primary shadow-xs hover:bg-surface-sunken hover:text-primary-hover",
 };
 
 export const IconButton = ({
@@ -28,16 +28,20 @@ export const IconButton = ({
     type = "button",
 }: IconButtonProps) => {
     const Icon = icons[iconName];
+    const iconSize = size === "small" ? 22 : 20;
     const classes = [
-        "border-0 inline-flex items-center cursor-pointer transition-[opacity,transform] duration-200 font-[Inter,sans-serif] text-[25px]",
+        "border-0 inline-flex items-center font-sans font-semibold cursor-pointer",
+        "transition-[background-color,color,box-shadow,opacity,transform] duration-200 ease-out",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+        "active:scale-[0.96]",
         sizes[size],
         colors[color],
     ].filter(Boolean).join(" ");
 
     return (
         <button type={type} className={classes} onClick={onPress}>
-            <Icon size={45} />
-            {label && <span>{label}</span>}
+            <Icon size={iconSize} aria-hidden="true" />
+            {label && <span className="whitespace-nowrap">{label}</span>}
         </button>
     );
 };

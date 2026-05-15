@@ -18,6 +18,7 @@ type Story = StoryObj<typeof SegmentedControl>;
 
 export const Default: Story = {
   args: {
+    value: "indicador",
     options: [
       {
         label: "Indicador",
@@ -35,6 +36,7 @@ export const Default: Story = {
 
 export const WithMultipleOptions: Story = {
   args: {
+    value: "grafica",
     options: [
       {
         label: "Indicador",

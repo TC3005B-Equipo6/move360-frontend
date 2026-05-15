@@ -36,7 +36,8 @@ export const Modal = ({
   className = "",
 }: ModalProps) => {
   const modalClasses = [
-    "w-[440px] max-h-[95vh] bg-white rounded-[15px] p-[30px] flex flex-col overflow-hidden font-[Inter,sans-serif]",
+    "w-[440px] max-w-[calc(100vw-32px)] max-h-[95vh] overflow-hidden rounded-xl bg-surface-overlay p-6 font-sans shadow-xl ring-1 ring-inset ring-border-subtle",
+    "flex flex-col",
     className,
   ].filter(Boolean).join(" ");
   const CloseIcon = icons.close;
@@ -46,19 +47,23 @@ export const Modal = ({
   const hasDefaultFooter = Boolean(onConfirm || onCancel);
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-black/40 flex items-center justify-center p-6">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-[var(--backdrop)] p-4">
       <div className={modalClasses}>
-        <div className="flex shrink-0 justify-between items-center">
-          {title ? <h3 className="text-[#1f4e79] text-lg font-semibold m-0">{title}</h3> : <div />}
+        <div className="flex shrink-0 items-start justify-between gap-4">
+          {title ? (
+            <h3 className="m-0 text-wrap-balance text-h3 font-semibold text-content-primary">{title}</h3>
+          ) : (
+            <div />
+          )}
 
           {showCloseIcon && (
             <button
               type="button"
               aria-label="Cerrar"
-              className="bg-transparent border-0 cursor-pointer text-[#1f4e79] inline-flex items-center justify-center p-1"
+              className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent p-0 text-content-secondary transition-[background-color,color,transform] duration-200 ease-out hover:bg-surface-sunken hover:text-content-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.96]"
               onClick={onClose}
             >
-              <CloseIcon size={24} />
+              <CloseIcon size={20} aria-hidden="true" />
             </button>
           )}
         </div>
@@ -67,7 +72,7 @@ export const Modal = ({
           className={
             hasCustomContent
               ? "my-5 min-h-0 flex-1 overflow-y-auto pr-1"
-              : "my-5 min-h-0 flex-1 flex flex-col justify-center items-center gap-2.5 text-center"
+              : "my-6 flex min-h-0 flex-1 flex-col items-center justify-center gap-3 text-center"
           }
         >
           {hasCustomContent ? (
@@ -75,24 +80,24 @@ export const Modal = ({
           ) : (
             <>
               {Icon && (
-                <div className="mb-2.5 text-[#1f4e79] inline-flex">
-                  <Icon size={40} />
+                <div className="mb-1 inline-flex h-14 w-14 items-center justify-center rounded-lg bg-primary-subtle text-primary">
+                  <Icon size={28} aria-hidden="true" />
                 </div>
               )}
 
-              {message && <p className="text-xl text-[#1f4e79] m-0">{message}</p>}
+              {message && <p className="m-0 text-body-lg font-semibold text-content-primary">{message}</p>}
 
               {secondaryMessage && (
-                <p className="text-lg text-[#1f4e79] m-0">{secondaryMessage}</p>
+                <p className="m-0 text-body-sm font-medium text-content-secondary">{secondaryMessage}</p>
               )}
             </>
           )}
         </div>
 
         {footer ? (
-          <div className="flex shrink-0 justify-end gap-3">{footer}</div>
+          <div className="flex shrink-0 justify-end gap-3 border-t border-border-subtle pt-4">{footer}</div>
         ) : hasDefaultFooter ? (
-          <div className="flex shrink-0 justify-center gap-3">
+          <div className="flex shrink-0 justify-center gap-3 border-t border-border-subtle pt-4">
             {onCancel && (
               <Button variant="white" size="medium" label={cancelText} onPress={onCancel} />
             )}

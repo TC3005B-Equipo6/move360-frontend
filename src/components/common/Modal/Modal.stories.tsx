@@ -4,6 +4,13 @@ import { Modal } from "./Modal";
 const meta: Meta<typeof Modal> = {
   title: "Components/Modal",
   component: Modal,
+  decorators: [
+    (Story) => (
+      <div className="min-h-screen bg-surface-base">
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export default meta;
