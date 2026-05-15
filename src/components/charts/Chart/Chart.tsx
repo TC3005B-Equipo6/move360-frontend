@@ -26,10 +26,12 @@ export interface SeriesItem {
 }
 
 export interface ChartProps {
-  type: "donut" | "line" | "bar";
+  type: "donut" | "line" | "bar" | "ranking";
   title?: string;
   /** Additive: secondary line rendered under the title (e.g. "Marzo 2025 – Febrero 2026"). */
   subtitle?: string;
+  /** Additive: period-over-period percentage movement for the chart total. */
+  delta?: number;
   metricLabel?: string;
   data: ChartItem[];
   size?: "sm" | "md" | "lg";
@@ -87,6 +89,17 @@ const formatCompactNumber = (value: string | number) => {
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? compactNumberFormatter.format(numericValue) : String(value);
 };
+
+const formatRankingNumber = (value: string | number | undefined) => {
+  if (value === undefined) return "";
+  return formatCompactNumber(value).replace(/([A-Za-z]+)$/, " $1");
+};
+
+const deltaFormatter = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 1,
+});
+
+const formatDelta = (delta: number): string => `${deltaFormatter.format(Math.abs(delta))}%`;
 
 const formatScalar = (value: string | number | undefined): string => {
   if (value === undefined) return "";
@@ -149,6 +162,7 @@ export const Chart = ({
   type,
   title = "Chart",
   subtitle,
+  delta,
   metricLabel = "Valor",
   data,
   size = "md",
@@ -159,6 +173,10 @@ export const Chart = ({
   const isEmpty = !data || data.length === 0;
   const headerHeight = subtitle ? 64 : 44;
   const bodyHeightStyle = { height: `calc(100% - ${headerHeight}px)` };
+  const hasDelta = typeof delta === "number";
+  const deltaSign = hasDelta ? Math.sign(delta) : 0;
+  const deltaColor = deltaSign > 0 ? "text-success" : deltaSign < 0 ? "text-danger" : "text-content-muted";
+  const deltaArrow = deltaSign > 0 ? "▲" : deltaSign < 0 ? "▼" : null;
 
   const renderDonut = () => (
     <div
@@ -266,6 +284,48 @@ export const Chart = ({
     </ResponsiveContainer>
   );
 
+  const renderRanking = () => {
+    const maxValue = Math.max(...data.map((item) => Number(item.value) || 0), 0);
+
+    return (
+      <ol
+        className="m-0 p-0 list-none flex flex-col justify-between gap-2 overflow-hidden"
+        style={bodyHeightStyle}
+      >
+        {data.map((item, index) => {
+          const value = Number(item.value) || 0;
+          const width = maxValue > 0 ? `${Math.max((value / maxValue) * 100, 2)}%` : "0%";
+
+          return (
+            <li
+              key={`${item.name ?? "ranking"}-${index}`}
+              className="grid grid-cols-[28px_minmax(92px,140px)_minmax(120px,1fr)_86px] items-center gap-3 min-h-0"
+            >
+              <span className="tabular-nums text-[13px] font-semibold leading-none text-content-muted">
+                {index + 1}
+              </span>
+              <span className="min-w-0 truncate text-[15px] font-semibold leading-tight text-content-primary">
+                {item.name}
+              </span>
+              <span
+                aria-hidden="true"
+                className="block h-2.5 rounded-full bg-surface-sunken overflow-hidden"
+              >
+                <span
+                  className="block h-full rounded-full bg-chart-1"
+                  style={{ width }}
+                />
+              </span>
+              <span className="tabular-nums text-right text-[13px] font-semibold leading-none text-content-secondary">
+                {formatRankingNumber(item.value)}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    );
+  };
+
   const renderBody = () => {
     if (isLoading) {
       return (
@@ -287,15 +347,24 @@ export const Chart = ({
     }
     if (type === "donut") return renderDonut();
     if (type === "line") return renderLine();
+    if (type === "ranking") return renderRanking();
     return renderBar();
   };
 
   return (
-    <div className={`bg-surface-raised border border-subtle rounded-md shadow-sm p-5 ${cardSizes[size]}`}>
-      <div className="mb-4">
-        <h2 className="m-0 text-h3 font-bold text-content-primary leading-tight [text-wrap:balance]">{title}</h2>
-        {subtitle && (
-          <p className="m-0 mt-0.5 text-body-sm text-content-secondary leading-tight">{subtitle}</p>
+    <div className={`box-border overflow-hidden bg-surface-raised border border-subtle rounded-md shadow-sm p-5 ${cardSizes[size]}`}>
+      <div className="mb-4 flex items-start justify-between gap-4 pr-10">
+        <div className="min-w-0">
+          <h2 className="m-0 text-h3 font-bold text-content-primary leading-tight [text-wrap:balance]">{title}</h2>
+          {subtitle && (
+            <p className="m-0 mt-0.5 text-body-sm text-content-secondary leading-tight">{subtitle}</p>
+          )}
+        </div>
+        {hasDelta && (
+          <div className={`shrink-0 flex items-center gap-1 text-body-sm font-semibold tabular-nums ${deltaColor}`}>
+            {deltaArrow && <span aria-hidden="true">{deltaArrow}</span>}
+            <span>{formatDelta(delta)}</span>
+          </div>
         )}
       </div>
       {renderBody()}

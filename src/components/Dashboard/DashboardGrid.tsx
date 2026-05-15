@@ -22,6 +22,7 @@ interface Props {
   dashboardId?: string;
   readonly?: boolean;
   initialItems?: Item[];
+  bottomBufferRows?: number;
 }
 
 const GRID_WIDTH = GRID_COLUMNS * CELL_SIZE + (GRID_COLUMNS - 1) * GUTTER + 2 * GUTTER;
@@ -47,7 +48,7 @@ function computeReflowLayout(
   return resolveCollisions(placed, newItem.i);
 }
 
-export const DashboardGrid = ({ dashboardId = "demo", readonly = false, initialItems }: Props) => {
+export const DashboardGrid = ({ dashboardId = "demo", readonly = false, initialItems, bottomBufferRows = 1 }: Props) => {
   const [items, setItems] = useState<Item[]>(() => initialItems ?? loadDashboard(dashboardId).items);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingChoice, setPendingChoice] = useState<AddItemChoice | null>(null);
@@ -61,7 +62,7 @@ export const DashboardGrid = ({ dashboardId = "demo", readonly = false, initialI
     (max, it) => Math.max(max, it.row + ITEM_SIZES[it.type].h),
     0,
   );
-  const visibleRows = occupiedRows + 1;
+  const visibleRows = occupiedRows + bottomBufferRows;
   const minHeight = visibleRows * CELL_SIZE + (visibleRows + 1) * GUTTER;
 
   const handlePick = (choice: AddItemChoice) => {

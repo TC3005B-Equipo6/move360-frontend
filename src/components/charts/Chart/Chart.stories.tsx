@@ -72,6 +72,27 @@ export const UsuariosPorTipoDePago: Story = {
   },
 };
 
+export const TopLineas: Story = {
+  args: {
+    type: "ranking",
+    title: "Top 10 lineas",
+    subtitle: "Periodo completo",
+    size: "lg",
+    data: [
+      { name: "Metro L2", value: 214_251_551 },
+      { name: "Metro L3", value: 174_541_303 },
+      { name: "Metrobus L1", value: 150_873_348 },
+      { name: "Metro L1", value: 132_638_596 },
+      { name: "Metro LB", value: 124_955_025 },
+      { name: "Metro L12", value: 119_912_616 },
+      { name: "Metro L8", value: 118_200_792 },
+      { name: "Metro L9", value: 93_362_377 },
+      { name: "Metro L7", value: 87_910_841 },
+      { name: "Metrobus L5", value: 86_233_112 },
+    ],
+  },
+};
+
 export const DosLineas: Story = {
   args: {
     type: "line",

@@ -2,7 +2,7 @@ import { forwardRef, useState, type CSSProperties, type ReactNode } from "react"
 import { Chart } from "../charts/Chart/Chart";
 import { Indicator, type IndicatorTone } from "../indicators/Indicator/Indicator";
 import { ActionMenu } from "../common/ActionMenu/ActionMenu";
-import { icons } from "../../icons";
+import { OverflowMenuButton } from "../common/OverflowMenuButton/OverflowMenuButton";
 import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./types";
 
 interface Props {
@@ -54,7 +54,6 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
   ref,
 ) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const MoreIcon = icons.more;
 
   const closeMenu = () => setMenuOpen(false);
   const toggleMenu = () => setMenuOpen((o) => !o);
@@ -64,15 +63,11 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
   };
 
   const menuButton = (
-    <button
-      type="button"
-      aria-label="More options"
-      data-action-menu-trigger
-      className="item-menu absolute top-3 right-3 inline-flex items-center justify-center w-10 h-10 p-0 bg-surface-overlay/90 hover:bg-surface-overlay border-0 rounded-full text-content-secondary cursor-pointer shadow-sm transition-[background-color,scale] duration-150 active:scale-[0.96]"
+    <OverflowMenuButton
+      isOpen={menuOpen}
+      className="absolute top-3 right-3 z-10"
       onClick={toggleMenu}
-    >
-      <MoreIcon size={20} />
-    </button>
+    />
   );
 
   const renderContent = () => {
@@ -83,11 +78,14 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
           <Indicator
             value={cfg.value}
             label={cfg.label}
+            subtitle={cfg.subtitle}
             tone={getIndicatorTone(cfg)}
             name={cfg.name ?? cfg.label}
             startDate={toDate(cfg.startDate)}
             endDate={toDate(cfg.endDate)}
             isMenuOpen={menuOpen || Boolean(cfg.isMenuOpen)}
+            delta={cfg.delta}
+            unit={cfg.unit}
           />
           {!readonly && menuButton}
         </div>
@@ -103,6 +101,8 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
           series={cfg.series}
           size={chartSizeMap[item.type]}
           title={cfg.config.datasetId || cfg.config.source}
+          subtitle={cfg.subtitle}
+          delta={cfg.delta}
           metricLabel={getMetricLabel(cfg.config.columns)}
         />
         {!readonly && menuButton}
@@ -114,14 +114,14 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
     <div
       ref={ref}
       style={style}
-      className={className}
+      className={[className, "group/dashboard-item relative"].filter(Boolean).join(" ")}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onTouchEnd={onTouchEnd}
     >
       {renderContent()}
       {!readonly && menuOpen && (
-        <div className="item-menu absolute top-12 right-3 z-20">
+        <div className="item-menu absolute top-[46px] right-3 z-20">
           <ActionMenu onDelete={handleDelete} onEdit={closeMenu} onClose={closeMenu} />
         </div>
       )}
