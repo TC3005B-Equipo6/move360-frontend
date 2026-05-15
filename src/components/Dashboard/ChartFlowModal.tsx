@@ -66,7 +66,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
     const preview = currentDataset?.preview || [];
     const formattedData = preview.map((row) => {
       const result: Record<string, string | number | undefined> = {
-        name: row["Mes"] || row["Anio"],
+        name: row["Mes"] || row["Año"],
       };
       selectedColumns.forEach((column) => {
         result[column] = (row as Record<string, string | number | undefined>)[column];
