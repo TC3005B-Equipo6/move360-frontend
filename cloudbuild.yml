@@ -1,8 +1,8 @@
 substitutions:
   _REGION: us-central1
-  _REPOSITORY: move360
-  _IMAGE: move360-frontend
-  _SERVICE: move360-frontend
+  _REPOSITORY: move360-front
+  _IMAGE: move360-front
+  _SERVICE: move360-front
   _PROJECT_ID: project-fa58d7d7-fa9b-4aba-82e
 
 options:
