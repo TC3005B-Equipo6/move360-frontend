@@ -17,15 +17,15 @@ export const IndicatorPreview = ({
 }: Props) => {
   return (
     <div
-      className="w-[200px] h-[200px] rounded-[32px] flex flex-col items-center justify-center text-center px-6"
+      className="w-[200px] h-[200px] rounded-xl shadow-sm flex flex-col items-center justify-center text-center px-6"
       style={{ backgroundColor, color: textColor }}
     >
-      <span className="text-[45px] font-bold leading-none">
+      <span className="text-[45px] font-bold leading-none tabular-nums">
         {tone === "direct" ? "+" : "-"}
         {value}%
       </span>
 
-      <span className="mt-4 text-[22px] font-bold uppercase leading-tight">
+      <span className="mt-4 text-h3 font-bold uppercase leading-tight [text-wrap:balance]">
         {label}
       </span>
     </div>

@@ -41,7 +41,7 @@ export const UsuariosRegulares: Story = {
       series: [
       {
         key: "value",
-        color: "#d372f3",
+        color: "var(--chart-1)",
         label: "Usuarios",
       },
     ],
@@ -64,7 +64,7 @@ export const UsuariosPorTipoDePago: Story = {
       series: [
       {
         key: "value",
-        color: "#72c8f3",
+        color: "var(--chart-2)",
         label: "Usuarios",
       },
 
@@ -108,14 +108,56 @@ export const DosLineas: Story = {
     series: [
       {
         key: "linea1",
-        color: "#0b4d94",
+        color: "var(--chart-1)",
         label: "Linea 1",
       },
       {
         key: "linea2",
-        color: "#ef2b2d",
+        color: "var(--chart-2)",
         label: "Linea 2",
       },
     ],
+  },
+};
+
+export const SinDatos: Story = {
+  args: {
+    type: "bar",
+    title: "Usuarios por tipo de pago",
+    size: "md",
+    data: [],
+  },
+};
+
+export const ConSubtitulo: Story = {
+  args: {
+    type: "line",
+    title: "Afluencia mensual",
+    subtitle: "Metro · Marzo 2025 – Febrero 2026",
+    size: "md",
+    data: [
+      { name: "Ene", value: 220 },
+      { name: "Feb", value: 460 },
+      { name: "Mar", value: 810 },
+      { name: "Abr", value: 1180 },
+      { name: "May", value: 1620 },
+    ],
+    series: [
+      {
+        key: "value",
+        color: "var(--chart-1)",
+        label: "Afluencia",
+      },
+    ],
+  },
+};
+
+export const Cargando: Story = {
+  args: {
+    type: "line",
+    title: "Usuarios Regulares",
+    size: "md",
+    data: [],
+    isLoading: true,
   },
 };

@@ -68,7 +68,7 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
       type="button"
       aria-label="More options"
       data-action-menu-trigger
-      className="item-menu absolute top-4 right-4 inline-flex items-center justify-center w-8 h-8 p-0 bg-white/80 hover:bg-white border-0 rounded-full text-[#5f6f8a] cursor-pointer shadow-sm"
+      className="item-menu absolute top-3 right-3 inline-flex items-center justify-center w-10 h-10 p-0 bg-surface-overlay/90 hover:bg-surface-overlay border-0 rounded-full text-content-secondary cursor-pointer shadow-sm transition-[background-color,scale] duration-150 active:scale-[0.96]"
       onClick={toggleMenu}
     >
       <MoreIcon size={20} />

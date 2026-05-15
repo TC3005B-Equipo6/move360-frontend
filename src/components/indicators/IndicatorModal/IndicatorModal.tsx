@@ -29,10 +29,10 @@ const columnsByTable: Record<string, string[]> = {
   "Table H": ["Column H1", "Column H2"],
 };
 
-// Neutral gray/white colors for all indicators
+// Neutral surface colors for all indicators — sourced from design tokens.
 const neutralColors = {
-  background: "#f3f4f6",
-  text: "#6b7280",
+  background: "var(--surface-sunken)",
+  text: "var(--text-secondary)",
 };
 
 export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
@@ -79,7 +79,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
     <Modal
       title={isEditMode ? "Editar indicador" : "Crear indicador"}
       onClose={onClose}
-      className="w-[950px] rounded-[32px]"
+      className="w-[950px] rounded-2xl"
       footer={
         <>
           <Button label="Cancelar" variant="white" onPress={onClose} />
@@ -95,7 +95,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
           {!isEditMode && (
             <>
               <div className="flex flex-col gap-3">
-                <label className="text-sm font-semibold text-[#1F4E79]">Fuente</label>
+                <label className="text-body-sm font-semibold text-content-primary">Fuente</label>
                 <select
                   value={source}
                   onChange={(e) => {
@@ -103,7 +103,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                     setTable("");
                     setColumn("");
                   }}
-                  className="h-[52px] rounded-2xl border border-[#DCE4EE] px-5 text-[18px] text-[#1F4E79] outline-none focus:border-[#1F4E79]"
+                  className="h-[52px] rounded-md border border-default px-5 text-body-lg text-content-primary outline-none transition-colors focus:border-primary"
                 >
                   <option value="">Selecciona una fuente</option>
                   {sources.map((src) => (
@@ -115,7 +115,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
               </div>
 
               <div className="flex flex-col gap-3">
-                <label className="text-sm font-semibold text-[#1F4E79]">Tabla</label>
+                <label className="text-body-sm font-semibold text-content-primary">Tabla</label>
                 <select
                   value={table}
                   onChange={(e) => {
@@ -123,7 +123,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                     setColumn("");
                   }}
                   disabled={!source}
-                  className="h-[52px] rounded-2xl border border-[#DCE4EE] px-5 text-[18px] text-[#1F4E79] outline-none focus:border-[#1F4E79] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-[52px] rounded-md border border-default px-5 text-body-lg text-content-primary outline-none transition-colors focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="">Selecciona una tabla</option>
                   {availableTables.map((tbl) => (
@@ -135,12 +135,12 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
               </div>
 
               <div className="flex flex-col gap-3">
-                <label className="text-sm font-semibold text-[#1F4E79]">Columna</label>
+                <label className="text-body-sm font-semibold text-content-primary">Columna</label>
                 <select
                   value={column}
                   onChange={(e) => setColumn(e.target.value)}
                   disabled={!table}
-                  className="h-[52px] rounded-2xl border border-[#DCE4EE] px-5 text-[18px] text-[#1F4E79] outline-none focus:border-[#1F4E79] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-[52px] rounded-md border border-default px-5 text-body-lg text-content-primary outline-none transition-colors focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="">Selecciona una columna</option>
                   {availableColumns.map((col) => (
@@ -154,7 +154,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
           )}
 
           <div className="flex flex-col gap-3">
-            <label className="text-sm font-semibold text-[#1F4E79]">Operación</label>
+            <label className="text-body-sm font-semibold text-content-primary">Operación</label>
             <div className="flex gap-3">
               {(["porcentaje", "total"] as const).map((op) => (
                 <button
@@ -165,10 +165,10 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                       setTone("direct");
                     }
                   }}
-                  className={`flex-1 h-[52px] rounded-2xl font-semibold text-[16px] transition-all ${
+                  className={`flex-1 h-[52px] rounded-md font-semibold text-body cursor-pointer transition-[background-color,border-color,color,scale] duration-150 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
                     operation === op
-                      ? "bg-[#1F4E79] text-white border-2 border-[#1F4E79]"
-                      : "bg-white text-[#1F4E79] border-2 border-[#DCE4EE] hover:border-[#1F4E79]"
+                      ? "bg-primary text-content-on-primary border-2 border-primary"
+                      : "bg-surface-raised text-content-primary border-2 border-default hover:border-primary"
                   }`}
                 >
                   {op === "porcentaje" ? "Porcentaje" : "Total"}
@@ -179,16 +179,16 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
 
           {operation === "porcentaje" && (
             <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-[#1F4E79]">Tipo</label>
+              <label className="text-body-sm font-semibold text-content-primary">Tipo</label>
               <div className="flex gap-3">
                 {(["direct", "inverse"] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => setTone(t)}
-                    className={`flex-1 h-[52px] rounded-2xl font-semibold text-[16px] transition-all ${
+                    className={`flex-1 h-[52px] rounded-md font-semibold text-body cursor-pointer transition-[background-color,border-color,color,scale] duration-150 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
                       tone === t
-                        ? "bg-[#1F4E79] text-white border-2 border-[#1F4E79]"
-                        : "bg-white text-[#1F4E79] border-2 border-[#DCE4EE] hover:border-[#1F4E79]"
+                        ? "bg-primary text-content-on-primary border-2 border-primary"
+                        : "bg-surface-raised text-content-primary border-2 border-default hover:border-primary"
                     }`}
                   >
                     {t === "direct" ? "Directo" : "Inverso"}
@@ -200,27 +200,27 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
 
           <div className="flex gap-4">
             <div className="flex-1 flex flex-col gap-3">
-              <label className="text-sm font-semibold text-[#1F4E79]">Fecha de inicio</label>
+              <label className="text-body-sm font-semibold text-content-primary">Fecha de inicio</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="h-[52px] rounded-2xl border border-[#DCE4EE] px-5 text-[18px] text-[#1F4E79] outline-none focus:border-[#1F4E79]"
+                className="h-[52px] rounded-md border border-default px-5 text-body-lg text-content-primary outline-none transition-colors focus:border-primary"
               />
             </div>
             <div className="flex-1 flex flex-col gap-3">
-              <label className="text-sm font-semibold text-[#1F4E79]">Fecha de fin</label>
+              <label className="text-body-sm font-semibold text-content-primary">Fecha de fin</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="h-[52px] rounded-2xl border border-[#DCE4EE] px-5 text-[18px] text-[#1F4E79] outline-none focus:border-[#1F4E79]"
+                className="h-[52px] rounded-md border border-default px-5 text-body-lg text-content-primary outline-none transition-colors focus:border-primary"
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-3">
-            <label className="text-sm font-semibold text-[#1F4E79]">Nombre</label>
+            <label className="text-body-sm font-semibold text-content-primary">Nombre</label>
             <input
               type="text"
               maxLength={40}
@@ -232,12 +232,12 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
 
           {isEditMode && (
             <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-[#1F4E79]">Valor</label>
+              <label className="text-body-sm font-semibold text-content-primary">Valor</label>
               <input
                 type="number"
                 value={value}
                 onChange={(e) => setValue(Number(e.target.value))}
-                className="h-[52px] rounded-2xl border border-[#DCE4EE] px-5 text-[18px] text-[#1F4E79] outline-none focus:border-[#1F4E79]"
+                className="h-[52px] rounded-md border border-default px-5 text-body-lg text-content-primary outline-none transition-colors focus:border-primary"
               />
             </div>
           )}

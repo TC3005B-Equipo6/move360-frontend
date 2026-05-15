@@ -8,14 +8,19 @@ const meta = {
   decorators: [
     (Story) => (
       <div
-      style={{
-        minHeight: "100vh", 
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#EEF2F7",
-        padding: 10}}>
-        <Story />
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "var(--surface-sunken)",
+          padding: 10,
+        }}
+      >
+        {/* The button is full-width; the rail defines its width. */}
+        <div style={{ width: 172, background: "var(--surface-raised)", padding: 12, borderRadius: 16 }}>
+          <Story />
+        </div>
       </div>
     ),
   ],
@@ -24,7 +29,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: StoryObj<typeof meta> = {
+export const Expanded: StoryObj<typeof meta> = {
   render: (args: SideBarButtonProps) => {
     const [selected, setSelected] = useState(Boolean(args.selected));
     return (
@@ -38,21 +43,17 @@ export const Default: StoryObj<typeof meta> = {
       />
     );
   },
-  args: { tooltip: "Home", iconName: "home", selected: false },
+  args: { tooltip: "Inicio", label: "Inicio", iconName: "home", selected: false, collapsed: false },
 };
 
 export const Selected: Story = {
-  args: { 
-    tooltip: "Home",
-    iconName: "help",
-    selected: true
- },
+  args: { tooltip: "Inicio", label: "Inicio", iconName: "home", selected: true, collapsed: false },
+};
+
+export const Collapsed: Story = {
+  args: { tooltip: "Inicio", label: "Inicio", iconName: "home", selected: false, collapsed: true },
 };
 
 export const Disabled: Story = {
-  args: {
-    tooltip: "Star",
-    iconName: "help",
-    disabled: true
- },
+  args: { tooltip: "Ayuda", label: "Ayuda", iconName: "help", disabled: true, collapsed: false },
 };

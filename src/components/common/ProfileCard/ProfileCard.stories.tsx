@@ -52,3 +52,18 @@ export const SinRol: Story = {
     name: "Juan Pérez",
   },
 };
+
+export const Compacto: Story = {
+  args: {
+    name: "Andrés García",
+    role: "Analista de movilidad",
+    variant: "compact",
+  },
+};
+
+export const CompactoSinRol: Story = {
+  args: {
+    name: "Juan Pérez",
+    variant: "compact",
+  },
+};

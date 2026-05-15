@@ -36,7 +36,7 @@ export const ActionMenu = ({ onDelete, onEdit, onClose, className = "" }: Action
   }, [onClose]);
 
   const classes = [
-    "inline-flex flex-col min-w-[140px] bg-white rounded-[15px] shadow-[0_4px_4px_rgba(0,0,0,0.25)] overflow-hidden font-[Inter,sans-serif]",
+    "inline-flex flex-col min-w-[140px] bg-surface-overlay border border-subtle rounded-md shadow-md overflow-hidden",
     className,
   ].filter(Boolean).join(" ");
 
@@ -48,17 +48,17 @@ export const ActionMenu = ({ onDelete, onEdit, onClose, className = "" }: Action
     >
       <button
         type="button"
-        className="inline-flex items-center gap-2 px-[14px] py-[10px] bg-transparent border-0 cursor-pointer text-[#dc2626] font-[inherit] text-[15px] font-medium text-left transition-colors duration-150 hover:bg-[#f3f4f6] active:bg-[#fee2e2] active:scale-[0.98]"
+        className="inline-flex items-center gap-2 px-[14px] py-[10px] min-h-10 bg-transparent border-0 cursor-pointer text-danger text-body-sm font-medium text-left transition-[background-color,scale] duration-150 hover:bg-surface-sunken active:bg-danger-subtle active:scale-[0.96]"
         onClick={onDelete}
         role="menuitem"
       >
         <TrashIcon size={20} className="shrink-0" />
         <span className="capitalize whitespace-nowrap">Eliminar</span>
       </button>
-      <div className="h-px bg-[#e5e7eb] w-full" />
+      <div className="h-px bg-border-subtle w-full" />
       <button
         type="button"
-        className="inline-flex items-center gap-2 px-[14px] py-[10px] bg-transparent border-0 cursor-pointer text-[#1f4e79] font-[inherit] text-[15px] font-medium text-left transition-colors duration-150 hover:bg-[#f3f4f6] active:bg-[#e5e7eb] active:scale-[0.98]"
+        className="inline-flex items-center gap-2 px-[14px] py-[10px] min-h-10 bg-transparent border-0 cursor-pointer text-primary text-body-sm font-medium text-left transition-[background-color,scale] duration-150 hover:bg-surface-sunken active:bg-surface-sunken active:scale-[0.96]"
         onClick={onEdit}
         role="menuitem"
       >

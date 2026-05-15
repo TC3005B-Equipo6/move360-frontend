@@ -1,6 +1,4 @@
-
-
-import { Sidebar } from '../../components/navigation/SideBar/SideBar';
+import { AppLayout } from '../../components/navigation/AppLayout/AppLayout';
 import { Header } from '../../components/navigation/Header/Header';
 import { ProfileCard } from '../../components/common/ProfileCard/ProfileCard';
 import { ListItem } from '../../components/common/ListItem/ListItem';
@@ -63,32 +61,26 @@ export default function Dashboards() {
   };
 
   return (
-    <div className="flex flex-row items-center bg-[#E7EEF6] p-8 h-screen w-screen box-border">
-      <Sidebar className="shrink-0" />
-      <div className="flex flex-col items-center gap-8 w-full h-full min-w-0">
-        <div className="flex w-full flex-col gap-1 px-8 box-border">
-          <div className="flex flex-row items-center justify-between w-full gap-5">
-            <div className="flex-1 min-w-0">
-              <Header title="Mis Dashboards" />
-            </div>
-            <ProfileCard name="Juan Pérez" role={''} className="shrink-0" />
-          </div>
-        </div>
-        <div className="w-full flex-1 min-h-0 px-8">
-          <div className="bg-white rounded-[20px] h-full overflow-y-auto p-6 flex flex-col gap-4">
-            {dashboards.map((dashboard) => (
-              <ListItem
-                key={dashboard.id}
-                title={dashboard.title}
-                date={formatDate(dashboard.createdAt)}
-                author={dashboard.owner}
-                iconName="file"
-                onPress={() => handleDashboardClick(dashboard.id)}
-              />
-            ))}
-          </div>
-        </div>
+    <AppLayout
+      header={
+        <Header
+          title="Mis Dashboards"
+          profile={<ProfileCard variant="compact" name="Juan Pérez" />}
+        />
+      }
+    >
+      <div className="bg-surface-raised border border-subtle rounded-md shadow-sm h-full overflow-y-auto p-6 flex flex-col gap-4">
+        {dashboards.map((dashboard) => (
+          <ListItem
+            key={dashboard.id}
+            title={dashboard.title}
+            date={formatDate(dashboard.createdAt)}
+            author={dashboard.owner}
+            iconName="file"
+            onPress={() => handleDashboardClick(dashboard.id)}
+          />
+        ))}
       </div>
-    </div>
+    </AppLayout>
   );
 }

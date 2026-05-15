@@ -14,7 +14,7 @@ const meta: Meta<typeof UserModal> = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#EEF2F7",
+        background: "var(--surface-sunken)",
         padding: 10}}>
         <Story />
       </div>

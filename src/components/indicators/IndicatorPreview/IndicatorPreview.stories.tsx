@@ -30,8 +30,8 @@ export const Positivo: Story = {
     value: 12,
     label: "Usuarios con descuento",
     tone: "direct",
-    backgroundColor: "#DDF3E4",
-    textColor: "#166534",
+    backgroundColor: "var(--success-subtle)",
+    textColor: "var(--success)",
   },
 };
 
@@ -40,7 +40,7 @@ export const Negativo: Story = {
     value: 8,
     label: "Tiempo de recorrido promedio",
     tone: "inverse",
-    backgroundColor: "#F8D7DA",
-    textColor: "#B42318",
+    backgroundColor: "var(--danger-subtle)",
+    textColor: "var(--danger)",
   },
 };

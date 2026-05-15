@@ -1,15 +1,16 @@
+// Aligned to semantic state tokens (success / danger / warning).
 export const colorOptions = {
   green: {
-    background: "#DDF3E4",
-    text: "#166534",
+    background: "var(--success-subtle)",
+    text: "var(--success)",
   },
   red: {
-    background: "#F8D7DA",
-    text: "#B42318",
+    background: "var(--danger-subtle)",
+    text: "var(--danger)",
   },
   yellow: {
-    background: "#FCEFC7",
-    text: "#B7791F",
+    background: "var(--warning-subtle)",
+    text: "var(--warning)",
   },
 };
 

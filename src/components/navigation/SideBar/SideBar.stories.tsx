@@ -10,12 +10,9 @@ const meta = {
       <MemoryRouter initialEntries={["/home"]}>
         <div
           style={{
-            minHeight: "100vh",
+            height: "600px",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#EEF2F7",
-            padding: 10,
+            background: "var(--surface-sunken)",
           }}
         >
           <Story />
@@ -28,4 +25,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// Uncontrolled — the hamburger toggles the rail's own internal state.
 export const Default: Story = {};
+
+export const Colapsado: Story = {
+  args: { collapsed: true },
+};
+
+export const Expandido: Story = {
+  args: { collapsed: false },
+};

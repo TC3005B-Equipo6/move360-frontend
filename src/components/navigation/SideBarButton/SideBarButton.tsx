@@ -7,6 +7,10 @@ export interface SideBarButtonProps {
     tooltip?: string;
     className?: string;
     iconName?: IconName;
+    /** Additive: text label shown beside the icon when the rail is expanded. */
+    label?: string;
+    /** Additive: when true, the label is hidden (rail collapsed). */
+    collapsed?: boolean;
 }
 
 export const SideBarButton = ({
@@ -16,21 +20,35 @@ export const SideBarButton = ({
     tooltip = "add",
     className = "",
     iconName = "home",
+    label,
+    collapsed = false,
 }: SideBarButtonProps) => {
     const Icon = icons[iconName];
     const classes = [
-        "border-0 rounded-[50px] cursor-pointer transition-[opacity,transform] duration-200 w-[70px] h-[70px] font-bold flex items-center justify-center",
+        "flex items-center gap-3 w-full h-11 px-2.5 rounded-md border-0 cursor-pointer transition-[background-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         disabled
-            ? "bg-white text-[#E2E2E2] cursor-not-allowed"
+            ? "bg-transparent text-border-strong cursor-not-allowed"
             : selected
-            ? "bg-[#E7EEF6] text-[#1F4E79]"
-            : "bg-white text-[#64748B] hover:bg-[#f0f0f0]",
+            ? "bg-primary text-content-on-primary"
+            : "bg-transparent text-content-secondary hover:bg-surface-sunken active:scale-[0.96]",
         className,
     ].filter(Boolean).join(" ");
 
     return (
         <button onClick={onPress} type="button" title={tooltip} disabled={disabled} className={classes}>
-            <Icon size={50} />
+            <span className="grid place-items-center w-6 shrink-0">
+                <Icon size={22} />
+            </span>
+            {label && (
+                <span
+                    className={[
+                        "min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-body-sm font-medium transition-opacity duration-150",
+                        collapsed ? "opacity-0 pointer-events-none" : "opacity-100",
+                    ].join(" ")}
+                >
+                    {label}
+                </span>
+            )}
         </button>
     );
 };
