@@ -1,4 +1,5 @@
 body {
-  background: #154b7c;
-  font-family: "Inter", sans-serif;
+  background: var(--surface-base);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }

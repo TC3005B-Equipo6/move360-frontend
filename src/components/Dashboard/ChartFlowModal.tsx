@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { BarChart3, LineChart } from "lucide-react";
-import { Modal } from "../Modal/Modal";
-import { Button } from "../Button/Button";
-import SegmentedControl from "../SegmentedControl/SegmentedControl";
+import { Modal } from "../common/Modal/Modal";
+import { Button } from "../common/Button/Button";
+import SegmentedControl from "../common/SegmentedControl/SegmentedControl";
 import chartData from "./ChartDatasets.json";
 import type { ChartConfig } from "./types";
 import type { ItemType } from "./grid.config";
@@ -22,7 +22,7 @@ const TYPE_BY_SIZE: Record<ChartSize, ChartType[]> = {
   chartLg: ["line"],
 };
 
-const colors = ["#0b4d94", "#ef2b2d", "#78d7fd", "#9cc52b"];
+const colors = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)"];
 
 interface Props {
   onClose: () => void;
@@ -115,7 +115,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
         </div>
 
         {!size && (
-          <p className="text-center text-[#5f6f8a] text-sm py-8">
+          <p className="text-center text-content-secondary text-body-sm py-8">
             Elige un tamaño para continuar.
           </p>
         )}
@@ -138,25 +138,25 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
             <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-5">
               <div className="grid grid-cols-3 gap-5">
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-[#1F4E79]">Inicio</label>
+                  <label className="text-body-sm font-semibold text-content-primary">Inicio</label>
                   <input
                     type="month"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="h-12 rounded-2xl border border-[#DCE4EE] bg-white px-4 outline-none focus:border-[#1F4E79]"
+                    className="h-12 rounded-md border border-default bg-surface-raised px-4 outline-none transition-colors focus:border-primary"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-[#1F4E79]">Fin</label>
+                  <label className="text-body-sm font-semibold text-content-primary">Fin</label>
                   <input
                     type="month"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="h-12 rounded-2xl border border-[#DCE4EE] bg-white px-4 outline-none focus:border-[#1F4E79]"
+                    className="h-12 rounded-md border border-default bg-surface-raised px-4 outline-none transition-colors focus:border-primary"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-[#1F4E79]">Fuente</label>
+                  <label className="text-body-sm font-semibold text-content-primary">Fuente</label>
                   <select
                     value={source}
                     onChange={(e) => {
@@ -165,7 +165,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
                       setSelectedColumns([]);
                       setCompareTable("");
                     }}
-                    className="h-12 rounded-2xl border border-[#DCE4EE] bg-white px-4 outline-none focus:border-[#1F4E79]"
+                    className="h-12 rounded-md border border-default bg-surface-raised px-4 outline-none transition-colors focus:border-primary"
                   >
                     {sources.map((item) => (
                       <option key={item.name} value={item.name}>
@@ -177,7 +177,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-[#1F4E79]">Tabla</label>
+                <label className="text-body-sm font-semibold text-content-primary">Tabla</label>
                 <select
                   value={currentDatasetId}
                   onChange={(e) => {
@@ -185,7 +185,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
                     setSelectedColumns([]);
                     setCompareTable("");
                   }}
-                  className="h-12 rounded-2xl border border-[#DCE4EE] bg-white px-4 outline-none focus:border-[#1F4E79]"
+                  className="h-12 rounded-md border border-default bg-surface-raised px-4 outline-none transition-colors focus:border-primary"
                 >
                   {currentSource?.datasets.map((dataset) => (
                     <option key={dataset.id} value={dataset.id}>
@@ -196,10 +196,10 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
               </div>
 
               <div className="flex flex-col gap-3">
-                <label className="text-sm font-semibold text-[#1F4E79]">Columnas</label>
-                <div className="rounded-3xl border border-[#DCE4EE] bg-[#F8FBFF] p-5 grid grid-cols-4 gap-4">
+                <label className="text-body-sm font-semibold text-content-primary">Columnas</label>
+                <div className="rounded-lg border border-default bg-surface-sunken p-5 grid grid-cols-4 gap-4">
                   {currentDataset?.columns.map((column) => (
-                    <label key={column} className="flex items-center gap-2 text-sm text-[#314158]">
+                    <label key={column} className="flex items-center gap-2 text-body-sm text-content-secondary">
                       <input
                         type="checkbox"
                         checked={selectedColumns.includes(column)}
@@ -212,7 +212,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
               </div>
 
               <div className="flex flex-col gap-4">
-                <label className="flex items-center gap-2 text-sm font-semibold text-[#1F4E79]">
+                <label className="flex items-center gap-2 text-body-sm font-semibold text-content-primary">
                   <input
                     type="checkbox"
                     checked={compareEnabled}
@@ -224,7 +224,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
                   <select
                     value={compareTable}
                     onChange={(e) => setCompareTable(e.target.value)}
-                    className="h-12 rounded-2xl border border-[#DCE4EE] bg-white px-4 outline-none focus:border-[#1F4E79]"
+                    className="h-12 rounded-md border border-default bg-surface-raised px-4 outline-none transition-colors focus:border-primary"
                   >
                     <option value="">Selecciona tabla</option>
                     {compatibleTables.map((dataset) => (
@@ -236,18 +236,18 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
                 )}
               </div>
 
-              <div className="rounded-3xl border border-[#DCE4EE] overflow-hidden bg-white">
-                <div className="px-6 py-4 border-b border-[#DCE4EE] bg-[#F8FBFF]">
-                  <h3 className="font-bold text-[#1F4E79] text-lg">Vista previa de datos</h3>
+              <div className="rounded-lg border border-default overflow-hidden bg-surface-raised">
+                <div className="px-6 py-4 border-b border-default bg-surface-sunken">
+                  <h3 className="font-bold text-content-primary text-h3">Vista previa de datos</h3>
                 </div>
                 <div className="overflow-auto max-h-[160px]">
-                  <table className="w-full text-sm">
-                    <thead className="bg-[#F8FBFF] sticky top-0">
+                  <table className="w-full text-body-sm">
+                    <thead className="bg-surface-sunken sticky top-0">
                       <tr>
                         {selectedColumns.map((column) => (
                           <th
                             key={column}
-                            className="px-4 py-3 text-left text-[#1F4E79] border-b border-[#DCE4EE]"
+                            className="px-4 py-3 text-left text-content-primary border-b border-default"
                           >
                             {column}
                           </th>
@@ -256,9 +256,9 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
                     </thead>
                     <tbody>
                       {currentDataset?.preview.map((row, index) => (
-                        <tr key={index} className="border-b border-[#EEF2F7]">
+                        <tr key={index} className="border-b border-subtle">
                           {selectedColumns.map((column) => (
-                            <td key={column} className="px-4 py-3 text-[#5F6F8A]">
+                            <td key={column} className="px-4 py-3 text-content-secondary">
                               {String((row as Record<string, string | number | undefined>)[column] ?? "-")}
                             </td>
                           ))}

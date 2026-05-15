@@ -1,5 +1,5 @@
 import type { ItemType } from "./grid.config";
-import type { IndicatorTone } from "../Indicator/Indicator";
+import type { IndicatorTone } from "../indicators/Indicator/Indicator";
 
 export interface IndicatorWidget {
   id: string;

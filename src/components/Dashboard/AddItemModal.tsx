@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TrendingUp, BarChart2 } from "lucide-react";
-import { Modal } from "../Modal/Modal";
-import { Button } from "../Button/Button";
-import SegmentedControl from "../SegmentedControl/SegmentedControl";
+import { Modal } from "../common/Modal/Modal";
+import { Button } from "../common/Button/Button";
+import SegmentedControl from "../common/SegmentedControl/SegmentedControl";
 
 export type AddItemChoice = "indicator" | "chart";
 

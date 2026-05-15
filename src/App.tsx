@@ -4,6 +4,7 @@ import Login from "./screens/Login/Login";
 import Home from "./screens/Home/Home";
 import Dashboard from "./screens/Dashboard/Dashboards";
 import TestDashboard from './screens/TestDashboard/TestDashboard';
+import Showcase from './screens/Showcase/Showcase';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/test" element={<TestDashboard />} />
+        <Route path="/showcase" element={<Showcase />} />
       </Routes>
     </Router>
   );

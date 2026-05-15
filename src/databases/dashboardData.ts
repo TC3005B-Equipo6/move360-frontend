@@ -1,4 +1,4 @@
-import type { DashboardItem } from '../components/Dashboard/types';
+import type { DashboardItem } from '../components/dashboard/types';
 
 // ── Datos del periodo Marzo 2025 – Febrero 2026 ──────────────────────────────
 

@@ -1,0 +1,76 @@
+/* Design tokens - Move360.
+   Official Phase 1 identity: Enfoque layout + Civic palette.
+   Light mode only. Dark mode: future - add a [data-theme="dark"] block. */
+
+:root {
+  /* ---- Surfaces ---- */
+  --surface-base:    #f5f7fa;  /* page background */
+  --surface-raised:  #ffffff;  /* cards, panels */
+  --surface-sunken:  #eef2f7;  /* wells, track backgrounds */
+  --surface-overlay: #ffffff;  /* modals, popovers */
+  --surface-inverse: #16243a;  /* dark surfaces on light bg */
+  --backdrop:        rgba(15, 24, 38, 0.45);
+
+  /* ---- Text ---- */
+  --text-primary:    #16243a;
+  --text-secondary:  #4d5d75;
+  --text-muted:      #8593a8;
+  --text-on-primary: #ffffff;
+  --text-on-inverse: #ffffff;
+
+  /* ---- Borders ---- */
+  --border-subtle:   #e2e8f0;
+  --border-default:  #d5deea;
+  --border-strong:   #b8c5d6;
+
+  /* ---- Primary ---- */
+  --primary:         #1d4e74;
+  --primary-hover:   #173f5f;
+  --primary-active:  #102d45;
+  --primary-subtle:  #e6eef6;
+
+  /* ---- Accent ---- */
+  --accent:          #e08a1e;
+  --accent-hover:    #bf7114;
+  --accent-subtle:   #fff1dd;
+
+  /* ---- Semantic states ---- */
+  --success: #2f8f4e;
+  --success-subtle: #e4f5ea;
+  --danger: #c0392b;
+  --danger-subtle: #fde8e5;
+  --warning: #b7791f;
+  --warning-subtle: #fcefc7;
+  --info: #1d4e74;
+  --info-subtle: #e6eef6;
+
+  /* ---- Chart series (categorical, aligned to Enfoque) ---- */
+  --chart-1: #1d4e74;  /* institutional blue */
+  --chart-2: #e08a1e;  /* amber */
+  --chart-3: #4a90b8;  /* mid blue */
+  --chart-4: #6aa84f;  /* green */
+  --chart-5: #b4477f;  /* berry */
+  --chart-6: #2f8f4e;  /* success green */
+  --chart-7: #c0392b;  /* red */
+  --chart-8: #7a5bd0;  /* violet */
+  --chart-grid: #e2e8f0;
+  --chart-axis: #8593a8;
+
+  /* ---- Radius scale (concentric) ---- */
+  --radius-xs:  4px;
+  --radius-sm:  9px;
+  --radius-md:  14px;
+  --radius-lg:  18px;
+  --radius-xl:  24px;
+  --radius-2xl: 32px;
+
+  /* ---- Shadow scale (layered, transparent) ---- */
+  --shadow-xs: 0 1px 2px rgba(20, 35, 58, 0.05);
+  --shadow-sm: 0 1px 2px rgba(20, 35, 58, 0.05), 0 3px 8px rgba(20, 35, 58, 0.06);
+  --shadow-md: 0 1px 2px rgba(20, 35, 58, 0.05), 0 6px 16px rgba(20, 35, 58, 0.08);
+  --shadow-lg: 0 2px 4px rgba(20, 35, 58, 0.06), 0 12px 28px rgba(20, 35, 58, 0.10);
+  --shadow-xl: 0 4px 8px rgba(20, 35, 58, 0.08), 0 24px 48px rgba(20, 35, 58, 0.14);
+
+  /* ---- Typography ---- */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
