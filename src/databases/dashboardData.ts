@@ -171,7 +171,7 @@ export const HOME_DASHBOARD_ITEMS: DashboardItem[] = [
     col: 0,
     config: {
       config: {
-        chartType: "bar",
+        chartType: "ranking",
         source: "SEMOVI",
         datasetId: "Afluencia Metro por línea",
         columns: ["value"],
@@ -193,7 +193,7 @@ export const HOME_DASHBOARD_ITEMS: DashboardItem[] = [
     col: 3,
     config: {
       config: {
-        chartType: "bar",
+        chartType: "ranking",
         source: "SEMOVI",
         datasetId: "Afluencia Metrobús por línea",
         columns: ["value"],
