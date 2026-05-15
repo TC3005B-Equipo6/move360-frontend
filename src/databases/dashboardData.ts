@@ -218,7 +218,7 @@ export const HOME_DASHBOARD_ITEMS: DashboardItem[] = [
     col: 0,
     config: {
       config: {
-        chartType: 'bar',
+        chartType: 'ranking',
         source: 'SEMOVI',
         datasetId: 'Top 10 líneas',
         columns: ['value'],

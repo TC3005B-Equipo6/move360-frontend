@@ -26,7 +26,7 @@ export interface SeriesItem {
 }
 
 export interface ChartProps {
-  type: "donut" | "line" | "bar";
+  type: "donut" | "line" | "bar" | "ranking";
   title?: string;
   /** Additive: secondary line rendered under the title (e.g. "Marzo 2025 – Febrero 2026"). */
   subtitle?: string;
@@ -86,6 +86,11 @@ const fullNumberFormatter = new Intl.NumberFormat("en-US");
 const formatCompactNumber = (value: string | number) => {
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? compactNumberFormatter.format(numericValue) : String(value);
+};
+
+const formatRankingNumber = (value: string | number | undefined) => {
+  if (value === undefined) return "";
+  return formatCompactNumber(value).replace(/([A-Za-z]+)$/, " $1");
 };
 
 const formatScalar = (value: string | number | undefined): string => {
@@ -266,6 +271,48 @@ export const Chart = ({
     </ResponsiveContainer>
   );
 
+  const renderRanking = () => {
+    const maxValue = Math.max(...data.map((item) => Number(item.value) || 0), 0);
+
+    return (
+      <ol
+        className="m-0 p-0 list-none flex flex-col justify-between gap-2 overflow-hidden"
+        style={bodyHeightStyle}
+      >
+        {data.map((item, index) => {
+          const value = Number(item.value) || 0;
+          const width = maxValue > 0 ? `${Math.max((value / maxValue) * 100, 2)}%` : "0%";
+
+          return (
+            <li
+              key={`${item.name ?? "ranking"}-${index}`}
+              className="grid grid-cols-[28px_minmax(92px,140px)_minmax(120px,1fr)_86px] items-center gap-3 min-h-0"
+            >
+              <span className="tabular-nums text-[13px] font-semibold leading-none text-content-muted">
+                {index + 1}
+              </span>
+              <span className="min-w-0 truncate text-[15px] font-semibold leading-tight text-content-primary">
+                {item.name}
+              </span>
+              <span
+                aria-hidden="true"
+                className="block h-2.5 rounded-full bg-surface-sunken overflow-hidden"
+              >
+                <span
+                  className="block h-full rounded-full bg-chart-1"
+                  style={{ width }}
+                />
+              </span>
+              <span className="tabular-nums text-right text-[13px] font-semibold leading-none text-content-secondary">
+                {formatRankingNumber(item.value)}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    );
+  };
+
   const renderBody = () => {
     if (isLoading) {
       return (
@@ -287,11 +334,12 @@ export const Chart = ({
     }
     if (type === "donut") return renderDonut();
     if (type === "line") return renderLine();
+    if (type === "ranking") return renderRanking();
     return renderBar();
   };
 
   return (
-    <div className={`bg-surface-raised border border-subtle rounded-md shadow-sm p-5 ${cardSizes[size]}`}>
+    <div className={`box-border overflow-hidden bg-surface-raised border border-subtle rounded-md shadow-sm p-5 ${cardSizes[size]}`}>
       <div className="mb-4">
         <h2 className="m-0 text-h3 font-bold text-content-primary leading-tight [text-wrap:balance]">{title}</h2>
         {subtitle && (

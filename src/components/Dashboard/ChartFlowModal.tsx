@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BarChart3, LineChart } from "lucide-react";
+import { BarChart3, LineChart, ListOrdered } from "lucide-react";
 import { Modal } from "../common/Modal/Modal";
 import { Button } from "../common/Button/Button";
 import SegmentedControl from "../common/SegmentedControl/SegmentedControl";
@@ -8,7 +8,7 @@ import type { ChartConfig } from "./types";
 import type { ItemType } from "./grid.config";
 
 type ChartSize = "chartSm" | "chartMd" | "chartLg";
-type ChartType = "bar" | "line";
+type ChartType = "bar" | "line" | "ranking";
 
 const SIZE_OPTIONS: { label: string; value: ChartSize }[] = [
   { label: "Pequeña", value: "chartSm" },
@@ -18,7 +18,7 @@ const SIZE_OPTIONS: { label: string; value: ChartSize }[] = [
 
 const TYPE_BY_SIZE: Record<ChartSize, ChartType[]> = {
   chartSm: ["bar"],
-  chartMd: ["bar", "line"],
+  chartMd: ["bar", "line", "ranking"],
   chartLg: ["line"],
 };
 
@@ -65,11 +65,22 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
     if (!size) return;
     const preview = currentDataset?.preview || [];
     const formattedData = preview.map((row) => {
+      const rowData = row as Record<string, string | number | undefined>;
+
+      if (effectiveType === "ranking") {
+        const valueColumn = selectedColumns[0];
+
+        return {
+          name: rowData["Línea"] || rowData["Linea"] || rowData["Mes"] || rowData["Año"],
+          value: valueColumn ? rowData[valueColumn] : undefined,
+        };
+      }
+
       const result: Record<string, string | number | undefined> = {
         name: row["Mes"] || row["Año"],
       };
       selectedColumns.forEach((column) => {
-        result[column] = (row as Record<string, string | number | undefined>)[column];
+        result[column] = rowData[column];
       });
       return result;
     });
@@ -127,11 +138,15 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
                 key={size}
                 value={effectiveType}
                 onChange={(v) => setChartType(v as ChartType)}
-                options={allowedTypes.map((t) =>
-                  t === "bar"
-                    ? { label: "Barras", value: "bar", icon: <BarChart3 size={18} /> }
-                    : { label: "Líneas", value: "line", icon: <LineChart size={18} /> },
-                )}
+                options={allowedTypes.map((t) => {
+                  if (t === "bar") {
+                    return { label: "Barras", value: "bar", icon: <BarChart3 size={18} /> };
+                  }
+                  if (t === "ranking") {
+                    return { label: "Ranking", value: "ranking", icon: <ListOrdered size={18} /> };
+                  }
+                  return { label: "Líneas", value: "line", icon: <LineChart size={18} /> };
+                })}
               />
             </div>
 

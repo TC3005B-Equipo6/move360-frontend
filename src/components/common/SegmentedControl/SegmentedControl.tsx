@@ -28,13 +28,16 @@ const SegmentedControl = ({ options, value, onChange, label = "Tipo" }: Segmente
     <div className="font-sans">
       <span className="mb-2 block text-body-sm font-semibold text-content-primary">{label}</span>
 
-      <div className="relative flex w-fit rounded-lg bg-surface-sunken p-1 shadow-xs">
+      <div
+        className="relative grid w-fit rounded-lg bg-surface-sunken p-1 shadow-xs"
+        style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      >
         {selectedIndex >= 0 && (
           <div
             className="absolute bottom-1 left-1 top-1 z-0 rounded-md bg-surface-raised shadow-sm transition-transform duration-200 ease-out"
             style={{
-              width: `${100 / options.length}%`,
-              transform: `translateX(${selectedIndex * 100}%)`,
+              width: `calc((100% - 8px) / ${options.length})`,
+              transform: `translateX(calc(${selectedIndex} * 100%))`,
             }}
           />
         )}

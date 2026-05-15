@@ -24,7 +24,13 @@ const deltaFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
 });
 
+const valueFormatter = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
 const formatDelta = (delta: number): string => deltaFormatter.format(Math.abs(delta));
+const formatValue = (value: number): string => valueFormatter.format(value);
 
 export const Indicator = ({
   value,
@@ -68,7 +74,9 @@ export const Indicator = ({
         {label}
       </p>
       <div className="flex items-baseline gap-1 min-w-0">
-        <span className={`text-[36px] font-bold leading-none tabular-nums ${valueColor}`}>{value}</span>
+        <span className={`text-[36px] font-bold leading-none tabular-nums ${valueColor}`}>
+          {formatValue(value)}
+        </span>
         {unit && <span className="text-body-sm font-medium text-content-secondary">{unit}</span>}
       </div>
       {hasDelta ? (

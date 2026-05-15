@@ -36,7 +36,7 @@ export interface IndicatorConfig {
 
 export interface ChartConfig {
   config: {
-    chartType: "bar" | "line" | "donut";
+    chartType: "bar" | "line" | "donut" | "ranking";
     source: string;
     datasetId: string;
     columns: string[];
