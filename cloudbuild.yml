@@ -1,0 +1,62 @@
+substitutions:
+  _REGION: us-central1
+  _REPOSITORY: move360
+  _IMAGE: move360-frontend
+  _SERVICE: move360-frontend
+  _PROJECT_ID: project-fa58d7d7-fa9b-4aba-82e
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  - id: install-dependencies
+    name: node:20-alpine
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        npm ci
+
+  - id: build-react
+    name: node:20-alpine
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        npm run build
+
+  - id: build-and-push
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        VERSION="$${TAG_NAME:-$${SHORT_SHA:-dev}}"
+        IMAGE_BASE="${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/${_IMAGE}"
+        echo "Building $$IMAGE_BASE:$$VERSION"
+        docker build \
+          --build-arg APP_VERSION="$$VERSION" \
+          --tag "$$IMAGE_BASE:$$VERSION" \
+          --tag "$$IMAGE_BASE:latest" \
+          --file=Dockerfile \
+          .
+        docker push "$$IMAGE_BASE:$$VERSION"
+        docker push "$$IMAGE_BASE:latest"
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        VERSION="$${TAG_NAME:-$${SHORT_SHA:-dev}}"
+        IMAGE="${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:$$VERSION"
+        gcloud run deploy ${_SERVICE} \
+          --image "$$IMAGE" \
+          --region ${_REGION} \
+          --platform managed \
+          --allow-unauthenticated
+
+timeout: 1800s
