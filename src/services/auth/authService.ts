@@ -1,6 +1,7 @@
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "./auth";
 import api from "../api";
+import adminApi from "../AdminApi";
 
 export const login = async (email: string, password: string) => {
 const userCredential = await signInWithEmailAndPassword(
@@ -23,3 +24,27 @@ export const logout = async () => {
   await signOut(auth);
   localStorage.removeItem("token");
 };
+
+
+
+/*export const requestPasswordRecovery = async (email: string) => {
+  const response = await adminApi.post("/tickets/password-recovery", {
+    email,
+  });
+
+  return response.data;
+};*/
+
+
+export const requestPasswordRecovery = async (email: string) => {
+  const response = await adminApi.post(
+    "/tickets/password-recovery",
+    {
+      email,
+    }
+  );
+
+  return response.data;
+};
+
+

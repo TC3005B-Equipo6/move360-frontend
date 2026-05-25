@@ -1,11 +1,12 @@
 import { useState, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { Modal } from "../../components/common/Modal/Modal";
 import { Button } from "../../components/common/Button/Button";
 import { Input } from "../../components/common/Input/Input";
-import { login, validateToken } from "../../services/auth/authService";
+import { login, validateToken, requestPasswordRecovery} from "../../services/auth/authService";
 
 type LoginError = {
-  code?: string;
+  code?: string;                             
   response?: {
     status?: number;
   };
@@ -18,6 +19,9 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showRecoverModal, setShowRecoverModal] = useState(false);
+  const [recoverEmail, setRecoverEmail] = useState("");
+  const [recoverMessage, setRecoverMessage] = useState("");
 
   const isMissingUser = Boolean(error) && !user;
   const isMissingPassword = Boolean(error) && !password;
@@ -60,6 +64,23 @@ export default function LoginScreen() {
       setIsSubmitting(false);
     }
   };
+
+
+const handleRecoverPassword = async () => {
+  try {
+    if (!recoverEmail) {
+      setRecoverMessage("Ingresa tu correo");
+      return;
+    }
+
+    await requestPasswordRecovery(recoverEmail);
+
+    setRecoverMessage("Solicitud enviada correctamente");
+
+  } catch (error) {
+    setRecoverMessage("Ocurrió un error al enviar la solicitud");
+  }
+};
 
   return (
     <main className="min-h-screen w-full bg-primary p-4 text-content-primary antialiased sm:p-6 lg:p-8">
@@ -122,15 +143,63 @@ export default function LoginScreen() {
                 className="mt-1 w-full"
               />
 
-              <button
-                type="button"
-                className="min-h-10 self-center rounded-sm px-2 text-body-sm font-semibold text-primary transition-[color,transform] duration-200 ease-out hover:text-primary-hover active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              >
-                ¿Olvidaste tu contraseña?
-              </button>
-            </form>
-          </div>
-        </section>
+<button
+  type="button"
+  onClick={() => setShowRecoverModal(true)}
+  className="min-h-10 self-center rounded-sm px-2 text-body-sm font-semibold text-primary transition-[color,transform] duration-200 ease-out hover:text-primary-hover active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+>
+  ¿Olvidaste tu contraseña?
+</button>
+</form>
+</div>
+</section>
+
+{showRecoverModal && (
+  <Modal
+    title="Recuperar contraseña"
+    onClose={() => setShowRecoverModal(false)}
+    onConfirm={handleRecoverPassword}
+    confirmText="Enviar solicitud"
+    onCancel={() => setShowRecoverModal(false)}
+  >
+
+    <div className="flex flex-col gap-4">
+
+      <p className="m-0 text-body-sm text-content-secondary">
+        Ingresa tu correo para generar una solicitud de recuperación.
+        Un administrador revisará la solicitud.
+      </p>
+
+      <Input
+        label="Correo"
+        type="email"
+        placeholder="ejemplo@move360.com"
+        value={recoverEmail}
+        onChange={(e) => {
+          setRecoverEmail(e.currentTarget.value);
+
+          if (recoverMessage) {
+            setRecoverMessage("");
+          }
+        }}
+      />
+
+      {recoverMessage && (
+        <p
+          className={`m-0 rounded-md px-3 py-2 text-body-sm font-medium ${
+            recoverMessage.includes("Solicitud")
+              ? "bg-success-subtle text-success"
+              : "bg-danger-subtle text-danger"
+          }`}
+        >
+          {recoverMessage}
+        </p>
+      )}
+
+    </div>
+
+  </Modal>
+)}
 
         <div className="relative hidden min-h-[640px] overflow-hidden bg-primary lg:block">
           <img
