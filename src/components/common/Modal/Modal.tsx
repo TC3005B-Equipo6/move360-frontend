@@ -11,7 +11,7 @@ export interface ModalProps {
   onConfirm?: () => void;
   onCancel?: () => void;
   onClose?: () => void;
-  showCloseIcon?: boolean;
+  showCloseIcon?: boolean;  
   confirmVariant?: "blue" | "red";
   iconName?: IconName;
   children?: ReactNode;
