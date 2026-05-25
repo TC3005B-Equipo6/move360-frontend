@@ -14,7 +14,7 @@ import { findFirstFreeSlot } from "./layout/findFirstFreeSlot";
 import { fromRGL, toRGL } from "./layout/mapping";
 import { resolveCollisions } from "./layout/resolveCollisions";
 import { detectSwapTarget } from "./layout/swapDetection";
-import { loadDashboard, saveDashboard } from "../../services/dashboards";
+import { loadDashboardItems, saveDashboardItems } from "../../services/dashboard/dashboardService";
 import type { DashboardItem as Item, ChartConfig, IndicatorConfig, IndicatorWidget } from "./types";
 import { IndicatorModal } from "../indicators/IndicatorModal/IndicatorModal";
 
@@ -49,13 +49,13 @@ function computeReflowLayout(
 }
 
 export const DashboardGrid = ({ dashboardId = "demo", readonly = false, initialItems, bottomBufferRows = 1 }: Props) => {
-  const [items, setItems] = useState<Item[]>(() => initialItems ?? loadDashboard(dashboardId).items);
+  const [items, setItems] = useState<Item[]>(() => initialItems ?? loadDashboardItems(dashboardId).items);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingChoice, setPendingChoice] = useState<AddItemChoice | null>(null);
   const layoutBeforeDrag = useRef<LayoutItem[] | null>(null);
 
   useEffect(() => {
-    if (!readonly) saveDashboard(dashboardId, { id: dashboardId, items });
+    if (!readonly) saveDashboardItems(dashboardId, { id: dashboardId, items });
   }, [dashboardId, items, readonly]);
 
   const occupiedRows = items.reduce(

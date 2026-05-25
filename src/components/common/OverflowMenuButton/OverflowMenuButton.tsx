@@ -4,6 +4,9 @@ export interface OverflowMenuButtonProps {
   isOpen?: boolean;
   className?: string;
   label?: string;
+  // When true, the button stays visible instead of being revealed on hover of a
+  // `group/dashboard-item` parent. Used by list rows that have no such group.
+  forceVisible?: boolean;
   onClick: () => void;
 }
 
@@ -11,6 +14,7 @@ export const OverflowMenuButton = ({
   isOpen = false,
   className = "",
   label = "More options",
+  forceVisible = false,
   onClick,
 }: OverflowMenuButtonProps) => {
   const MoreIcon = icons.more;
@@ -19,7 +23,7 @@ export const OverflowMenuButton = ({
     "bg-surface-overlay/95 hover:bg-surface-overlay border border-subtle rounded-[6px] text-content-secondary cursor-pointer shadow-sm",
     "transition-[background-color,opacity,scale] duration-150 active:scale-[0.96]",
     "after:content-[''] after:absolute after:-inset-[5px]",
-    isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none group-hover/dashboard-item:opacity-100 group-hover/dashboard-item:pointer-events-auto",
+    isOpen || forceVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none group-hover/dashboard-item:opacity-100 group-hover/dashboard-item:pointer-events-auto",
     className,
   ].filter(Boolean).join(" ");
 

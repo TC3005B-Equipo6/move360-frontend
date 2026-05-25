@@ -3,6 +3,7 @@ import './App.css'
 import Login from "./screens/Login/Login";
 import Home from "./screens/Home/Home";
 import Dashboard from "./screens/Dashboard/Dashboards";
+import DashboardDetail from './screens/Dashboard/DashboardDetail';
 import TestDashboard from './screens/TestDashboard/TestDashboard';
 import Showcase from './screens/Showcase/Showcase';
 
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/:dashboardId" element={<DashboardDetail />} />
         <Route path="/test" element={<TestDashboard />} />
         <Route path="/showcase" element={<Showcase />} />
       </Routes>
