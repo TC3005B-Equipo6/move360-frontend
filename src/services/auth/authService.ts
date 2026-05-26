@@ -2,6 +2,7 @@ import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "./auth";
 import api from "../api";
 import adminApi from "../AdminApi";
+import { clearProfileCache } from "./useProfile";
 
 export const login = async (email: string, password: string) => {
 const userCredential = await signInWithEmailAndPassword(
@@ -66,6 +67,7 @@ export const getProfile = async (): Promise<UserProfile> => {
 export const logout = async () => {
   await signOut(auth);
   localStorage.removeItem("token");
+  clearProfileCache();
 };
 
 
