@@ -2,6 +2,7 @@ import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "./auth";
 import api from "../api";
 import adminApi from "../AdminApi";
+import { clearProfileCache } from "./useProfile";
 
 export const login = async (email: string, password: string) => {
 const userCredential = await signInWithEmailAndPassword(
@@ -20,9 +21,53 @@ export const validateToken = async () => {
   return response.data;
 };
 
+export interface UserProfile {
+  firstName: string;
+  surname: string;
+  maternalSurname?: string;
+  role: string;
+  email: string;
+}
+
+type UserProfileResponse = {
+  firstName?: string | null;
+  name?: string | null;
+  surname?: string | null;
+  paternalSurname?: string | null;
+  lastName?: string | null;
+  maternalSurname?: string | null;
+  role?: string | { name?: string | null } | null;
+  email?: string | null;
+};
+
+const textOrEmpty = (value: unknown): string =>
+  typeof value === "string" ? value.trim() : "";
+
+const normalizeRole = (role: UserProfileResponse["role"]): string => {
+  if (typeof role === "string") return role.trim();
+  return textOrEmpty(role?.name);
+};
+
+const normalizeProfile = (data: UserProfileResponse): UserProfile => ({
+  firstName: textOrEmpty(data.firstName) || textOrEmpty(data.name),
+  surname:
+    textOrEmpty(data.surname) ||
+    textOrEmpty(data.paternalSurname) ||
+    textOrEmpty(data.lastName),
+  maternalSurname: textOrEmpty(data.maternalSurname) || undefined,
+  role: normalizeRole(data.role),
+  email: textOrEmpty(data.email),
+});
+
+export const getProfile = async (): Promise<UserProfile> => {
+  const response = await api.get<UserProfileResponse>("/auth/profile");
+  return normalizeProfile(response.data);
+};
+
 export const logout = async () => {
   await signOut(auth);
   localStorage.removeItem("token");
+  clearProfileCache();
 };
 
 

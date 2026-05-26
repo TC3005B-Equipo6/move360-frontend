@@ -6,7 +6,7 @@ export interface ListItemProps {
   // TODO: date comes pre-formatted from the caller for now. When the backend
   // contract is defined, change to Date/ISO string and format inside the component.
   date: string;
-  author: string;
+  author?: string;
   iconName: IconName;
   onPress?: () => void;
   // Optional trailing slot (e.g. an overflow menu). Rendered outside the main
@@ -48,7 +48,9 @@ export const ListItem = ({
         </span>
         <span className="inline-flex shrink-0 items-center gap-5">
           <span className="whitespace-nowrap text-body-sm font-semibold capitalize tabular-nums text-content-secondary">{date}</span>
-          <span className="whitespace-nowrap text-body-sm font-medium capitalize text-content-muted">{author}</span>
+          {author && (
+            <span className="whitespace-nowrap text-body-sm font-medium capitalize text-content-muted">{author}</span>
+          )}
         </span>
       </button>
       {actions && <span className="shrink-0">{actions}</span>}

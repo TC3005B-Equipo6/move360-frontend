@@ -3,9 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AppLayout } from '../../components/navigation/AppLayout/AppLayout';
 import { Header } from '../../components/navigation/Header/Header';
 import { ProfileCard } from '../../components/common/ProfileCard/ProfileCard';
+import { IconButton } from '../../components/common/IconButton/IconButton';
 import { Button } from '../../components/common/Button/Button';
 import { DashboardGrid } from '../../components/dashboard/DashboardGrid';
-import { getDashboard, type DashboardSummary } from '../../services/dashboard/dashboardService';
+import { getDashboard, type DashboardDetail as DashboardDetailDto } from '../../services/dashboard/dashboardService';
+import { useProfile, displayName } from '../../services/auth/useProfile';
 
 function NotFound() {
   const navigate = useNavigate();
@@ -23,8 +25,10 @@ function NotFound() {
 
 // Keyed by dashboard id so navigating between dashboards remounts with fresh state.
 function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
-  const [dashboard, setDashboard] = useState<DashboardSummary | null>(null);
+  const { profile, isLoading: isProfileLoading } = useProfile();
+  const [dashboard, setDashboard] = useState<DashboardDetailDto | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -48,11 +52,34 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
         <Header
           title={dashboard?.title ?? 'Cargando…'}
           subtitle={dashboard?.description ?? undefined}
-          profile={<ProfileCard variant="compact" name="Juan Pérez" role="Analista de movilidad" />}
+          actions={
+            <IconButton
+              size="small"
+              iconName="settings"
+              iconSize={26}
+              label=""
+              className={`!h-14 !w-14 !rounded-xl !shadow-sm ${
+                isEditing
+                  ? ""
+                  : "!bg-surface-raised !text-primary !ring-1 !ring-inset !ring-border-strong hover:!bg-primary-subtle hover:!text-primary-hover"
+              }`}
+              color={isEditing ? "primary" : "secondary"}
+              onPress={() => setIsEditing((value) => !value)}
+              aria-label={isEditing ? "Desactivar ajustes" : "Ajustes"}
+            />
+          }
+          profile={
+            <ProfileCard
+              variant="compact"
+              name={displayName(profile)}
+              role={profile?.role ?? ''}
+              isLoading={isProfileLoading}
+            />
+          }
         />
       }
     >
-      <DashboardGrid dashboardId={dashboardId} />
+      <DashboardGrid dashboardId={dashboardId} readonly={!isEditing} />
     </AppLayout>
   );
 }

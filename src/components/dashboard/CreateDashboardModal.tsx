@@ -4,11 +4,11 @@ import { Button } from "../common/Button/Button";
 import { Input } from "../common/Input/Input";
 import SegmentedControl from "../common/SegmentedControl/SegmentedControl";
 import { icons } from "../../icons";
-import { createDashboard, type DashboardSummary } from "../../services/dashboard/dashboardService";
+import { createDashboard, type UserDashboardSummary } from "../../services/dashboard/dashboardService";
 
 interface Props {
   onClose: () => void;
-  onCreated: (dashboard: DashboardSummary) => void;
+  onCreated: (dashboard: UserDashboardSummary) => void;
 }
 
 const EyeOn = icons.eyeOn;
