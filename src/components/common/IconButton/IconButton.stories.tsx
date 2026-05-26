@@ -49,3 +49,30 @@ export const Small: Story = {
     type: "button"
   },
 };
+
+export const AjustesDashboard: Story = {
+  args: {
+    iconName: "settings",
+    iconSize: 26,
+    size: "small",
+    label: "",
+    "aria-label": "Ajustes",
+    color: "secondary",
+    className:
+      "!h-14 !w-14 !rounded-xl !bg-surface-raised !text-primary !shadow-sm !ring-1 !ring-inset !ring-border-strong hover:!bg-primary-subtle hover:!text-primary-hover",
+    type: "button",
+  },
+};
+
+export const AjustesDashboardActivo: Story = {
+  args: {
+    iconName: "settings",
+    iconSize: 26,
+    size: "small",
+    label: "",
+    "aria-label": "Desactivar ajustes",
+    color: "primary",
+    className: "!h-14 !w-14 !rounded-xl !shadow-sm",
+    type: "button",
+  },
+};

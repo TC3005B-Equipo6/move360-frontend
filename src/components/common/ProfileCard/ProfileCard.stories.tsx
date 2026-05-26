@@ -21,7 +21,7 @@ type Story = StoryObj<typeof ProfileCard>;
 
 export const Analista: Story = {
   args: {
-    name: "Andrés García",
+    name: "Andrés García López",
     role: "Analista",
   },
 };
@@ -55,7 +55,7 @@ export const SinRol: Story = {
 
 export const Compacto: Story = {
   args: {
-    name: "Andrés García",
+    name: "Andrés García López",
     role: "Analista de movilidad",
     variant: "compact",
   },

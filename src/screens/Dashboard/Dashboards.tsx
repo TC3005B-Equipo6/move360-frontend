@@ -13,9 +13,9 @@ import { CreateDashboardModal } from '../../components/dashboard/CreateDashboard
 import {
   listDashboards,
   deleteDashboard,
-  ownerDisplayName,
-  type DashboardSummary,
+  type UserDashboardSummary,
 } from '../../services/dashboard/dashboardService';
+import { useProfile, displayName } from '../../services/auth/useProfile';
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -29,12 +29,13 @@ const formatDate = (dateString: string): string => {
 
 export default function Dashboards() {
   const navigate = useNavigate();
-  const [dashboards, setDashboards] = useState<DashboardSummary[]>([]);
+  const { profile, isLoading: isProfileLoading } = useProfile();
+  const [dashboards, setDashboards] = useState<UserDashboardSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<DashboardSummary | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<UserDashboardSummary | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const loadDashboards = useCallback(async () => {
@@ -53,7 +54,7 @@ export default function Dashboards() {
     loadDashboards();
   }, [loadDashboards]);
 
-  const handleCreated = (dashboard: DashboardSummary) => {
+  const handleCreated = (dashboard: UserDashboardSummary) => {
     setCreateOpen(false);
     navigate(`/dashboard/${dashboard.id}`);
   };
@@ -77,7 +78,14 @@ export default function Dashboards() {
       header={
         <Header
           title="Mis Dashboards"
-          profile={<ProfileCard variant="compact" name="Juan Pérez" role="Analista de movilidad" />}
+          profile={
+            <ProfileCard
+              variant="compact"
+              name={displayName(profile)}
+              role={profile?.role ?? ''}
+              isLoading={isProfileLoading}
+            />
+          }
         />
       }
     >
@@ -104,7 +112,6 @@ export default function Dashboards() {
               key={dashboard.id}
               title={dashboard.title}
               date={formatDate(dashboard.createdAt)}
-              author={ownerDisplayName(dashboard.owner)}
               iconName="barchart"
               onPress={() => navigate(`/dashboard/${dashboard.id}`)}
               actions={
