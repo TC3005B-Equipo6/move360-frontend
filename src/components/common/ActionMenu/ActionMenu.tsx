@@ -3,7 +3,7 @@ import { icons } from "../../../icons";
 
 export interface ActionMenuProps {
   onDelete: () => void;
-  onEdit: () => void;
+  onEdit?: () => void;
   onClose?: () => void;
   className?: string;
 }
@@ -55,16 +55,20 @@ export const ActionMenu = ({ onDelete, onEdit, onClose, className = "" }: Action
         <TrashIcon size={20} className="shrink-0" />
         <span className="capitalize whitespace-nowrap">Eliminar</span>
       </button>
-      <div className="h-px bg-border-subtle w-full" />
-      <button
-        type="button"
-        className="inline-flex items-center gap-2 px-[14px] py-[10px] min-h-10 bg-transparent border-0 cursor-pointer text-primary text-body-sm font-medium text-left transition-[background-color,scale] duration-150 hover:bg-surface-sunken active:bg-surface-sunken active:scale-[0.96]"
-        onClick={onEdit}
-        role="menuitem"
-      >
-        <EditIcon size={20} className="shrink-0" />
-        <span className="capitalize whitespace-nowrap">Editar</span>
-      </button>
+      {onEdit && (
+        <>
+          <div className="h-px bg-border-subtle w-full" />
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 px-[14px] py-[10px] min-h-10 bg-transparent border-0 cursor-pointer text-primary text-body-sm font-medium text-left transition-[background-color,scale] duration-150 hover:bg-surface-sunken active:bg-surface-sunken active:scale-[0.96]"
+            onClick={onEdit}
+            role="menuitem"
+          >
+            <EditIcon size={20} className="shrink-0" />
+            <span className="capitalize whitespace-nowrap">Editar</span>
+          </button>
+        </>
+      )}
     </div>
   );
 };

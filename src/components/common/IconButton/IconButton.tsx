@@ -5,7 +5,9 @@ export interface IconButtonProps {
     color?: "primary" | "secondary";
     onPress?: () => void;
     iconName?: IconName;
+    iconSize?: number;
     label?: string;
+    className?: string;
     "aria-label"?: string;
     type?: "button" | "submit" | "reset";
 }
@@ -25,12 +27,14 @@ export const IconButton = ({
     color = "primary",
     onPress,
     iconName = "sort",
+    iconSize,
     label = "",
+    className = "",
     "aria-label": ariaLabel,
     type = "button",
 }: IconButtonProps) => {
     const Icon = icons[iconName];
-    const iconSize = size === "small" ? 22 : 20;
+    const resolvedIconSize = iconSize ?? (size === "small" ? 22 : 20);
     const classes = [
         "border-0 inline-flex items-center font-sans font-semibold cursor-pointer",
         "transition-[background-color,color,box-shadow,opacity,transform] duration-200 ease-out",
@@ -38,11 +42,12 @@ export const IconButton = ({
         "active:scale-[0.96]",
         sizes[size],
         colors[color],
+        className,
     ].filter(Boolean).join(" ");
 
     return (
         <button type={type} className={classes} onClick={onPress} aria-label={ariaLabel || label || undefined}>
-            <Icon size={iconSize} aria-hidden="true" />
+            <Icon size={resolvedIconSize} aria-hidden="true" />
             {label && <span className="whitespace-nowrap">{label}</span>}
         </button>
     );

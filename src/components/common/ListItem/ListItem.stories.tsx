@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ListItem } from "./ListItem";
+import { OverflowMenuButton } from "../OverflowMenuButton/OverflowMenuButton";
 
 const meta: Meta<typeof ListItem> = {
   title: "Components/ListItem",
@@ -46,5 +47,18 @@ export const TituloLargo: Story = {
     author: "Omar Estrada",
     iconName: "barchart",
     onPress: () => console.log("Click"),
+  },
+};
+
+export const ConAcciones: Story = {
+  args: {
+    title: "Movilidad 2025-2026",
+    date: "23-02-2026",
+    author: "Eleanor Alarcón",
+    iconName: "file",
+    onPress: () => console.log("Abrir dashboard"),
+    actions: (
+      <OverflowMenuButton forceVisible label="Más opciones" onClick={() => console.log("Menú")} />
+    ),
   },
 };
