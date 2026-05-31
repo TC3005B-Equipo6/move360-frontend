@@ -81,6 +81,9 @@ export const logout = async () => {
 };*/
 
 
+
+// This function calls the backend that holds the hold logic of the password recovery
+
 export const requestPasswordRecovery = async (email: string) => {
   const response = await adminApi.post(
     "/tickets/password-recovery",
