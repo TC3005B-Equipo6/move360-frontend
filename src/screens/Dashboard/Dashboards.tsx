@@ -10,6 +10,8 @@ interface Dashboard {
   owner: string;
 }
 
+// Temporary mock data used until dashboard information
+
 const DASHBOARDS: Dashboard[] = [
   {
     id: '1',
@@ -44,6 +46,8 @@ const DASHBOARDS: Dashboard[] = [
 ];
 
 export default function Dashboards() {
+
+  // Dashboard source abstraction.This allows replacing mock data with API data
   const dashboards = DASHBOARDS;
 
   const formatDate = (dateString: string): string => {
@@ -69,6 +73,7 @@ export default function Dashboards() {
         />
       }
     >
+    // Render each dashboard entry as a reusable list item component
       <div className="bg-surface-raised border border-subtle rounded-md shadow-sm h-full overflow-y-auto p-6 flex flex-col gap-4">
         {dashboards.map((dashboard) => (
           <ListItem
