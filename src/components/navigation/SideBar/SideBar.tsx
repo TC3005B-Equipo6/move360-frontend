@@ -22,10 +22,22 @@ export const Sidebar = ({ className = "", collapsed, onToggle }: SidebarProps) =
   const { pathname } = useLocation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const [hoverExpanded, setHoverExpanded] = useState(false);
 
   // Controlled when `collapsed` is provided (AppLayout); uncontrolled otherwise.
   const isCollapsed = collapsed ?? internalCollapsed;
+  const isVisuallyCollapsed = isCollapsed && !hoverExpanded;
   const handleToggle = onToggle ?? (() => setInternalCollapsed((v) => !v));
+
+  const handleMouseEnter = () => {
+    if (isCollapsed) {
+      setHoverExpanded(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHoverExpanded(false);
+  };
 
   const handleConfirmLogout = async () => {
     await logout();
@@ -36,28 +48,28 @@ export const Sidebar = ({ className = "", collapsed, onToggle }: SidebarProps) =
     {
       id: "home",
       props: {
-        tooltip: "Inicio", label: "Inicio", iconName: "home", collapsed: isCollapsed,
+        tooltip: "Inicio", label: "Inicio", iconName: "home", collapsed: isVisuallyCollapsed,
         selected: pathname === "/home", onPress: () => navigate("/home"),
       },
     },
     {
       id: "explore",
       props: {
-        tooltip: "Explorar", label: "Explorar", iconName: "explore", collapsed: isCollapsed,
+        tooltip: "Explorar", label: "Explorar", iconName: "explore", collapsed: isVisuallyCollapsed,
         selected: pathname === "/explore", onPress: () => navigate("/explore"),
       },
     },
     {
       id: "dashboards",
       props: {
-        tooltip: "Dashboards", label: "Dashboards", iconName: "piechart", collapsed: isCollapsed,
+        tooltip: "Dashboards", label: "Dashboards", iconName: "piechart", collapsed: isVisuallyCollapsed,
         selected: pathname === "/dashboard", onPress: () => navigate("/dashboard"),
       },
     },
     {
       id: "reports",
       props: {
-        tooltip: "Reportes", label: "Reportes", iconName: "file", collapsed: isCollapsed,
+        tooltip: "Reportes", label: "Reportes", iconName: "file", collapsed: isVisuallyCollapsed,
         selected: pathname === "/reports", onPress: () => navigate("/reports"),
       },
     },
@@ -66,12 +78,12 @@ export const Sidebar = ({ className = "", collapsed, onToggle }: SidebarProps) =
   const bottom: SidebarItem[] = [
     {
       id: "help",
-      props: { tooltip: "Ayuda", label: "Ayuda", iconName: "help", collapsed: isCollapsed, selected: false },
+      props: { tooltip: "Ayuda", label: "Ayuda", iconName: "help", collapsed: isVisuallyCollapsed, selected: false },
     },
     {
       id: "logout",
       props: {
-        tooltip: "Cerrar sesión", label: "Cerrar sesión", iconName: "logout", collapsed: isCollapsed,
+        tooltip: "Cerrar sesión", label: "Cerrar sesión", iconName: "logout", collapsed: isVisuallyCollapsed,
         selected: false, onPress: () => setShowLogoutModal(true),
       },
     },
@@ -80,8 +92,10 @@ export const Sidebar = ({ className = "", collapsed, onToggle }: SidebarProps) =
   return (
     <>
       <nav
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         className={`shrink-0 flex flex-col justify-between h-full bg-surface-raised border-r border-subtle overflow-hidden py-4 box-border ${className}`}
-        style={{ width: isCollapsed ? 64 : 172, transition: "width 220ms cubic-bezier(0.2,0,0,1)" }}
+        style={{ width: isVisuallyCollapsed ? 64 : 172, transition: "width 220ms cubic-bezier(0.2,0,0,1)" }}
       >
         <div className="flex flex-col gap-6">
           {/* Toggle + wordmark — the wordmark only shows when the rail is expanded. */}
@@ -102,7 +116,7 @@ export const Sidebar = ({ className = "", collapsed, onToggle }: SidebarProps) =
               src="/move360.png"
               alt="Move360"
               className={`h-5 w-auto max-w-[104px] object-contain shrink-0 transition-opacity duration-150 ${
-                isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+                isVisuallyCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
               }`}
             />
           </div>
