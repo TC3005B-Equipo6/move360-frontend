@@ -7,7 +7,8 @@ import { IconButton } from '../../components/common/IconButton/IconButton';
 import { Button } from '../../components/common/Button/Button';
 import { Modal } from '../../components/common/Modal/Modal';
 import { DashboardGrid, type DashboardGridHandle } from '../../components/dashboard/DashboardGrid';
-import { getDashboard, type DashboardDetail as DashboardDetailDto } from '../../services/dashboard/dashboardService';
+import { getDashboardDetail, type DashboardDetail as DashboardDetailDto } from '../../services/dashboard/dashboardService';
+import type { DashboardItem } from '../../components/dashboard/types';
 import { useProfile, displayName } from '../../services/auth/useProfile';
 import { DashboardDetailsModal } from '../../components/dashboard/DashboardDetailsModal/DashboardDetailsModal';
 
@@ -29,6 +30,7 @@ function NotFound() {
 function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
   const { profile, isLoading: isProfileLoading } = useProfile();
   const [dashboard, setDashboard] = useState<DashboardDetailDto | null>(null);
+  const [items, setItems] = useState<DashboardItem[] | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -36,11 +38,14 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
   const gridRef = useRef<DashboardGridHandle>(null);
 
   async function handleConfirm() {
-    // Persiste en lote los indicadores modificados (coordenada/título/subtítulo).
+    // Persiste cambios: layout en lote (PUT /layout) + ediciones de contenido.
     try {
       await gridRef.current?.flushModified();
+      // Reconcilia con el backend tras persistir (snapshot recomputado).
+      const fresh = await getDashboardDetail(dashboardId);
+      setItems(fresh.items);
     } catch (e) {
-      console.error('PATCH /indicator failed', e);
+      console.error('Persist dashboard changes failed', e);
     }
     setIsConfirmModalOpen(false);
     setIsEditing(false);
@@ -48,9 +53,11 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
 
   useEffect(() => {
     let active = true;
-    getDashboard(dashboardId)
-      .then((data) => {
-        if (active) setDashboard(data);
+    getDashboardDetail(dashboardId)
+      .then(({ meta, items: loaded }) => {
+        if (!active) return;
+        setDashboard(meta);
+        setItems(loaded);
       })
       .catch(() => {
         if (active) setNotFound(true);
@@ -122,7 +129,19 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
         />
       }
     >
-      <DashboardGrid ref={gridRef} dashboardId={dashboardId} persistIndicators readonly={!isEditing} />
+      {items === null ? (
+        <div className="flex h-full items-center justify-center">
+          <p className="m-0 text-body-sm font-medium text-content-muted">Cargando…</p>
+        </div>
+      ) : (
+        <DashboardGrid
+          ref={gridRef}
+          dashboardId={dashboardId}
+          persistToBackend
+          initialItems={items}
+          readonly={!isEditing}
+        />
+      )}
     </AppLayout>
     {isDetailsOpen && (
       <DashboardDetailsModal

@@ -16,7 +16,9 @@ interface ScTooltipProps {
 export interface ChartItem {
   name?: string;
   value?: number;
-  [key: string]: string | number | undefined;
+  // `null` is allowed so backend-computed graph rows (numeric | null) can be
+  // rendered directly; recharts treats null as a gap.
+  [key: string]: string | number | null | undefined;
 }
 
 export interface SeriesItem {

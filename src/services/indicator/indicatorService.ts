@@ -6,6 +6,7 @@ import type {
   IndicatorOperation,
 } from "../../components/dashboard/types";
 import type { Relationship } from "../../components/indicators/Indicator/Indicator";
+import { toCoord, type Coordinate } from "../../components/dashboard/itemMapping";
 
 // --- Indicator persistence -------------------------------------------------
 //
@@ -17,12 +18,6 @@ import type { Relationship } from "../../components/indicators/Indicator/Indicat
 // arrays `{ ids, values }`).
 //
 // See docs/adr/0001, docs/adr/0002 and docs/pending-implementation.md § Indicator.
-
-/** Backend `Coordinate(x, y)`. The grid is column-major: x = col, y = row. */
-export interface Coordinate {
-  x: number;
-  y: number;
-}
 
 /** Backend `IndicatorFiltersDTO`: parallel arrays, `ids[i]` ↔ `values[i]`. */
 export interface IndicatorFiltersPayload {
@@ -47,12 +42,13 @@ export interface CreateIndicatorPayload {
   coordinate: Coordinate;
 }
 
+// Content-only PATCH. Coordinate moves now go through the batch layout endpoint
+// (`PUT /dashboard/{id}/layout`), so this payload no longer carries coordinate.
 /** Body for `PATCH /indicator/{id}` — the backend only persists these fields. */
 export interface UpdateIndicatorPayload {
   title: string;
   subtitle?: string;
   relationship?: Relationship;
-  coordinate: Coordinate;
 }
 
 /** Response of `POST` / `PATCH` (mirrors `CreateIndicatorResponseDTO`). */
@@ -102,18 +98,17 @@ export function buildCreatePayload(
     // SEMOVI has no column; the backend ignores columnId for that source.
     columnId: config.columnId ?? 0,
     filters: flattenFilters(config.filters),
-    coordinate: { x: col, y: row },
+    coordinate: toCoord(col, row),
   };
 }
 
-/** Build the update body from a dashboard item (coordinate from its slot). */
+/** Build the content-only update body from a dashboard item. */
 export function buildUpdatePayload(item: DashboardItem): UpdateIndicatorPayload {
   const config = item.config as IndicatorConfig;
   return {
     title: config.title,
     subtitle: config.subtitle,
     relationship: config.relationship,
-    coordinate: { x: item.col, y: item.row },
   };
 }
 

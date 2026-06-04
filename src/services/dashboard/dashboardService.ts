@@ -1,5 +1,23 @@
 import api from "../api";
-import type { DashboardData } from "../../components/dashboard/types";
+import type {
+  DashboardData,
+  DashboardItem as Item,
+  IndicatorConfig,
+} from "../../components/dashboard/types";
+import type { IndicatorType, IndicatorOperation } from "../../components/dashboard/types";
+import type { Relationship } from "../../components/indicators/Indicator/Indicator";
+import {
+  fromCoord,
+  sizeToItemType,
+  type Coordinate,
+  type DashboardItemKind,
+  type GraphType,
+} from "../../components/dashboard/itemMapping";
+import {
+  getGraphCatalog,
+  graphToChartConfig,
+  type GraphSnapshot,
+} from "../graph/graphService";
 
 // --- Server-backed dashboard entity (CRUD) ---------------------------------
 //
@@ -72,6 +90,7 @@ interface RawDashboardDetail {
   public?: boolean;
   isPublic?: boolean;
   owner?: { firstName?: string; paternalSurname?: string };
+  ownerName?: string;
   tags?: DashboardTag[];
 }
 
@@ -103,13 +122,14 @@ function toPublicSummary(raw: RawPublicDashboard): PublicDashboardSummary {
 function toDetail(raw: RawDashboardDetail): DashboardDetail {
   const first = raw.owner?.firstName ?? '';
   const last = raw.owner?.paternalSurname ?? '';
+  const composedOwner = (first + ' ' + last).trim();
   return {
     id: raw.id,
     title: raw.title,
     description: raw.description ?? null,
     createdAt: raw.createdAt,
     isPublic: raw.public ?? raw.isPublic ?? false,
-    ownerName: (first + ' ' + last).trim() || null,
+    ownerName: composedOwner || raw.ownerName?.trim() || null,
     tags: raw.tags ?? [],
   };
 }
@@ -127,6 +147,148 @@ export async function listPublicDashboards(): Promise<PublicDashboardSummary[]> 
 export async function getDashboard(id: string): Promise<DashboardDetail> {
   const { data } = await api.get<RawDashboardDetail>(`/dashboard/${id}`);
   return toDetail(data);
+}
+
+// --- Dashboard detail render (items[]) -------------------------------------
+//
+// `GET /dashboard/{id}` now returns `items[]` (INDICATOR | GRAPH) with the
+// backend-computed snapshot. These are the source of truth for the grid; the
+// localStorage layer below is only used by the local-only screens (Home/test).
+
+interface RawDashboardIndicatorItem {
+  title: string;
+  subtitle: string | null;
+  data: number | null;
+  relationship: string;
+  deltaData: number | null;
+  operation: string;
+  startDate: string;
+  endDate: string;
+  sourceId: number;
+}
+
+interface RawDashboardItem {
+  itemId: string; // "indicator:<id>" | "graph:<id>"
+  kind: DashboardItemKind;
+  resourceId: number;
+  type: string;
+  coordinate: Coordinate;
+  graph: GraphSnapshot | null;
+  indicator: RawDashboardIndicatorItem | null;
+}
+
+interface RawDashboardDetailWithItems extends RawDashboardDetail {
+  ownerName?: string;
+  items?: RawDashboardItem[];
+}
+
+function toIndicatorConfig(raw: RawDashboardIndicatorItem, type: string): IndicatorConfig {
+  const indicatorType = (type === "PERCENTAGE" ? "PERCENTAGE" : "NUMBER") as IndicatorType;
+  return {
+    title: raw.title,
+    subtitle: raw.subtitle ?? undefined,
+    type: indicatorType,
+    operation: raw.operation as IndicatorOperation,
+    relationship: raw.relationship as Relationship,
+    data: raw.data ?? 0,
+    deltaData: raw.deltaData ?? undefined,
+    unit: indicatorType === "PERCENTAGE" ? "%" : undefined,
+    startDate: raw.startDate,
+    endDate: raw.endDate,
+    sourceId: raw.sourceId,
+  };
+}
+
+/** Resolves graph `sourceId`/`tableId` -> display names (the detail payload only
+ * carries numeric ids). Built from `GET /graph/catalog`. */
+type GraphNameResolver = (sourceId: number, tableId: number) => {
+  sourceName?: string;
+  tableName?: string;
+};
+
+const noNames: GraphNameResolver = () => ({});
+
+function toDashboardItem(raw: RawDashboardItem, resolveNames: GraphNameResolver): Item | null {
+  const { col, row } = fromCoord(raw.coordinate);
+  if (raw.kind === "GRAPH" && raw.graph) {
+    return {
+      id: raw.itemId,
+      type: sizeToItemType(raw.graph.size),
+      row,
+      col,
+      config: graphToChartConfig(
+        raw.graph,
+        raw.type as GraphType,
+        resolveNames(raw.graph.sourceId, raw.graph.tableId),
+      ),
+      resourceId: raw.resourceId,
+    };
+  }
+  if (raw.kind === "INDICATOR" && raw.indicator) {
+    return {
+      id: raw.itemId,
+      type: "indicator",
+      row,
+      col,
+      config: toIndicatorConfig(raw.indicator, raw.type),
+      resourceId: raw.resourceId,
+    };
+  }
+  return null;
+}
+
+/** Builds a name resolver from the graph catalog. Catalog failures degrade to no
+ * names (titles fall back to empty) rather than breaking the dashboard load. */
+async function buildGraphNameResolver(): Promise<GraphNameResolver> {
+  try {
+    const catalog = await getGraphCatalog();
+    const sourceNames = new Map<number, string>();
+    const tableNames = new Map<string, string>(); // key: `${sourceId}:${tableId}`
+    for (const source of catalog.sources) {
+      sourceNames.set(source.sourceId, source.name);
+      for (const table of source.tables) {
+        tableNames.set(`${source.sourceId}:${table.tableId}`, table.displayName);
+      }
+    }
+    return (sourceId, tableId) => ({
+      sourceName: sourceNames.get(sourceId),
+      tableName: tableNames.get(`${sourceId}:${tableId}`),
+    });
+  } catch {
+    return noNames;
+  }
+}
+
+export interface DashboardDetailWithItems {
+  meta: DashboardDetail;
+  items: Item[];
+}
+
+/** `GET /dashboard/{id}` returning metadata + mapped grid items. The graph
+ * catalog is fetched in parallel to resolve source/table display names (the
+ * detail payload only carries numeric ids). */
+export async function getDashboardDetail(id: string): Promise<DashboardDetailWithItems> {
+  const [{ data }, resolveNames] = await Promise.all([
+    api.get<RawDashboardDetailWithItems>(`/dashboard/${id}`),
+    buildGraphNameResolver(),
+  ]);
+  const items = (data.items ?? [])
+    .map((raw) => toDashboardItem(raw, resolveNames))
+    .filter((it): it is Item => it !== null);
+  return { meta: toDetail(data), items };
+}
+
+// --- Layout batch ----------------------------------------------------------
+
+interface LayoutItemPayload {
+  kind: DashboardItemKind;
+  resourceId: number;
+  coordinate: Coordinate;
+}
+
+/** `PUT /dashboard/{id}/layout` — batch coordinate persistence (both kinds). */
+export async function saveLayout(id: string, items: LayoutItemPayload[]): Promise<void> {
+  await api.put(`/dashboard/${id}/layout`, { items });
 }
 
 // The backend's POST /dashboard does NOT return an id today; it returns

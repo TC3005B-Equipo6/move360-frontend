@@ -213,6 +213,18 @@ const inputClass =
   "h-[52px] rounded-md border border-default px-5 text-body-lg text-content-primary outline-none transition-colors focus:border-primary";
 const selectClass = `${inputClass} disabled:opacity-50 disabled:cursor-not-allowed`;
 
+// The indicator backend stores `startDate`/`endDate` as LocalDate (YYYY-MM-DD),
+// but the UI restricts the picker to whole months (same as graphs). We map the
+// month picker to the first/last day of the chosen month.
+const toMonthInput = (isoDate: string) => (isoDate ? isoDate.slice(0, 7) : "");
+const monthToStartDate = (ym: string) => (ym ? `${ym}-01` : "");
+const monthToEndDate = (ym: string) => {
+  if (!ym) return "";
+  const [year, month] = ym.split("-").map(Number);
+  const lastDay = new Date(year, month, 0).getDate(); // day 0 of next month = last of this
+  return `${ym}-${String(lastDay).padStart(2, "0")}`;
+};
+
 export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
   const isEditMode = !!indicator;
 
@@ -498,20 +510,20 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
 
             <div className="flex gap-4">
               <div className="flex-1 flex flex-col gap-3">
-                <FieldLabel>Fecha de inicio</FieldLabel>
+                <FieldLabel>Mes de inicio</FieldLabel>
                 <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  type="month"
+                  value={toMonthInput(startDate)}
+                  onChange={(e) => setStartDate(monthToStartDate(e.target.value))}
                   className={inputClass}
                 />
               </div>
               <div className="flex-1 flex flex-col gap-3">
-                <FieldLabel>Fecha de fin</FieldLabel>
+                <FieldLabel>Mes de fin</FieldLabel>
                 <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  type="month"
+                  value={toMonthInput(endDate)}
+                  onChange={(e) => setEndDate(monthToEndDate(e.target.value))}
                   className={inputClass}
                 />
               </div>
