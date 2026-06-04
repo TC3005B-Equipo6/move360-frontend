@@ -6,7 +6,23 @@ export type IndicatorType = "number" | "percentage";
 /** Backend `operation`: how the query aggregates the column. */
 export type IndicatorOperation = "sum" | "average";
 
-export interface IndicatorWidget {
+// Data origin captured from the `/source*` catalog. Indices are the values the
+// backend expects (sourceId/tableId/columnId in CreateIndicatorDTO) — see
+// src/services/source/sourceService.ts for the index-vs-id contract quirks.
+// INEGI tables carry `columnIndex`/`columnName`; SEMOVI tables carry `filters`
+// (filterId -> selected values). Names are kept for display + edit prefill.
+export interface IndicatorSource {
+  sourceIndex?: number;
+  sourceName?: string;
+  tableIndex?: number;
+  tableName?: string;
+  columnIndex?: number;
+  columnName?: string;
+  /** SEMOVI only: selected filter values keyed by filter group id. */
+  filters?: Record<number, string[]>;
+}
+
+export interface IndicatorWidget extends IndicatorSource {
   id: string;
   type: "indicator";
   value: number;
@@ -19,14 +35,11 @@ export interface IndicatorWidget {
   // Backend output format and aggregation; sent on create/update.
   indicatorType?: IndicatorType;
   operation?: IndicatorOperation;
-  source?: string;
-  table?: string;
-  column?: string;
   startDate: Date;
   endDate: Date;
 }
 
-export interface IndicatorConfig {
+export interface IndicatorConfig extends IndicatorSource {
   value: number;
   label: string;
   subtitle?: string;
@@ -35,9 +48,6 @@ export interface IndicatorConfig {
   unit?: string;
   indicatorType?: IndicatorType;
   operation?: IndicatorOperation;
-  source?: string;
-  table?: string;
-  column?: string;
   startDate: Date | string;
   endDate: Date | string;
   isMenuOpen?: boolean;

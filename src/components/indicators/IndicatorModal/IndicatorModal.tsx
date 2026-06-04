@@ -1,9 +1,17 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Modal } from "../../common/Modal/Modal";
 import { Button } from "../../common/Button/Button";
 import { IndicatorPreview } from "../IndicatorPreview/IndicatorPreview";
 import { icons } from "../../../icons";
+import {
+  listSources,
+  listTables,
+  listColumns,
+  listFilters,
+  type SourceItem,
+  type SourceFilter,
+} from "../../../services/source/sourceService";
 import type { IndicatorWidget, IndicatorType, IndicatorOperation } from "../../dashboard/types";
 import type { RelationType } from "../Indicator/Indicator";
 
@@ -13,30 +21,18 @@ interface Props {
   indicator?: IndicatorWidget;
 }
 
-// Mock data for dropdowns - replace with actual API calls (GET /source, tables, columns).
-const sources = ["Source 1", "Source 2", "Source 3"];
-const tablesBySource: Record<string, string[]> = {
-  "Source 1": ["Table A", "Table B", "Table C"],
-  "Source 2": ["Table D", "Table E"],
-  "Source 3": ["Table F", "Table G", "Table H"],
-};
-const columnsByTable: Record<string, string[]> = {
-  "Table A": ["Column A1", "Column A2", "Column A3"],
-  "Table B": ["Column B1", "Column B2"],
-  "Table C": ["Column C1", "Column C2", "Column C3"],
-  "Table D": ["Column D1"],
-  "Table E": ["Column E1", "Column E2"],
-  "Table F": ["Column F1", "Column F2", "Column F3", "Column F4"],
-  "Table G": ["Column G1"],
-  "Table H": ["Column H1", "Column H2"],
-};
+// Sources whose name matches these expose columns (INEGI) vs filters (SEMOVI).
+// The backend hardcodes `/source/column/*` to INEGI and `/source/filter/*` to
+// SEMOVI, so the branch is driven by the selected source name.
+const SOURCE_INEGI = "INEGI";
+const SOURCE_SEMOVI = "SEMOVI";
 
 const HelpIcon = icons.help;
 
 // The modal body scrolls (overflow-y-auto) and the modal root clips
 // (overflow-hidden), so an in-flow popover would be cut off. We portal the
 // bubble to <body> with fixed coordinates measured from the trigger on hover.
-const HelpTip = ({ text }: { text: string }) => {
+const Tip = ({ text, children }: { text: string; children: ReactNode }) => {
   const triggerRef = useRef<HTMLSpanElement>(null);
   const [coords, setCoords] = useState<{ x: number; y: number } | null>(null);
 
@@ -54,9 +50,9 @@ const HelpTip = ({ text }: { text: string }) => {
       onMouseLeave={hide}
       onFocus={show}
       onBlur={hide}
-      className="inline-flex items-center text-content-muted outline-none focus-visible:text-primary"
+      className="inline-flex items-center outline-none focus-visible:text-primary"
     >
-      <HelpIcon size={15} className="cursor-help" aria-label={text} />
+      {children}
       {coords &&
         createPortal(
           <span
@@ -75,7 +71,11 @@ const HelpTip = ({ text }: { text: string }) => {
 const FieldLabel = ({ children, help }: { children: ReactNode; help?: string }) => (
   <span className="flex items-center gap-1.5 text-body-sm font-semibold text-content-primary">
     {children}
-    {help && <HelpTip text={help} />}
+    {help && (
+      <Tip text={help}>
+        <HelpIcon size={15} className="cursor-help text-content-muted" aria-label={help} />
+      </Tip>
+    )}
   </span>
 );
 
@@ -110,6 +110,105 @@ function Toggle<T extends string>({
   );
 }
 
+// A SEMOVI filter group is satisfied when it has no selectable values (e.g. the
+// Metro "Estación" placeholder) or at least one value is picked.
+const isFilterGroupValid = (g: SourceFilter, selected: Record<number, string[]>) =>
+  g.values.length === 0 || (selected[g.id]?.length ?? 0) > 0;
+
+const toggleValue = (arr: string[], v: string) =>
+  arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
+
+// Accordion + chips. Multiple groups open at once; each group requires >=1 value.
+function FilterAccordion({
+  filters,
+  selected,
+  onChange,
+}: {
+  filters: SourceFilter[];
+  selected: Record<number, string[]>;
+  onChange: (next: Record<number, string[]>) => void;
+}) {
+  // All groups start expanded. The parent remounts this via `key` when the table
+  // changes, so a fresh initializer re-expands everything without an effect.
+  const [open, setOpen] = useState<Set<number>>(() => new Set(filters.map((g) => g.id)));
+
+  const toggleOpen = (id: number) =>
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      {filters.map((g) => {
+        const chosen = selected[g.id] ?? [];
+        const valid = isFilterGroupValid(g, selected);
+        const isOpen = open.has(g.id);
+        return (
+          <div key={g.id} className="rounded-md border border-default overflow-hidden">
+            <button
+              type="button"
+              onClick={() => toggleOpen(g.id)}
+              className="w-full px-4 h-[52px] flex items-center justify-between bg-surface-raised hover:bg-surface-sunken"
+            >
+              <span className="flex items-center gap-2">
+                <span className="text-content-muted">{isOpen ? "▾" : "▸"}</span>
+                <span className="text-body-sm font-semibold text-content-primary">{g.name}</span>
+                <span className="text-danger">*</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <span
+                  className={`grid place-items-center min-w-6 h-6 px-1.5 rounded-full text-caption font-semibold ${
+                    chosen.length ? "bg-primary text-content-on-primary" : "bg-surface-sunken text-content-muted"
+                  }`}
+                >
+                  {chosen.length}
+                </span>
+                {!valid && (
+                  <Tip text="Este grupo requiere al menos 1 valor seleccionado.">
+                    <span className="text-danger text-body-sm cursor-help" aria-label="Requiere al menos 1 valor">
+                      ⚠
+                    </span>
+                  </Tip>
+                )}
+              </span>
+            </button>
+            {isOpen && (
+              <div className="px-4 py-3 border-t border-subtle">
+                {g.values.length === 0 ? (
+                  <span className="text-body-sm text-content-muted italic">Sin valores disponibles</span>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {g.values.map((v) => {
+                      const on = chosen.includes(v);
+                      return (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => onChange({ ...selected, [g.id]: toggleValue(chosen, v) })}
+                          className={`h-8 px-3 rounded-full text-body-sm font-medium border-2 transition-colors cursor-pointer ${
+                            on
+                              ? "bg-primary text-content-on-primary border-primary"
+                              : "bg-surface-raised text-content-secondary border-default hover:border-primary"
+                          }`}
+                        >
+                          {v}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const inputClass =
   "h-[52px] rounded-md border border-default px-5 text-body-lg text-content-primary outline-none transition-colors focus:border-primary";
 const selectClass = `${inputClass} disabled:opacity-50 disabled:cursor-not-allowed`;
@@ -119,28 +218,105 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
 
   const [title, setTitle] = useState(indicator?.label || "");
   const [subtitle, setSubtitle] = useState(indicator?.subtitle || "");
-  const [source, setSource] = useState(indicator?.source || "");
-  const [table, setTable] = useState(indicator?.table || "");
-  const [column, setColumn] = useState(indicator?.column || "");
   const [indicatorType, setIndicatorType] = useState<IndicatorType>(indicator?.indicatorType || "percentage");
   const [operation, setOperation] = useState<IndicatorOperation>(indicator?.operation || "sum");
   const [relationType, setRelationType] = useState<RelationType>(indicator?.relationType || "direct");
   const [startDate, setStartDate] = useState(
-    indicator?.startDate ? new Date(indicator.startDate).toISOString().split("T")[0] : ""
+    indicator?.startDate ? new Date(indicator.startDate).toISOString().split("T")[0] : "",
   );
   const [endDate, setEndDate] = useState(
-    indicator?.endDate ? new Date(indicator.endDate).toISOString().split("T")[0] : ""
+    indicator?.endDate ? new Date(indicator.endDate).toISOString().split("T")[0] : "",
   );
 
-  const availableTables = source ? tablesBySource[source] || [] : [];
-  const availableColumns = table ? columnsByTable[table] || [] : [];
+  // --- Catalog selection (indices are what the backend expects) ---
+  const [sources, setSources] = useState<SourceItem[]>([]);
+  const [tables, setTables] = useState<SourceItem[]>([]);
+  const [columns, setColumns] = useState<SourceItem[]>([]);
+  const [filters, setFilters] = useState<SourceFilter[]>([]);
+
+  const [sourceIndex, setSourceIndex] = useState<number | null>(indicator?.sourceIndex ?? null);
+  const [tableIndex, setTableIndex] = useState<number | null>(indicator?.tableIndex ?? null);
+  const [columnIndex, setColumnIndex] = useState<number | null>(indicator?.columnIndex ?? null);
+  const [selectedFilters, setSelectedFilters] = useState<Record<number, string[]>>(indicator?.filters ?? {});
+
+  const sourceName = sourceIndex !== null ? sources[sourceIndex]?.name : undefined;
+  const isInegi = sourceName === SOURCE_INEGI;
+  const isSemovi = sourceName === SOURCE_SEMOVI;
+
+  // Load sources once on mount. (setState runs in the async callback, not the
+  // effect body, to avoid synchronous cascading renders.)
+  useEffect(() => {
+    let active = true;
+    listSources()
+      .then((data) => active && setSources(data))
+      .catch(() => active && setSources([]));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Load tables whenever the source changes (and on edit prefill once sources arrive).
+  useEffect(() => {
+    if (sourceIndex === null) return;
+    let active = true;
+    listTables(sourceIndex)
+      .then((data) => active && setTables(data))
+      .catch(() => active && setTables([]));
+    return () => {
+      active = false;
+    };
+  }, [sourceIndex]);
+
+  // Load columns (INEGI) or filters (SEMOVI) whenever the table changes.
+  // `sourceName` gates the branch; depend on it so prefill resolves after sources load.
+  useEffect(() => {
+    if (sourceIndex === null || tableIndex === null || !sourceName) return;
+    let active = true;
+    if (isInegi) {
+      listColumns(tableIndex)
+        .then((data) => active && setColumns(data))
+        .catch(() => active && setColumns([]));
+    } else if (isSemovi) {
+      listFilters(tableIndex)
+        .then((data) => active && setFilters(data))
+        .catch(() => active && setFilters([]));
+    }
+    return () => {
+      active = false;
+    };
+  }, [sourceIndex, tableIndex, sourceName, isInegi, isSemovi]);
+
+  const handleSourceChange = (value: string) => {
+    setSourceIndex(value === "" ? null : Number(value));
+    setTableIndex(null);
+    setColumnIndex(null);
+    setSelectedFilters({});
+    // Clear dependent lists here (event handler) rather than in an effect body.
+    setTables([]);
+    setColumns([]);
+    setFilters([]);
+  };
+
+  const handleTableChange = (value: string) => {
+    setTableIndex(value === "" ? null : Number(value));
+    setColumnIndex(null);
+    setSelectedFilters({});
+    setColumns([]);
+    setFilters([]);
+  };
 
   // Percentage figures render with a "%" suffix; absolute counts carry no unit here.
   const unit = indicatorType === "percentage" ? "%" : undefined;
 
-  // Required to save: identity (title + subtitle) and the data origin
-  // (source, table, column). The backend rejects an indicator without them.
-  const canSave = Boolean(title.trim() && subtitle.trim() && source && table && column);
+  const filtersValid = isSemovi && filters.length > 0 && filters.every((g) => isFilterGroupValid(g, selectedFilters));
+  const originValid = isInegi ? columnIndex !== null : isSemovi ? filtersValid : false;
+
+  // Required to save: identity (title + subtitle), source + table, and the data
+  // origin (INEGI column or SEMOVI filters). The backend rejects an indicator
+  // without them.
+  const canSave = Boolean(
+    title.trim() && subtitle.trim() && sourceIndex !== null && tableIndex !== null && originValid,
+  );
 
   const handleSave = () => {
     // `value`/`deltaData` are computed by the backend from the query; we keep any
@@ -156,9 +332,13 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
       unit,
       indicatorType,
       operation,
-      source,
-      table,
-      column,
+      sourceIndex: sourceIndex ?? undefined,
+      sourceName,
+      tableIndex: tableIndex ?? undefined,
+      tableName: tableIndex !== null ? tables[tableIndex]?.name : undefined,
+      columnIndex: isInegi && columnIndex !== null ? columnIndex : undefined,
+      columnName: isInegi && columnIndex !== null ? columns[columnIndex]?.name : undefined,
+      filters: isSemovi ? selectedFilters : undefined,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
     };
@@ -212,19 +392,11 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
           <div className="flex-1 flex flex-col gap-6">
             <div className="flex flex-col gap-3">
               <FieldLabel>Fuente</FieldLabel>
-              <select
-                value={source}
-                onChange={(e) => {
-                  setSource(e.target.value);
-                  setTable("");
-                  setColumn("");
-                }}
-                className={selectClass}
-              >
+              <select value={sourceIndex ?? ""} onChange={(e) => handleSourceChange(e.target.value)} className={selectClass}>
                 <option value="">Selecciona una fuente</option>
-                {sources.map((src) => (
-                  <option key={src} value={src}>
-                    {src}
+                {sources.map((src, i) => (
+                  <option key={src.name} value={i}>
+                    {src.name}
                   </option>
                 ))}
               </select>
@@ -233,38 +405,58 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
             <div className="flex flex-col gap-3">
               <FieldLabel>Tabla</FieldLabel>
               <select
-                value={table}
-                onChange={(e) => {
-                  setTable(e.target.value);
-                  setColumn("");
-                }}
-                disabled={!source}
+                value={tableIndex ?? ""}
+                onChange={(e) => handleTableChange(e.target.value)}
+                disabled={sourceIndex === null}
                 className={selectClass}
               >
                 <option value="">Selecciona una tabla</option>
-                {availableTables.map((tbl) => (
-                  <option key={tbl} value={tbl}>
-                    {tbl}
+                {tables.map((tbl, i) => (
+                  <option key={tbl.id} value={i}>
+                    {tbl.name}
                   </option>
                 ))}
               </select>
             </div>
 
+            {/* Columna — INEGI only. Disabled for SEMOVI (it exposes filters instead). */}
             <div className="flex flex-col gap-3">
-              <FieldLabel>Columna</FieldLabel>
+              <FieldLabel help="La columna numérica que se agrega (suma o promedio). Solo aplica para INEGI.">
+                Columna
+              </FieldLabel>
               <select
-                value={column}
-                onChange={(e) => setColumn(e.target.value)}
-                disabled={!table}
+                value={columnIndex ?? ""}
+                onChange={(e) => setColumnIndex(e.target.value === "" ? null : Number(e.target.value))}
+                disabled={!isInegi}
                 className={selectClass}
               >
-                <option value="">Selecciona una columna</option>
-                {availableColumns.map((col) => (
-                  <option key={col} value={col}>
-                    {col}
+                <option value="">{isSemovi ? "No aplica para SEMOVI" : "Selecciona una columna"}</option>
+                {columns.map((col, i) => (
+                  <option key={col.id} value={i}>
+                    {col.name}
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Filtros — SEMOVI only. */}
+            <div className="flex flex-col gap-3">
+              <FieldLabel help="Acota la afluencia por líneas, tipo de pago, etc. Debes elegir al menos 1 valor en cada grupo. Solo aplica para SEMOVI.">
+                Filtros
+              </FieldLabel>
+              {isSemovi ? (
+                filters.length > 0 ? (
+                  <FilterAccordion key={tableIndex} filters={filters} selected={selectedFilters} onChange={setSelectedFilters} />
+                ) : (
+                  <div className="rounded-md border border-dashed border-default px-5 py-6 text-body-sm text-content-muted">
+                    {tableIndex === null ? "Selecciona una tabla para ver sus filtros." : "Esta tabla no tiene filtros."}
+                  </div>
+                )
+              ) : (
+                <div className="rounded-md border border-dashed border-default px-5 py-6 text-body-sm text-content-muted">
+                  Los filtros solo aplican para SEMOVI.
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-3">
