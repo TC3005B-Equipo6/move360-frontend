@@ -1,12 +1,9 @@
 /**
- * Edit-time semantic of an indicator: does growth read as good (`direct`) or
- * bad (`inverse`)? The render no longer consumes this — the backend already
- * folds it into `delta` (the verdict). Kept for the create/edit modal.
+ * Indicator's relation (backend `relationType`): does growth read as good
+ * (`direct`) or bad (`inverse`)? Combined with the sign of `deltaData` it
+ * resolves the delta color — e.g. `inverse` + positive movement = danger.
  */
-export type IndicatorTone = "direct" | "inverse";
-
-/** Period-over-period verdict computed by the backend: drives the color. */
-export type IndicatorDelta = "positive" | "negative";
+export type RelationType = "direct" | "inverse";
 
 export interface IndicatorProps {
   /** The displayed figure (backend `data`): a percentage or an absolute count. */
@@ -15,12 +12,8 @@ export interface IndicatorProps {
   className?: string;
   /** Additive (optional): secondary context rendered under the label. */
   subtitle?: string;
-  /**
-   * Additive (optional): period-over-period verdict (backend `delta`).
-   * `positive` = success color, `negative` = danger color. Drives only color,
-   * never the arrow. Omit it to leave the figure in the neutral color.
-   */
-  delta?: IndicatorDelta;
+  /** Additive (optional): relation that, with the movement sign, drives the color. */
+  relationType?: RelationType;
   /**
    * Additive (optional): signed magnitude of the change (backend `deltaData`).
    * Sign drives the arrow (▲/▼); the absolute value is rendered. Omit it to
@@ -48,24 +41,30 @@ export const Indicator = ({
   label,
   subtitle,
   className = "",
-  delta,
+  relationType,
   deltaData,
   unit,
 }: IndicatorProps) => {
   const hasDelta = typeof deltaData === "number";
   const deltaSign = hasDelta ? Math.sign(deltaData) : 0;
 
-  // The backend already resolved good/bad into `delta`; we just map it to a color.
-  const verdictColor =
-    delta === "positive"
-      ? "text-success"
-      : delta === "negative"
-      ? "text-danger"
-      : "text-content-muted";
+  // relation ⊕ sign: direct+up = good, direct+down = bad, inverse flipped.
+  const isGood =
+    hasDelta &&
+    deltaSign !== 0 &&
+    ((relationType === "direct" && deltaSign > 0) || (relationType === "inverse" && deltaSign < 0));
+  const isBad = hasDelta && deltaSign !== 0 && !isGood;
 
-  // With a movement row, the figure stays neutral and the row carries the verdict;
-  // without one, the verdict colors the figure itself (neutral when there is none).
-  const valueColor = hasDelta ? "text-content-primary" : delta ? verdictColor : "text-content-primary";
+  const deltaColor = isGood ? "text-success" : isBad ? "text-danger" : "text-content-muted";
+
+  // No delta: the figure itself carries the relation color (neutral if no relation).
+  const valueColor = hasDelta
+    ? "text-content-primary"
+    : relationType === "direct"
+    ? "text-success"
+    : relationType === "inverse"
+    ? "text-danger"
+    : "text-content-primary";
 
   const arrowGlyph = deltaSign > 0 ? "▲" : deltaSign < 0 ? "▼" : null;
 
@@ -93,7 +92,7 @@ export const Indicator = ({
         {unit && <span className="text-body-sm font-medium text-content-secondary">{unit}</span>}
       </div>
       {hasDelta ? (
-        <div className={`flex items-center gap-1 text-body-sm font-semibold tabular-nums ${verdictColor}`}>
+        <div className={`flex items-center gap-1 text-body-sm font-semibold tabular-nums ${deltaColor}`}>
           {arrowGlyph && <span aria-hidden="true">{arrowGlyph}</span>}
           <span>{formatDelta(deltaData)}</span>
           {unit && <span>{unit}</span>}

@@ -26,60 +26,60 @@ export default meta;
 
 type Story = StoryObj<typeof Indicator>;
 
-// `delta` is the backend verdict (color); `deltaData` is the signed magnitude
-// (its sign draws the arrow). The two are independent: an up arrow can be bad.
+// Color = relationType ⊕ sign(deltaData). The arrow follows deltaData's sign
+// only, so an up arrow on an `inverse` relation reads as bad (danger).
 
-export const SinMovimiento_Positivo: Story = {
+export const Directo_SinMovimiento: Story = {
   args: {
     value: 12,
     label: "Usuarios con descuento",
-    delta: "positive",
+    relationType: "direct",
   },
 };
 
-export const SinMovimiento_Negativo: Story = {
+export const Inverso_SinMovimiento: Story = {
   args: {
     value: 10,
     label: "Tiempo de recorrido promedio",
-    delta: "negative",
+    relationType: "inverse",
   },
 };
 
-export const Sube_Bueno: Story = {
+export const Directo_Sube: Story = {
   args: {
     value: 24.8,
     label: "Afluencia mensual",
-    delta: "positive",
+    relationType: "direct",
     deltaData: 2.4,
     unit: "M",
   },
 };
 
-export const Baja_Malo: Story = {
+export const Directo_Baja: Story = {
   args: {
     value: 22.1,
     label: "Afluencia mensual",
-    delta: "negative",
+    relationType: "direct",
     deltaData: -1.6,
     unit: "M",
   },
 };
 
-export const Sube_Malo: Story = {
+export const Inverso_Sube: Story = {
   args: {
     value: 14,
     label: "Tiempo de recorrido promedio",
-    delta: "negative",
+    relationType: "inverse",
     deltaData: 1.2,
     unit: "min",
   },
 };
 
-export const Baja_Bueno: Story = {
+export const Inverso_Baja: Story = {
   args: {
     value: 11,
     label: "Tiempo de recorrido promedio",
-    delta: "positive",
+    relationType: "inverse",
     deltaData: -0.8,
     unit: "min",
   },
@@ -89,7 +89,7 @@ export const ConUnidad: Story = {
   args: {
     value: 92,
     label: "Puntualidad",
-    delta: "positive",
+    relationType: "direct",
     deltaData: 1.1,
     unit: "%",
   },

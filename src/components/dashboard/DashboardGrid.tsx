@@ -84,16 +84,17 @@ export const DashboardGrid = ({ dashboardId = "demo", readonly = false, initialI
     const config: IndicatorConfig = {
       value: widget.value,
       label: widget.label,
-      name: widget.name,
-      tone: widget.tone,
+      subtitle: widget.subtitle,
+      relationType: widget.relationType,
+      deltaData: widget.deltaData,
+      unit: widget.unit,
+      indicatorType: widget.indicatorType,
       operation: widget.operation,
       source: widget.source,
       table: widget.table,
       column: widget.column,
       startDate: widget.startDate,
       endDate: widget.endDate,
-      backgroundColor: widget.backgroundColor,
-      textColor: widget.textColor,
     };
     placeItem("indicator", config);
   };

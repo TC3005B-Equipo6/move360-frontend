@@ -1,46 +1,45 @@
 import type { ItemType } from "./grid.config";
-import type { IndicatorTone, IndicatorDelta } from "../indicators/Indicator/Indicator";
+import type { RelationType } from "../indicators/Indicator/Indicator";
+
+/** Backend `type`: output format of the figure. */
+export type IndicatorType = "number" | "percentage";
+/** Backend `operation`: how the query aggregates the column. */
+export type IndicatorOperation = "sum" | "average";
 
 export interface IndicatorWidget {
   id: string;
   type: "indicator";
   value: number;
   label: string;
-  name: string;
-  // Edit-time semantic kept for the create/edit modal; the card render no longer uses it.
-  tone?: IndicatorTone;
   subtitle?: string;
-  // Verdict (color) and signed magnitude (arrow + figure) of the period-over-period change.
-  delta?: IndicatorDelta;
+  // Relation (direct/inverse) + signed magnitude resolve the delta color + arrow.
+  relationType?: RelationType;
   deltaData?: number;
   unit?: string;
-  operation: "porcentaje" | "total";
+  // Backend output format and aggregation; sent on create/update.
+  indicatorType?: IndicatorType;
+  operation?: IndicatorOperation;
   source?: string;
   table?: string;
   column?: string;
   startDate: Date;
   endDate: Date;
-  backgroundColor: string;
-  textColor: string;
 }
 
 export interface IndicatorConfig {
   value: number;
   label: string;
-  name: string;
-  tone?: IndicatorTone;
   subtitle?: string;
-  delta?: IndicatorDelta;
+  relationType?: RelationType;
   deltaData?: number;
   unit?: string;
-  operation?: "porcentaje" | "total";
+  indicatorType?: IndicatorType;
+  operation?: IndicatorOperation;
   source?: string;
   table?: string;
   column?: string;
   startDate: Date | string;
   endDate: Date | string;
-  backgroundColor?: string;
-  textColor?: string;
   isMenuOpen?: boolean;
 }
 

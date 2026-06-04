@@ -60,7 +60,7 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
             value={cfg.value}
             label={cfg.label}
             subtitle={cfg.subtitle}
-            delta={cfg.delta}
+            relationType={cfg.relationType}
             deltaData={cfg.deltaData}
             unit={cfg.unit}
           />
