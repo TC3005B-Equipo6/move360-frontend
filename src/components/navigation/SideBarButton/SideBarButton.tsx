@@ -25,7 +25,8 @@ export const SideBarButton = ({
 }: SideBarButtonProps) => {
     const Icon = icons[iconName];
     const classes = [
-        "flex items-center gap-3 w-full h-11 px-2.5 rounded-md border-0 cursor-pointer transition-[background-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        "flex items-center h-11 rounded-md border-0 cursor-pointer transition-[background-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        collapsed ? "w-11 justify-center px-0" : "w-full gap-3 px-2.5",
         disabled
             ? "bg-transparent text-border-strong cursor-not-allowed"
             : selected
@@ -39,12 +40,9 @@ export const SideBarButton = ({
             <span className="grid place-items-center w-6 shrink-0">
                 <Icon size={22} />
             </span>
-            {label && (
+            {label && !collapsed && (
                 <span
-                    className={[
-                        "min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-body-sm font-medium transition-opacity duration-150",
-                        collapsed ? "opacity-0 pointer-events-none" : "opacity-100",
-                    ].join(" ")}
+                    className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-body-sm font-medium transition-opacity duration-150"
                 >
                     {label}
                 </span>

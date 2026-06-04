@@ -22,12 +22,24 @@ export interface PublicDashboardSummary {
   createdDate: string;
 }
 
+export interface DashboardTag {
+  id: number;
+  name: string;
+  color: {
+    id: number;
+    name: string;
+    hex: string;
+  };
+}
+
 export interface DashboardDetail {
   id: string;
   title: string;
   description: string | null;
   createdAt: string;
   isPublic: boolean;
+  ownerName: string | null;
+  tags: DashboardTag[];
 }
 
 export interface CreateDashboardInput {
@@ -59,6 +71,8 @@ interface RawDashboardDetail {
   createdAt: string;
   public?: boolean;
   isPublic?: boolean;
+  owner?: { firstName?: string; paternalSurname?: string };
+  tags?: DashboardTag[];
 }
 
 interface RawCreateDashboardResponse {
@@ -87,12 +101,16 @@ function toPublicSummary(raw: RawPublicDashboard): PublicDashboardSummary {
 }
 
 function toDetail(raw: RawDashboardDetail): DashboardDetail {
+  const first = raw.owner?.firstName ?? '';
+  const last = raw.owner?.paternalSurname ?? '';
   return {
     id: raw.id,
     title: raw.title,
     description: raw.description ?? null,
     createdAt: raw.createdAt,
     isPublic: raw.public ?? raw.isPublic ?? false,
+    ownerName: (first + ' ' + last).trim() || null,
+    tags: raw.tags ?? [],
   };
 }
 
@@ -127,6 +145,28 @@ export async function createDashboard(
     throw new Error("Created dashboard not found after refetch");
   }
   return matches[0];
+}
+
+export interface UpdateDashboardInput {
+  title: string;
+  description?: string;
+}
+
+export async function updateDashboard(id: string, input: UpdateDashboardInput): Promise<void> {
+  await api.patch(`/dashboard/${id}`, input);
+}
+
+export async function getAllTags(): Promise<DashboardTag[]> {
+  const { data } = await api.get<DashboardTag[]>('/tag');
+  return data;
+}
+
+export async function addTagToDashboard(dashboardId: string, tagId: number): Promise<void> {
+  await api.post(`/dashboard/${dashboardId}/tag/${tagId}`);
+}
+
+export async function removeTagFromDashboard(dashboardId: string, tagId: number): Promise<void> {
+  await api.delete(`/dashboard/${dashboardId}/tag/${tagId}`);
 }
 
 export async function deleteDashboard(id: string): Promise<void> {

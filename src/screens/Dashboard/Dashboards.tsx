@@ -10,6 +10,7 @@ import { ActionMenu } from '../../components/common/ActionMenu/ActionMenu';
 import { Modal } from '../../components/common/Modal/Modal';
 import { Button } from '../../components/common/Button/Button';
 import { CreateDashboardModal } from '../../components/dashboard/CreateDashboardModal';
+import { DashboardDetailsModal } from '../../components/dashboard/DashboardDetailsModal/DashboardDetailsModal';
 import {
   listDashboards,
   deleteDashboard,
@@ -37,6 +38,7 @@ export default function Dashboards() {
   const [createOpen, setCreateOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<UserDashboardSummary | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [detailsDashboardId, setDetailsDashboardId] = useState<string | null>(null);
 
   const loadDashboards = useCallback(async () => {
     setIsLoading(true);
@@ -125,6 +127,10 @@ export default function Dashboards() {
                   {openMenuId === dashboard.id && (
                     <div className="absolute right-0 top-full z-20 mt-1">
                       <ActionMenu
+                        onDetails={() => {
+                          setOpenMenuId(null);
+                          setDetailsDashboardId(dashboard.id);
+                        }}
                         onDelete={() => {
                           setOpenMenuId(null);
                           setPendingDelete(dashboard);
@@ -146,6 +152,24 @@ export default function Dashboards() {
 
       {createOpen && (
         <CreateDashboardModal onClose={() => setCreateOpen(false)} onCreated={handleCreated} />
+      )}
+
+      {detailsDashboardId && (
+        <DashboardDetailsModal
+          dashboardId={detailsDashboardId}
+          isOwner
+          onClose={() => setDetailsDashboardId(null)}
+          onIsPublicChange={(id, isPublic) =>
+            setDashboards((prev) =>
+              prev.map((d) => (d.id === id ? { ...d, isPublic } : d)),
+            )
+          }
+          onTitleChange={(id, title) =>
+            setDashboards((prev) =>
+              prev.map((d) => (d.id === id ? { ...d, title } : d)),
+            )
+          }
+        />
       )}
 
       {pendingDelete && (
