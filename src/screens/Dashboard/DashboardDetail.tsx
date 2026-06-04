@@ -35,6 +35,7 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [gridRevision, setGridRevision] = useState(0);
   const gridRef = useRef<DashboardGridHandle>(null);
 
   async function handleConfirm() {
@@ -44,6 +45,7 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
       // Reconcilia con el backend tras persistir (snapshot recomputado).
       const fresh = await getDashboardDetail(dashboardId);
       setItems(fresh.items);
+      setGridRevision((revision) => revision + 1);
     } catch (e) {
       console.error('Persist dashboard changes failed', e);
     }
@@ -135,6 +137,7 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
         </div>
       ) : (
         <DashboardGrid
+          key={`${dashboardId}:${gridRevision}`}
           ref={gridRef}
           dashboardId={dashboardId}
           persistToBackend

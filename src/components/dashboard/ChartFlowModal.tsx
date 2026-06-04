@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { Modal } from "../common/Modal/Modal";
 import { Button } from "../common/Button/Button";
+import { MonthYearPicker } from "../common/MonthYearPicker/MonthYearPicker";
 import { getGraphCatalog, type CatalogSource, type CatalogTable } from "../../services/graph/graphService";
 import type { ChartConfig, GraphDataRow } from "./types";
 import type { ChartType, GraphOperation } from "./itemMapping";
@@ -40,6 +41,9 @@ interface TooltipProps {
 interface Props {
   onClose: () => void;
   onSave: (result: { type: ItemType; config: ChartConfig }) => void;
+  /** When provided, the modal opens in edit mode prefilled from this graph. The
+   * grid `type` is a chart size (`chartSm|chartMd|chartLg`). */
+  chart?: { type: ItemType; config: ChartConfig };
 }
 
 const SIZE_OPTIONS: { label: string; value: ChartSize }[] = [
@@ -195,13 +199,7 @@ function MonthField({
       <label htmlFor={id} className="mb-2 block text-body-sm font-semibold text-content-primary">
         {label}
       </label>
-      <input
-        id={id}
-        type="month"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-11 w-full rounded-md border border-default bg-surface-raised px-3 text-body-sm text-content-primary outline-none transition-colors focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-      />
+      <MonthYearPicker id={id} value={value} onChange={onChange} size="sm" />
     </div>
   );
 }
@@ -336,24 +334,27 @@ function PreviewChart({
   );
 }
 
-export const ChartFlowModal = ({ onClose, onSave }: Props) => {
+export const ChartFlowModal = ({ onClose, onSave, chart }: Props) => {
+  const isEditMode = !!chart;
+  const initial = chart?.config.config;
+
   const [sources, setSources] = useState<CatalogSource[]>([]);
   const [catalogError, setCatalogError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-  const [size, setSize] = useState<ChartSize>("chartMd");
-  const [chartType, setChartType] = useState<ChartType>("bar");
-  const [operation, setOperation] = useState<GraphOperation>("SUM");
-  const [sourceId, setSourceId] = useState<number | null>(null);
-  const [tableId, setTableId] = useState<number | null>(null);
-  const [dimensionColumn, setDimensionColumn] = useState("");
-  const [metricColumns, setMetricColumns] = useState<string[]>([]);
-  const [compareEnabled, setCompareEnabled] = useState(false);
-  const [compareTableId, setCompareTableId] = useState<number | null>(null);
-  const [startMonth, setStartMonth] = useState("");
-  const [endMonth, setEndMonth] = useState("");
+  const [title, setTitle] = useState(chart?.config.title ?? "");
+  const [subtitle, setSubtitle] = useState(chart?.config.subtitle ?? "");
+  const [size, setSize] = useState<ChartSize>(chart ? (chart.type as ChartSize) : "chartMd");
+  const [chartType, setChartType] = useState<ChartType>(initial?.chartType ?? "bar");
+  const [operation, setOperation] = useState<GraphOperation>(initial?.operation ?? "SUM");
+  const [sourceId, setSourceId] = useState<number | null>(initial?.sourceId ?? null);
+  const [tableId, setTableId] = useState<number | null>(initial?.tableId ?? null);
+  const [dimensionColumn, setDimensionColumn] = useState(initial?.dimensionColumn ?? "");
+  const [metricColumns, setMetricColumns] = useState<string[]>(initial?.metricColumns ?? []);
+  const [compareEnabled, setCompareEnabled] = useState(initial?.compareEnabled ?? false);
+  const [compareTableId, setCompareTableId] = useState<number | null>(initial?.compareTableId ?? null);
+  const [startMonth, setStartMonth] = useState(initial?.startMonth ?? "");
+  const [endMonth, setEndMonth] = useState(initial?.endMonth ?? "");
 
   useEffect(() => {
     let active = true;
@@ -361,6 +362,8 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
       .then((catalog) => {
         if (!active) return;
         setSources(catalog.sources);
+        // Edit mode keeps the graph's saved selection; only seed defaults on create.
+        if (isEditMode) return;
         const firstSource = catalog.sources[0];
         const firstTable = firstSource?.tables[0];
         setSourceId(firstSource?.sourceId ?? null);
@@ -376,7 +379,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isEditMode]);
 
   const currentSource = useMemo(
     () => sources.find((s) => s.sourceId === sourceId) ?? sources[0],
@@ -472,7 +475,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
   };
 
   return (
-    <Modal title="Nueva grafica" onClose={onClose} className="w-[92vw] max-w-[1180px] max-h-[84vh]">
+    <Modal title={isEditMode ? "Editar grafica" : "Nueva grafica"} onClose={onClose} className="w-[92vw] max-w-[1180px] max-h-[84vh]">
       {isLoading ? (
         <p className="m-0 py-6 text-center text-body-sm font-medium text-content-muted">Cargando catalogo…</p>
       ) : catalogError ? (
@@ -627,7 +630,7 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
 
           <div className="flex flex-col-reverse gap-3 border-t border-subtle pt-4 sm:flex-row sm:items-center sm:justify-end">
             <Button label="Cancelar" variant="white" size="large" onPress={onClose} />
-            <Button label="Crear grafica" size="large" disabled={!canSave} onPress={handleSave} />
+            <Button label={isEditMode ? "Guardar cambios" : "Crear grafica"} size="large" disabled={!canSave} onPress={handleSave} />
           </div>
         </div>
       )}

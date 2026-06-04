@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Modal } from "../../common/Modal/Modal";
 import { Button } from "../../common/Button/Button";
+import { MonthYearPicker } from "../../common/MonthYearPicker/MonthYearPicker";
 import { IndicatorPreview } from "../IndicatorPreview/IndicatorPreview";
 import { icons } from "../../../icons";
 import {
@@ -322,8 +323,13 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
   // Required to save: identity (title + subtitle), source + table, and the data
   // origin (INEGI column or SEMOVI filters). The backend rejects an indicator
   // without them.
+  // Edit only persists title/subtitle/relationship (the PATCH body) and the
+  // backend never returns table/column/filters to rehydrate the origin — so
+  // origin can't gate saving in edit mode (it would stay disabled forever).
   const canSave = Boolean(
-    title.trim() && subtitle.trim() && sourceIndex !== null && tableIndex !== null && originValid,
+    isEditMode
+      ? title.trim() && subtitle.trim()
+      : title.trim() && subtitle.trim() && sourceIndex !== null && tableIndex !== null && originValid,
   );
 
   const handleSave = () => {
@@ -511,20 +517,16 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
             <div className="flex gap-4">
               <div className="flex-1 flex flex-col gap-3">
                 <FieldLabel>Mes de inicio</FieldLabel>
-                <input
-                  type="month"
+                <MonthYearPicker
                   value={toMonthInput(startDate)}
-                  onChange={(e) => setStartDate(monthToStartDate(e.target.value))}
-                  className={inputClass}
+                  onChange={(ym) => setStartDate(monthToStartDate(ym))}
                 />
               </div>
               <div className="flex-1 flex flex-col gap-3">
                 <FieldLabel>Mes de fin</FieldLabel>
-                <input
-                  type="month"
+                <MonthYearPicker
                   value={toMonthInput(endDate)}
-                  onChange={(e) => setEndDate(monthToEndDate(e.target.value))}
-                  className={inputClass}
+                  onChange={(ym) => setEndDate(monthToEndDate(ym))}
                 />
               </div>
             </div>

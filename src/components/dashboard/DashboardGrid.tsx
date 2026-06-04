@@ -181,9 +181,18 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
       .catch((e) => console.error("POST /graph failed", e));
   };
 
+  // Edit: replace the graph config (and size, since the modal can resize) and
+  // flag content modified. The PATCH happens later in flushModified, on confirm.
+  const handleChartEdit = ({ type, config }: { type: ItemType; config: ChartConfig }) => {
+    setItems((prev) =>
+      prev.map((it) => (it.id === editingId ? { ...it, type, config, contentModified: true } : it)),
+    );
+    setEditingId(null);
+  };
+
   const handleEditRequest = (id: string) => {
     const item = items.find((it) => it.id === id);
-    if (item?.type === "indicator") setEditingId(id);
+    if (item) setEditingId(id);
   };
 
   const handleDelete = (id: string) => {
@@ -260,9 +269,11 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
 
   useImperativeHandle(ref, () => ({ flushModified }), [flushModified]);
 
-  const editingItem = items.find((it) => it.id === editingId && it.type === "indicator");
-  const editingWidget: IndicatorWidget | undefined = editingItem
-    ? { ...(editingItem.config as IndicatorConfig), id: editingItem.id }
+  const editingItem = items.find((it) => it.id === editingId);
+  const editingIndicator = editingItem?.type === "indicator" ? editingItem : undefined;
+  const editingChart = editingItem && editingItem.type !== "indicator" ? editingItem : undefined;
+  const editingWidget: IndicatorWidget | undefined = editingIndicator
+    ? { ...(editingIndicator.config as IndicatorConfig), id: editingIndicator.id }
     : undefined;
 
   return (
@@ -314,11 +325,18 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
       {!readonly && pendingChoice === "chart" && (
         <ChartFlowModal onClose={closeConfigModal} onSave={handleChartSave} />
       )}
-      {!readonly && editingItem && (
+      {!readonly && editingIndicator && (
         <IndicatorModal
           onClose={() => setEditingId(null)}
           onSave={handleIndicatorEdit}
           indicator={editingWidget}
+        />
+      )}
+      {!readonly && editingChart && (
+        <ChartFlowModal
+          onClose={() => setEditingId(null)}
+          onSave={handleChartEdit}
+          chart={{ type: editingChart.type, config: editingChart.config as ChartConfig }}
         />
       )}
     </div>
