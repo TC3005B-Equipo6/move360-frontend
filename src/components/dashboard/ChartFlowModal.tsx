@@ -341,6 +341,8 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
   const [catalogError, setCatalogError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
   const [size, setSize] = useState<ChartSize>("chartMd");
   const [chartType, setChartType] = useState<ChartType>("bar");
   const [operation, setOperation] = useState<GraphOperation>("SUM");
@@ -392,7 +394,8 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
 
   const rankingMetricOk = effectiveType !== "ranking" || metricColumns.length === 1;
   const canSave = Boolean(
-    currentSource &&
+    title.trim() &&
+      currentSource &&
       currentTable &&
       dimensionColumn &&
       metricColumns.length &&
@@ -444,6 +447,8 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
     }));
 
     const config: ChartConfig = {
+      title: title.trim(),
+      subtitle: subtitle.trim() || undefined,
       config: {
         chartType: effectiveType,
         sourceId: currentSource.sourceId,
@@ -478,6 +483,37 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
         <div className="flex min-h-0 flex-col gap-4">
           <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
             <div className="flex min-w-0 flex-col gap-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="min-w-0">
+                  <label htmlFor="chart-title" className="mb-2 block text-body-sm font-semibold text-content-primary">
+                    Titulo
+                  </label>
+                  <input
+                    id="chart-title"
+                    type="text"
+                    maxLength={40}
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                    placeholder="Nombre de la grafica"
+                    className="h-11 w-full rounded-md border border-default bg-surface-raised px-3 text-body-sm text-content-primary outline-none transition-colors focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <label htmlFor="chart-subtitle" className="mb-2 block text-body-sm font-semibold text-content-primary">
+                    Subtitulo
+                  </label>
+                  <input
+                    id="chart-subtitle"
+                    type="text"
+                    maxLength={60}
+                    value={subtitle}
+                    onChange={(event) => setSubtitle(event.target.value)}
+                    placeholder="Contexto (opcional)"
+                    className="h-11 w-full rounded-md border border-default bg-surface-raised px-3 text-body-sm text-content-primary outline-none transition-colors focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  />
+                </div>
+              </div>
+
               <div className="grid gap-3 lg:grid-cols-2">
                 <OptionGroup label="Tamano" value={size} options={SIZE_OPTIONS} onChange={handleSizeChange} />
                 <OptionGroup

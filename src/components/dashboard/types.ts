@@ -83,6 +83,8 @@ export interface ChartConfig {
     sourceName?: string;
     tableName?: string;
   };
+  /** User-authored heading (backend `title`). Falls back to the table name. */
+  title?: string;
   subtitle?: string;
   delta?: number;
   data: GraphDataRow[];

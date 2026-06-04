@@ -75,6 +75,8 @@ export interface GraphSeries {
  * full `GraphResponse` does include it. Always pass the type explicitly to
  * `graphToChartConfig`. */
 export interface GraphSnapshot {
+  title?: string;
+  subtitle?: string;
   size: GraphSize;
   type?: GraphType;
   sourceId: number;
@@ -101,6 +103,8 @@ export interface GraphResponse extends GraphSnapshot {
 
 export interface CreateGraphRequest {
   dashboardId: string;
+  title: string;
+  subtitle?: string;
   size: GraphSize;
   type: GraphType;
   sourceId: number;
@@ -142,6 +146,8 @@ export function graphToChartConfig(
       : g.data;
 
   return {
+    title: g.title,
+    subtitle: g.subtitle,
     config: {
       chartType,
       sourceId: g.sourceId,
@@ -177,6 +183,8 @@ export function buildCreateGraphPayload(
   const c = config.config;
   return {
     dashboardId,
+    title: config.title ?? "",
+    subtitle: config.subtitle,
     size,
     type: chartTypeToGraphType(c.chartType),
     sourceId: c.sourceId,
@@ -197,6 +205,8 @@ export function buildCreateGraphPayload(
 export function buildUpdateGraphPayload(config: ChartConfig, size: GraphSize): UpdateGraphRequest {
   const c = config.config;
   return {
+    title: config.title,
+    subtitle: config.subtitle,
     size,
     type: chartTypeToGraphType(c.chartType),
     sourceId: c.sourceId,
