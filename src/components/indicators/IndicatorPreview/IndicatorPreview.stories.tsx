@@ -25,22 +25,20 @@ export default meta;
 
 type Story = StoryObj<typeof IndicatorPreview>;
 
-export const Positivo: Story = {
+export const Directa: Story = {
   args: {
-    value: 12,
-    label: "Usuarios con descuento",
-    tone: "direct",
-    backgroundColor: "var(--success-subtle)",
-    textColor: "var(--success)",
+    title: "Usuarios con descuento",
+    subtitle: "Febrero 2026 vs enero 2026",
+    relationship: "DIRECT",
+    unit: "%",
   },
 };
 
-export const Negativo: Story = {
+export const Inversa: Story = {
   args: {
-    value: 8,
-    label: "Tiempo de recorrido promedio",
-    tone: "inverse",
-    backgroundColor: "var(--danger-subtle)",
-    textColor: "var(--danger)",
+    title: "Tiempo de recorrido promedio",
+    subtitle: "Febrero 2026 vs enero 2026",
+    relationship: "INVERSE",
+    unit: "min",
   },
 };

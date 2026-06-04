@@ -4,13 +4,15 @@ import { icons } from "../../../icons";
 export interface ActionMenuProps {
   onDelete: () => void;
   onEdit?: () => void;
+  onDetails?: () => void;
   onClose?: () => void;
   className?: string;
 }
 
-export const ActionMenu = ({ onDelete, onEdit, onClose, className = "" }: ActionMenuProps) => {
+export const ActionMenu = ({ onDelete, onEdit, onDetails, onClose, className = "" }: ActionMenuProps) => {
   const TrashIcon = icons.trash;
   const EditIcon = icons.edit;
+  const InfoIcon = icons.info;
   const menuRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -46,6 +48,20 @@ export const ActionMenu = ({ onDelete, onEdit, onClose, className = "" }: Action
       className={classes}
       role="menu"
     >
+      {onDetails && (
+        <>
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 px-[14px] py-[10px] min-h-10 bg-transparent border-0 cursor-pointer text-primary text-body-sm font-medium text-left transition-[background-color,scale] duration-150 hover:bg-surface-sunken active:bg-surface-sunken active:scale-[0.96]"
+            onClick={onDetails}
+            role="menuitem"
+          >
+            <InfoIcon size={20} className="shrink-0" />
+            <span className="capitalize whitespace-nowrap">Detalles</span>
+          </button>
+          <div className="h-px bg-border-subtle w-full" />
+        </>
+      )}
       <button
         type="button"
         className="inline-flex items-center gap-2 px-[14px] py-[10px] min-h-10 bg-transparent border-0 cursor-pointer text-danger text-body-sm font-medium text-left transition-[background-color,scale] duration-150 hover:bg-surface-sunken active:bg-danger-subtle active:scale-[0.96]"

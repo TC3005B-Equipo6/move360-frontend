@@ -1,6 +1,6 @@
 import { forwardRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Chart } from "../charts/Chart/Chart";
-import { Indicator, type IndicatorTone } from "../indicators/Indicator/Indicator";
+import { Indicator } from "../indicators/Indicator/Indicator";
 import { ActionMenu } from "../common/ActionMenu/ActionMenu";
 import { OverflowMenuButton } from "../common/OverflowMenuButton/OverflowMenuButton";
 import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./types";
@@ -8,6 +8,7 @@ import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./type
 interface Props {
   item: Item;
   onDelete: (id: string) => void;
+  onEdit?: (id: string) => void;
   readonly?: boolean;
   // RGL inyecta estas props vía cloneElement; las recibimos y reenviamos al DOM root.
   style?: CSSProperties;
@@ -24,25 +25,6 @@ const chartSizeMap = {
   chartLg: "lg",
 } as const;
 
-type RenderIndicatorConfig = Partial<Omit<IndicatorConfig, "tone">> & {
-  value: number;
-  label: string;
-  tone?: IndicatorTone | "positive" | "neutral" | "negative";
-  isPositive?: boolean;
-};
-
-const toDate = (value?: string | Date) => {
-  if (value instanceof Date) return value;
-  const date = value ? new Date(value) : new Date();
-  return Number.isNaN(date.getTime()) ? new Date() : date;
-};
-
-const getIndicatorTone = (cfg: RenderIndicatorConfig): IndicatorTone => {
-  if (cfg.tone === "inverse" || cfg.tone === "negative") return "inverse";
-  if (cfg.tone === "direct" || cfg.tone === "positive" || cfg.tone === "neutral") return "direct";
-  return cfg.isPositive === false ? "inverse" : "direct";
-};
-
 const getMetricLabel = (columns: string[]) => {
   const [firstColumn] = columns;
   if (!firstColumn || firstColumn === "value") return "Afluencia";
@@ -50,7 +32,7 @@ const getMetricLabel = (columns: string[]) => {
 };
 
 export const DashboardItem = forwardRef<HTMLDivElement, Props>(function DashboardItem(
-  { item, onDelete, readonly = false, style, className, onMouseDown, onMouseUp, onTouchEnd, children },
+  { item, onDelete, onEdit, readonly = false, style, className, onMouseDown, onMouseUp, onTouchEnd, children },
   ref,
 ) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -60,6 +42,10 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
   const handleDelete = () => {
     setMenuOpen(false);
     onDelete(item.id);
+  };
+  const handleEdit = () => {
+    setMenuOpen(false);
+    onEdit?.(item.id);
   };
 
   const menuButton = (
@@ -72,19 +58,15 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
 
   const renderContent = () => {
     if (item.type === "indicator") {
-      const cfg = item.config as RenderIndicatorConfig;
+      const cfg = item.config as IndicatorConfig;
       return (
         <div className="relative w-full h-full flex items-center justify-center">
           <Indicator
-            value={cfg.value}
-            label={cfg.label}
+            data={cfg.data}
+            title={cfg.title}
             subtitle={cfg.subtitle}
-            tone={getIndicatorTone(cfg)}
-            name={cfg.name ?? cfg.label}
-            startDate={toDate(cfg.startDate)}
-            endDate={toDate(cfg.endDate)}
-            isMenuOpen={menuOpen || Boolean(cfg.isMenuOpen)}
-            delta={cfg.delta}
+            relationship={cfg.relationship}
+            deltaData={cfg.deltaData}
             unit={cfg.unit}
           />
           {!readonly && menuButton}
@@ -122,7 +104,7 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
       {renderContent()}
       {!readonly && menuOpen && (
         <div className="item-menu absolute top-[46px] right-3 z-20">
-          <ActionMenu onDelete={handleDelete} onEdit={closeMenu} onClose={closeMenu} />
+          <ActionMenu onDelete={handleDelete} onEdit={handleEdit} onClose={closeMenu} />
         </div>
       )}
       {/* RGL placeholder children (resize handles, etc.) — no se usan aquí pero los reenviamos */}
