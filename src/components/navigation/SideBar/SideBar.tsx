@@ -66,13 +66,6 @@ export const Sidebar = ({ className = "", collapsed, onToggle }: SidebarProps) =
         selected: pathname === "/dashboard", onPress: () => navigate("/dashboard"),
       },
     },
-    {
-      id: "reports",
-      props: {
-        tooltip: "Reportes", label: "Reportes", iconName: "file", collapsed: isVisuallyCollapsed,
-        selected: pathname === "/reports", onPress: () => navigate("/reports"),
-      },
-    },
   ];
 
   const bottom: SidebarItem[] = [

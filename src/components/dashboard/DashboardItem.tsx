@@ -1,6 +1,6 @@
 import { forwardRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Chart } from "../charts/Chart/Chart";
-import { Indicator, type IndicatorTone } from "../indicators/Indicator/Indicator";
+import { Indicator } from "../indicators/Indicator/Indicator";
 import { ActionMenu } from "../common/ActionMenu/ActionMenu";
 import { OverflowMenuButton } from "../common/OverflowMenuButton/OverflowMenuButton";
 import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./types";
@@ -23,25 +23,6 @@ const chartSizeMap = {
   chartMd: "md",
   chartLg: "lg",
 } as const;
-
-type RenderIndicatorConfig = Partial<Omit<IndicatorConfig, "tone">> & {
-  value: number;
-  label: string;
-  tone?: IndicatorTone | "positive" | "neutral" | "negative";
-  isPositive?: boolean;
-};
-
-const toDate = (value?: string | Date) => {
-  if (value instanceof Date) return value;
-  const date = value ? new Date(value) : new Date();
-  return Number.isNaN(date.getTime()) ? new Date() : date;
-};
-
-const getIndicatorTone = (cfg: RenderIndicatorConfig): IndicatorTone => {
-  if (cfg.tone === "inverse" || cfg.tone === "negative") return "inverse";
-  if (cfg.tone === "direct" || cfg.tone === "positive" || cfg.tone === "neutral") return "direct";
-  return cfg.isPositive === false ? "inverse" : "direct";
-};
 
 const getMetricLabel = (columns: string[]) => {
   const [firstColumn] = columns;
@@ -72,19 +53,15 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
 
   const renderContent = () => {
     if (item.type === "indicator") {
-      const cfg = item.config as RenderIndicatorConfig;
+      const cfg = item.config as IndicatorConfig;
       return (
         <div className="relative w-full h-full flex items-center justify-center">
           <Indicator
             value={cfg.value}
             label={cfg.label}
             subtitle={cfg.subtitle}
-            tone={getIndicatorTone(cfg)}
-            name={cfg.name ?? cfg.label}
-            startDate={toDate(cfg.startDate)}
-            endDate={toDate(cfg.endDate)}
-            isMenuOpen={menuOpen || Boolean(cfg.isMenuOpen)}
             delta={cfg.delta}
+            deltaData={cfg.deltaData}
             unit={cfg.unit}
           />
           {!readonly && menuButton}

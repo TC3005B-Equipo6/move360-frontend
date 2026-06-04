@@ -1,5 +1,5 @@
 import type { ItemType } from "./grid.config";
-import type { IndicatorTone } from "../indicators/Indicator/Indicator";
+import type { IndicatorTone, IndicatorDelta } from "../indicators/Indicator/Indicator";
 
 export interface IndicatorWidget {
   id: string;
@@ -7,9 +7,12 @@ export interface IndicatorWidget {
   value: number;
   label: string;
   name: string;
+  // Edit-time semantic kept for the create/edit modal; the card render no longer uses it.
   tone?: IndicatorTone;
   subtitle?: string;
-  delta?: number;
+  // Verdict (color) and signed magnitude (arrow + figure) of the period-over-period change.
+  delta?: IndicatorDelta;
+  deltaData?: number;
   unit?: string;
   operation: "porcentaje" | "total";
   source?: string;
@@ -27,7 +30,8 @@ export interface IndicatorConfig {
   name: string;
   tone?: IndicatorTone;
   subtitle?: string;
-  delta?: number;
+  delta?: IndicatorDelta;
+  deltaData?: number;
   unit?: string;
   operation?: "porcentaje" | "total";
   source?: string;

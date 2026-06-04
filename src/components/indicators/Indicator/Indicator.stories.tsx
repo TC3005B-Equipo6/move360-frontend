@@ -26,77 +26,62 @@ export default meta;
 
 type Story = StoryObj<typeof Indicator>;
 
-const baseDates = {
-  startDate: new Date("2024-01-01"),
-  endDate: new Date("2024-01-31"),
-  isMenuOpen: false,
-};
+// `delta` is the backend verdict (color); `deltaData` is the signed magnitude
+// (its sign draws the arrow). The two are independent: an up arrow can be bad.
 
-export const SinDelta_Direct: Story = {
+export const SinMovimiento_Positivo: Story = {
   args: {
     value: 12,
     label: "Usuarios con descuento",
-    tone: "direct",
-    name: "Descuento",
-    ...baseDates,
+    delta: "positive",
   },
 };
 
-export const SinDelta_Inverse: Story = {
+export const SinMovimiento_Negativo: Story = {
   args: {
     value: 10,
     label: "Tiempo de recorrido promedio",
-    tone: "inverse",
-    name: "Recorrido",
-    ...baseDates,
+    delta: "negative",
   },
 };
 
-export const DirectSube: Story = {
+export const Sube_Bueno: Story = {
   args: {
     value: 24.8,
     label: "Afluencia mensual",
-    tone: "direct",
-    name: "Afluencia",
-    delta: 2.4,
+    delta: "positive",
+    deltaData: 2.4,
     unit: "M",
-    ...baseDates,
   },
 };
 
-export const DirectBaja: Story = {
+export const Baja_Malo: Story = {
   args: {
     value: 22.1,
     label: "Afluencia mensual",
-    tone: "direct",
-    name: "Afluencia",
-    delta: -1.6,
+    delta: "negative",
+    deltaData: -1.6,
     unit: "M",
-    ...baseDates,
   },
 };
 
-export const InverseSube: Story = {
+export const Sube_Malo: Story = {
   args: {
     value: 14,
     label: "Tiempo de recorrido promedio",
-    tone: "inverse",
-    name: "Recorrido",
-    delta: 1.2,
+    delta: "negative",
+    deltaData: 1.2,
     unit: "min",
-    ...baseDates,
   },
 };
 
-export const InverseBaja: Story = {
+export const Baja_Bueno: Story = {
   args: {
     value: 11,
     label: "Tiempo de recorrido promedio",
-    tone: "inverse",
-    name: "Recorrido",
-    delta: -0.8,
+    delta: "positive",
+    deltaData: -0.8,
     unit: "min",
-    ...baseDates,
   },
 };
 
@@ -104,10 +89,8 @@ export const ConUnidad: Story = {
   args: {
     value: 92,
     label: "Puntualidad",
-    tone: "direct",
-    name: "Puntualidad",
-    delta: 1.1,
+    delta: "positive",
+    deltaData: 1.1,
     unit: "%",
-    ...baseDates,
   },
 };

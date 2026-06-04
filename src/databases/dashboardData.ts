@@ -64,7 +64,8 @@ export const HOME_DASHBOARD_ITEMS: DashboardItem[] = [
     col: 5,
     config: {
       value: 6,
-      delta: 3,
+      delta: "negative",
+      deltaData: 3,
       tone: "inverse",
       label: "Incidencias Metro",
       subtitle: PERIOD_SUBTITLE,
@@ -81,7 +82,8 @@ export const HOME_DASHBOARD_ITEMS: DashboardItem[] = [
     col: 3,
     config: {
       value: 98.6,
-      delta: -2.2,
+      delta: "negative",
+      deltaData: -2.2,
       unit: "M",
       tone: "direct",
       label: "Pasajeros Metro",
@@ -99,7 +101,8 @@ export const HOME_DASHBOARD_ITEMS: DashboardItem[] = [
     col: 4,
     config: {
       value: -1.5,
-      delta: -1.5,
+      delta: "negative",
+      deltaData: -1.5,
       unit: "%",
       tone: "direct",
       label: "Tendencia pasajeros Metrobús",
@@ -117,7 +120,8 @@ export const HOME_DASHBOARD_ITEMS: DashboardItem[] = [
     col: 4,
     config: {
       value: -2.1,
-      delta: -2.1,
+      delta: "negative",
+      deltaData: -2.1,
       unit: "%",
       tone: "direct",
       label: "Tendencia pasajeros Metro",
@@ -135,7 +139,8 @@ export const HOME_DASHBOARD_ITEMS: DashboardItem[] = [
     col: 3,
     config: {
       value: 40.0,
-      delta: -0.6,
+      delta: "negative",
+      deltaData: -0.6,
       unit: "M",
       tone: "direct",
       label: "Pasajeros Metrobús",
@@ -153,7 +158,8 @@ export const HOME_DASHBOARD_ITEMS: DashboardItem[] = [
     col: 5,
     config: {
       value: 15.6,
-      delta: -0.6,
+      delta: "positive",
+      deltaData: -0.6,
       unit: "%",
       tone: "inverse",
       label: "Concentración top línea Metro",

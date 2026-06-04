@@ -1,23 +1,32 @@
+/**
+ * Edit-time semantic of an indicator: does growth read as good (`direct`) or
+ * bad (`inverse`)? The render no longer consumes this — the backend already
+ * folds it into `delta` (the verdict). Kept for the create/edit modal.
+ */
 export type IndicatorTone = "direct" | "inverse";
 
+/** Period-over-period verdict computed by the backend: drives the color. */
+export type IndicatorDelta = "positive" | "negative";
 
 export interface IndicatorProps {
+  /** The displayed figure (backend `data`): a percentage or an absolute count. */
   value: number;
-  tone: IndicatorTone;
   label: string;
-  name: string;
-  startDate: Date;
-  endDate: Date;
-  isMenuOpen: boolean;
   className?: string;
   /** Additive (optional): secondary context rendered under the label. */
   subtitle?: string;
   /**
-   * Additive (optional): period-over-period movement.
-   * Sign drives the arrow direction; `tone` ⊕ sign drives the color
-   * (good = success, bad = danger). Omit it to render without a delta row.
+   * Additive (optional): period-over-period verdict (backend `delta`).
+   * `positive` = success color, `negative` = danger color. Drives only color,
+   * never the arrow. Omit it to leave the figure in the neutral color.
    */
-  delta?: number;
+  delta?: IndicatorDelta;
+  /**
+   * Additive (optional): signed magnitude of the change (backend `deltaData`).
+   * Sign drives the arrow (▲/▼); the absolute value is rendered. Omit it to
+   * render without a delta row.
+   */
+  deltaData?: number;
   /** Additive (optional): unit suffix rendered next to the value (e.g. "M", "%", "min"). */
   unit?: string;
 }
@@ -36,33 +45,27 @@ const formatValue = (value: number): string => valueFormatter.format(value);
 
 export const Indicator = ({
   value,
-  tone,
   label,
   subtitle,
   className = "",
   delta,
+  deltaData,
   unit,
 }: IndicatorProps) => {
-  const hasDelta = typeof delta === "number";
-  const deltaSign = hasDelta ? Math.sign(delta) : 0;
+  const hasDelta = typeof deltaData === "number";
+  const deltaSign = hasDelta ? Math.sign(deltaData) : 0;
 
-  // tone ⊕ sign: direct+up = good, direct+down = bad, inverse flipped.
-  const isGood =
-    hasDelta && deltaSign !== 0 && ((tone === "direct" && deltaSign > 0) || (tone === "inverse" && deltaSign < 0));
-  const isBad = hasDelta && deltaSign !== 0 && !isGood;
+  // The backend already resolved good/bad into `delta`; we just map it to a color.
+  const verdictColor =
+    delta === "positive"
+      ? "text-success"
+      : delta === "negative"
+      ? "text-danger"
+      : "text-content-muted";
 
-  const deltaColor = isGood
-    ? "text-success"
-    : isBad
-    ? "text-danger"
-    : "text-content-muted";
-
-  // No delta: the big number itself carries the tone color.
-  const valueColor = hasDelta
-    ? "text-content-primary"
-    : tone === "direct"
-    ? "text-success"
-    : "text-danger";
+  // With a movement row, the figure stays neutral and the row carries the verdict;
+  // without one, the verdict colors the figure itself (neutral when there is none).
+  const valueColor = hasDelta ? "text-content-primary" : delta ? verdictColor : "text-content-primary";
 
   const arrowGlyph = deltaSign > 0 ? "▲" : deltaSign < 0 ? "▼" : null;
 
@@ -90,9 +93,9 @@ export const Indicator = ({
         {unit && <span className="text-body-sm font-medium text-content-secondary">{unit}</span>}
       </div>
       {hasDelta ? (
-        <div className={`flex items-center gap-1 text-body-sm font-semibold tabular-nums ${deltaColor}`}>
+        <div className={`flex items-center gap-1 text-body-sm font-semibold tabular-nums ${verdictColor}`}>
           {arrowGlyph && <span aria-hidden="true">{arrowGlyph}</span>}
-          <span>{formatDelta(delta)}</span>
+          <span>{formatDelta(deltaData)}</span>
           {unit && <span>{unit}</span>}
         </div>
       ) : (
