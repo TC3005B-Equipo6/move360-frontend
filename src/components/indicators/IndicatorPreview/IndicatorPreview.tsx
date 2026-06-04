@@ -1,22 +1,22 @@
-import type { RelationType } from "../Indicator/Indicator";
+import type { Relationship } from "../Indicator/Indicator";
 
 export interface IndicatorPreviewProps {
-  label: string;
+  title: string;
   subtitle?: string;
-  relationType?: RelationType;
+  relationship?: Relationship;
   unit?: string;
 }
 
 // Mirrors the real Indicator card so the modal shows the true anatomy of the
 // widget being configured. The backend fills `data`/`deltaData` only after the
 // query runs, so at create/edit time the figure is a placeholder "X". The
-// sample delta row assumes an upward movement to surface the relationType color
-// (direct = success, inverse = danger).
-export const IndicatorPreview = ({ label, subtitle, relationType, unit }: IndicatorPreviewProps) => {
+// sample delta row assumes an upward movement to surface the relationship color
+// (DIRECT = success, INVERSE = danger).
+export const IndicatorPreview = ({ title, subtitle, relationship, unit }: IndicatorPreviewProps) => {
   const sampleDeltaColor =
-    relationType === "direct"
+    relationship === "DIRECT"
       ? "text-success"
-      : relationType === "inverse"
+      : relationship === "INVERSE"
       ? "text-danger"
       : "text-content-muted";
 
@@ -24,7 +24,7 @@ export const IndicatorPreview = ({ label, subtitle, relationType, unit }: Indica
     <div className="group relative flex flex-col justify-between w-[180px] h-[180px] p-4 rounded-md bg-surface-raised border border-subtle shadow-sm overflow-hidden">
       <div className="min-w-0 pr-12">
         <p className="m-0 text-caption font-semibold uppercase tracking-wide text-content-muted leading-tight [text-wrap:balance]">
-          {label || "Título"}
+          {title || "Título"}
         </p>
         <p className="m-0 mt-1 text-[11px] font-medium text-content-secondary leading-tight [text-wrap:balance]">
           {subtitle || "Subtítulo"}

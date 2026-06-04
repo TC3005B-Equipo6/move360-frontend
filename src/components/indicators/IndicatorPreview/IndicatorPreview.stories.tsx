@@ -27,18 +27,18 @@ type Story = StoryObj<typeof IndicatorPreview>;
 
 export const Directa: Story = {
   args: {
-    label: "Usuarios con descuento",
+    title: "Usuarios con descuento",
     subtitle: "Febrero 2026 vs enero 2026",
-    relationType: "direct",
+    relationship: "DIRECT",
     unit: "%",
   },
 };
 
 export const Inversa: Story = {
   args: {
-    label: "Tiempo de recorrido promedio",
+    title: "Tiempo de recorrido promedio",
     subtitle: "Febrero 2026 vs enero 2026",
-    relationType: "inverse",
+    relationship: "INVERSE",
     unit: "min",
   },
 };

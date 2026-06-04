@@ -10,6 +10,7 @@ export interface IconButtonProps {
     className?: string;
     "aria-label"?: string;
     type?: "button" | "submit" | "reset";
+    tooltip?: string;
 }
 
 const sizes: Record<string, string> = {
@@ -32,6 +33,7 @@ export const IconButton = ({
     className = "",
     "aria-label": ariaLabel,
     type = "button",
+    tooltip,
 }: IconButtonProps) => {
     const Icon = icons[iconName];
     const resolvedIconSize = iconSize ?? (size === "small" ? 22 : 20);
@@ -45,10 +47,21 @@ export const IconButton = ({
         className,
     ].filter(Boolean).join(" ");
 
-    return (
+    const button = (
         <button type={type} className={classes} onClick={onPress} aria-label={ariaLabel || label || undefined}>
             <Icon size={resolvedIconSize} aria-hidden="true" />
             {label && <span className="whitespace-nowrap">{label}</span>}
         </button>
+    );
+
+    if (!tooltip) return button;
+
+    return (
+        <div className="relative inline-flex group">
+            {button}
+            <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 z-50">
+                {tooltip}
+            </span>
+        </div>
     );
 };

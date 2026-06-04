@@ -26,30 +26,30 @@ export default meta;
 
 type Story = StoryObj<typeof Indicator>;
 
-// Color = relationType ⊕ sign(deltaData). The arrow follows deltaData's sign
-// only, so an up arrow on an `inverse` relation reads as bad (danger).
+// Color = relationship ⊕ sign(deltaData). The arrow follows deltaData's sign
+// only, so an up arrow on an `INVERSE` relation reads as bad (danger).
 
 export const Directo_SinMovimiento: Story = {
   args: {
-    value: 12,
-    label: "Usuarios con descuento",
-    relationType: "direct",
+    data: 12,
+    title: "Usuarios con descuento",
+    relationship: "DIRECT",
   },
 };
 
 export const Inverso_SinMovimiento: Story = {
   args: {
-    value: 10,
-    label: "Tiempo de recorrido promedio",
-    relationType: "inverse",
+    data: 10,
+    title: "Tiempo de recorrido promedio",
+    relationship: "INVERSE",
   },
 };
 
 export const Directo_Sube: Story = {
   args: {
-    value: 24.8,
-    label: "Afluencia mensual",
-    relationType: "direct",
+    data: 24.8,
+    title: "Afluencia mensual",
+    relationship: "DIRECT",
     deltaData: 2.4,
     unit: "M",
   },
@@ -57,9 +57,9 @@ export const Directo_Sube: Story = {
 
 export const Directo_Baja: Story = {
   args: {
-    value: 22.1,
-    label: "Afluencia mensual",
-    relationType: "direct",
+    data: 22.1,
+    title: "Afluencia mensual",
+    relationship: "DIRECT",
     deltaData: -1.6,
     unit: "M",
   },
@@ -67,9 +67,9 @@ export const Directo_Baja: Story = {
 
 export const Inverso_Sube: Story = {
   args: {
-    value: 14,
-    label: "Tiempo de recorrido promedio",
-    relationType: "inverse",
+    data: 14,
+    title: "Tiempo de recorrido promedio",
+    relationship: "INVERSE",
     deltaData: 1.2,
     unit: "min",
   },
@@ -77,9 +77,9 @@ export const Inverso_Sube: Story = {
 
 export const Inverso_Baja: Story = {
   args: {
-    value: 11,
-    label: "Tiempo de recorrido promedio",
-    relationType: "inverse",
+    data: 11,
+    title: "Tiempo de recorrido promedio",
+    relationship: "INVERSE",
     deltaData: -0.8,
     unit: "min",
   },
@@ -87,9 +87,9 @@ export const Inverso_Baja: Story = {
 
 export const ConUnidad: Story = {
   args: {
-    value: 92,
-    label: "Puntualidad",
-    relationType: "direct",
+    data: 92,
+    title: "Puntualidad",
+    relationship: "DIRECT",
     deltaData: 1.1,
     unit: "%",
   },

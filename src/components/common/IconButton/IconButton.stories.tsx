@@ -41,10 +41,10 @@ export const Reporte: Story = {
 
 export const Small: Story = {
   args: {
-    iconName: "settings",
+    iconName: "edit",
     size: "small",
     label: "",
-    "aria-label": "Ajustes",
+    "aria-label": "Editar",
     color: "secondary",
     type: "button"
   },
@@ -52,25 +52,26 @@ export const Small: Story = {
 
 export const AjustesDashboard: Story = {
   args: {
-    iconName: "settings",
+    iconName: "edit",
     iconSize: 26,
     size: "small",
     label: "",
-    "aria-label": "Ajustes",
+    "aria-label": "Editar",
     color: "secondary",
     className:
       "!h-14 !w-14 !rounded-xl !bg-surface-raised !text-primary !shadow-sm !ring-1 !ring-inset !ring-border-strong hover:!bg-primary-subtle hover:!text-primary-hover",
+    tooltip: "Editar",
     type: "button",
   },
 };
 
 export const AjustesDashboardActivo: Story = {
   args: {
-    iconName: "settings",
+    iconName: "edit",
     iconSize: 26,
     size: "small",
     label: "",
-    "aria-label": "Desactivar ajustes",
+    "aria-label": "Desactivar edición",
     color: "primary",
     className: "!h-14 !w-14 !rounded-xl !shadow-sm",
     type: "button",

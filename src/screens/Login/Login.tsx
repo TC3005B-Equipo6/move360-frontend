@@ -77,7 +77,7 @@ const handleRecoverPassword = async () => {
 
     setRecoverMessage("Solicitud enviada correctamente");
 
-  } catch (error) {
+  } catch {
     setRecoverMessage("Ocurrió un error al enviar la solicitud");
   }
 };

@@ -200,7 +200,8 @@ export const DashboardDetailsModal = ({
     const next = !detail.isPublic;
     setDetail((prev) => (prev ? { ...prev, isPublic: next } : prev));
     onIsPublicChange?.(dashboardId, next);
-    // TODO: call PATCH /dashboard/{id} once backend adds the endpoint.
+    // TODO: not persisted yet. PATCH /dashboard/{id} (UpdateDashboardDTO) has no
+    // isPublic field; add it on the backend, then persist here like title/desc.
   };
 
   const handleAddTag = async (tag: DashboardTag) => {
@@ -286,6 +287,14 @@ export const DashboardDetailsModal = ({
               className="w-full resize-none rounded-md bg-surface-raised px-3.5 py-3 text-body text-content-primary shadow-xs outline-none ring-1 ring-inset ring-border placeholder:text-content-muted transition-[background-color,box-shadow,color] duration-200 ease-out focus:ring-2 focus:ring-primary"
             />
           </div>
+
+          {/* Visibility (TODO: not persisted — PATCH /dashboard/{id} has no isPublic) */}
+          {isOwner && (
+            <div className="flex items-center justify-between">
+              <span className="text-body-sm font-semibold text-content-primary">Visibilidad</span>
+              <SliderToggle checked={detail.isPublic} onChange={handleTogglePublic} />
+            </div>
+          )}
 
           {/* Tags */}
           <div>
@@ -376,13 +385,9 @@ export const DashboardDetailsModal = ({
 
         <div className="flex items-center justify-between py-3">
           <span className="text-body-sm font-medium text-content-secondary">Visibilidad</span>
-          {isOwner ? (
-            <SliderToggle checked={detail.isPublic} onChange={handleTogglePublic} />
-          ) : (
-            <span className="text-body-sm font-semibold text-content-primary">
-              {detail.isPublic ? 'Público' : 'Privado'}
-            </span>
-          )}
+          <span className="text-body-sm font-semibold text-content-primary">
+            {detail.isPublic ? 'Público' : 'Privado'}
+          </span>
         </div>
       </div>
 

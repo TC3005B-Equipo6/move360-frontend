@@ -8,6 +8,7 @@ import type { DashboardItem as Item, ChartConfig, IndicatorConfig } from "./type
 interface Props {
   item: Item;
   onDelete: (id: string) => void;
+  onEdit?: (id: string) => void;
   readonly?: boolean;
   // RGL inyecta estas props vía cloneElement; las recibimos y reenviamos al DOM root.
   style?: CSSProperties;
@@ -31,7 +32,7 @@ const getMetricLabel = (columns: string[]) => {
 };
 
 export const DashboardItem = forwardRef<HTMLDivElement, Props>(function DashboardItem(
-  { item, onDelete, readonly = false, style, className, onMouseDown, onMouseUp, onTouchEnd, children },
+  { item, onDelete, onEdit, readonly = false, style, className, onMouseDown, onMouseUp, onTouchEnd, children },
   ref,
 ) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -41,6 +42,10 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
   const handleDelete = () => {
     setMenuOpen(false);
     onDelete(item.id);
+  };
+  const handleEdit = () => {
+    setMenuOpen(false);
+    onEdit?.(item.id);
   };
 
   const menuButton = (
@@ -57,10 +62,10 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
       return (
         <div className="relative w-full h-full flex items-center justify-center">
           <Indicator
-            value={cfg.value}
-            label={cfg.label}
+            data={cfg.data}
+            title={cfg.title}
             subtitle={cfg.subtitle}
-            relationType={cfg.relationType}
+            relationship={cfg.relationship}
             deltaData={cfg.deltaData}
             unit={cfg.unit}
           />
@@ -99,7 +104,7 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
       {renderContent()}
       {!readonly && menuOpen && (
         <div className="item-menu absolute top-[46px] right-3 z-20">
-          <ActionMenu onDelete={handleDelete} onEdit={closeMenu} onClose={closeMenu} />
+          <ActionMenu onDelete={handleDelete} onEdit={handleEdit} onClose={closeMenu} />
         </div>
       )}
       {/* RGL placeholder children (resize handles, etc.) — no se usan aquí pero los reenviamos */}

@@ -13,7 +13,7 @@ import {
   type SourceFilter,
 } from "../../../services/source/sourceService";
 import type { IndicatorWidget, IndicatorType, IndicatorOperation } from "../../dashboard/types";
-import type { RelationType } from "../Indicator/Indicator";
+import type { Relationship } from "../Indicator/Indicator";
 
 interface Props {
   onClose: () => void;
@@ -216,17 +216,13 @@ const selectClass = `${inputClass} disabled:opacity-50 disabled:cursor-not-allow
 export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
   const isEditMode = !!indicator;
 
-  const [title, setTitle] = useState(indicator?.label || "");
+  const [title, setTitle] = useState(indicator?.title || "");
   const [subtitle, setSubtitle] = useState(indicator?.subtitle || "");
-  const [indicatorType, setIndicatorType] = useState<IndicatorType>(indicator?.indicatorType || "percentage");
-  const [operation, setOperation] = useState<IndicatorOperation>(indicator?.operation || "sum");
-  const [relationType, setRelationType] = useState<RelationType>(indicator?.relationType || "direct");
-  const [startDate, setStartDate] = useState(
-    indicator?.startDate ? new Date(indicator.startDate).toISOString().split("T")[0] : "",
-  );
-  const [endDate, setEndDate] = useState(
-    indicator?.endDate ? new Date(indicator.endDate).toISOString().split("T")[0] : "",
-  );
+  const [indicatorType, setIndicatorType] = useState<IndicatorType>(indicator?.type || "PERCENTAGE");
+  const [operation, setOperation] = useState<IndicatorOperation>(indicator?.operation || "SUM");
+  const [relationship, setRelationship] = useState<Relationship>(indicator?.relationship || "DIRECT");
+  const [startDate, setStartDate] = useState(indicator?.startDate ?? "");
+  const [endDate, setEndDate] = useState(indicator?.endDate ?? "");
 
   // --- Catalog selection (indices are what the backend expects) ---
   const [sources, setSources] = useState<SourceItem[]>([]);
@@ -234,9 +230,9 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
   const [columns, setColumns] = useState<SourceItem[]>([]);
   const [filters, setFilters] = useState<SourceFilter[]>([]);
 
-  const [sourceIndex, setSourceIndex] = useState<number | null>(indicator?.sourceIndex ?? null);
-  const [tableIndex, setTableIndex] = useState<number | null>(indicator?.tableIndex ?? null);
-  const [columnIndex, setColumnIndex] = useState<number | null>(indicator?.columnIndex ?? null);
+  const [sourceIndex, setSourceIndex] = useState<number | null>(indicator?.sourceId ?? null);
+  const [tableIndex, setTableIndex] = useState<number | null>(indicator?.tableId ?? null);
+  const [columnIndex, setColumnIndex] = useState<number | null>(indicator?.columnId ?? null);
   const [selectedFilters, setSelectedFilters] = useState<Record<number, string[]>>(indicator?.filters ?? {});
 
   const sourceName = sourceIndex !== null ? sources[sourceIndex]?.name : undefined;
@@ -306,7 +302,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
   };
 
   // Percentage figures render with a "%" suffix; absolute counts carry no unit here.
-  const unit = indicatorType === "percentage" ? "%" : undefined;
+  const unit = indicatorType === "PERCENTAGE" ? "%" : undefined;
 
   const filtersValid = isSemovi && filters.length > 0 && filters.every((g) => isFilterGroupValid(g, selectedFilters));
   const originValid = isInegi ? columnIndex !== null : isSemovi ? filtersValid : false;
@@ -319,28 +315,27 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
   );
 
   const handleSave = () => {
-    // `value`/`deltaData` are computed by the backend from the query; we keep any
+    // `data`/`deltaData` are computed by the backend from the query; we keep any
     // existing values when editing and otherwise leave them for the backend to fill.
     const newIndicator: IndicatorWidget = {
       id: indicator?.id || crypto.randomUUID(),
-      type: "indicator",
-      value: indicator?.value ?? 0,
-      label: title,
+      data: indicator?.data ?? 0,
+      title,
       subtitle: subtitle || undefined,
-      relationType,
+      relationship,
       deltaData: indicator?.deltaData,
       unit,
-      indicatorType,
+      type: indicatorType,
       operation,
-      sourceIndex: sourceIndex ?? undefined,
+      sourceId: sourceIndex ?? undefined,
       sourceName,
-      tableIndex: tableIndex ?? undefined,
+      tableId: tableIndex ?? undefined,
       tableName: tableIndex !== null ? tables[tableIndex]?.name : undefined,
-      columnIndex: isInegi && columnIndex !== null ? columnIndex : undefined,
+      columnId: isInegi && columnIndex !== null ? columnIndex : undefined,
       columnName: isInegi && columnIndex !== null ? columns[columnIndex]?.name : undefined,
       filters: isSemovi ? selectedFilters : undefined,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate,
+      endDate,
     };
     onSave(newIndicator);
   };
@@ -467,8 +462,8 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                 value={indicatorType}
                 onChange={setIndicatorType}
                 options={[
-                  { value: "percentage", label: "Porcentaje" },
-                  { value: "number", label: "Número" },
+                  { value: "PERCENTAGE", label: "Porcentaje" },
+                  { value: "NUMBER", label: "Número" },
                 ]}
               />
             </div>
@@ -481,8 +476,8 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                 value={operation}
                 onChange={setOperation}
                 options={[
-                  { value: "sum", label: "Suma" },
-                  { value: "average", label: "Promedio" },
+                  { value: "SUM", label: "Suma" },
+                  { value: "AVG", label: "Promedio" },
                 ]}
               />
             </div>
@@ -492,11 +487,11 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                 Relación
               </FieldLabel>
               <Toggle
-                value={relationType}
-                onChange={setRelationType}
+                value={relationship}
+                onChange={setRelationship}
                 options={[
-                  { value: "direct", label: "Directa" },
-                  { value: "inverse", label: "Inversa" },
+                  { value: "DIRECT", label: "Directa" },
+                  { value: "INVERSE", label: "Inversa" },
                 ]}
               />
             </div>
@@ -526,9 +521,9 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
           <div className="flex flex-col items-center justify-start gap-3 min-w-[320px] pt-7">
             <span className="text-body-sm font-semibold text-content-secondary">Vista previa</span>
             <IndicatorPreview
-              label={title}
+              title={title}
               subtitle={subtitle || undefined}
-              relationType={relationType}
+              relationship={relationship}
               unit={unit}
             />
           </div>
