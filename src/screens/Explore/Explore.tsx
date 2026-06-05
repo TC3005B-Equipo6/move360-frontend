@@ -2,14 +2,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '../../components/navigation/AppLayout/AppLayout';
 import { Header } from '../../components/navigation/Header/Header';
-import { ProfileCard } from '../../components/common/ProfileCard/ProfileCard';
+import { ProfileMenu } from '../../components/navigation/ProfileMenu/ProfileMenu';
 import { ListItem } from '../../components/common/ListItem/ListItem';
 import { Button } from '../../components/common/Button/Button';
 import {
   listPublicDashboards,
   type PublicDashboardSummary,
 } from '../../services/dashboard/dashboardService';
-import { useProfile, displayName } from '../../services/auth/useProfile';
+import { useProfile } from '../../services/auth/useProfile';
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -49,14 +49,7 @@ export default function Explore() {
       header={
         <Header
           title="Dashboards públicos"
-          profile={
-            <ProfileCard
-              variant="compact"
-              name={displayName(profile)}
-              role={profile?.role ?? ''}
-              isLoading={isProfileLoading}
-            />
-          }
+          profile={<ProfileMenu profile={profile} isLoading={isProfileLoading} />}
         />
       }
     >

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '../../components/navigation/AppLayout/AppLayout';
 import { Header } from '../../components/navigation/Header/Header';
-import { ProfileCard } from '../../components/common/ProfileCard/ProfileCard';
+import { ProfileMenu } from '../../components/navigation/ProfileMenu/ProfileMenu';
 import { ListItem } from '../../components/common/ListItem/ListItem';
 import { AddButton } from '../../components/common/AddButton/AddButton';
 import { OverflowMenuButton } from '../../components/common/OverflowMenuButton/OverflowMenuButton';
@@ -16,7 +16,7 @@ import {
   deleteDashboard,
   type UserDashboardSummary,
 } from '../../services/dashboard/dashboardService';
-import { useProfile, displayName } from '../../services/auth/useProfile';
+import { useProfile } from '../../services/auth/useProfile';
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -80,14 +80,7 @@ export default function Dashboards() {
       header={
         <Header
           title="Mis Dashboards"
-          profile={
-            <ProfileCard
-              variant="compact"
-              name={displayName(profile)}
-              role={profile?.role ?? ''}
-              isLoading={isProfileLoading}
-            />
-          }
+          profile={<ProfileMenu profile={profile} isLoading={isProfileLoading} />}
         />
       }
     >

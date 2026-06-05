@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AppLayout } from '../../components/navigation/AppLayout/AppLayout';
 import { Header } from '../../components/navigation/Header/Header';
-import { ProfileCard } from '../../components/common/ProfileCard/ProfileCard';
+import { ProfileMenu } from '../../components/navigation/ProfileMenu/ProfileMenu';
 import { IconButton } from '../../components/common/IconButton/IconButton';
 import { Button } from '../../components/common/Button/Button';
 import { Modal } from '../../components/common/Modal/Modal';
 import { DashboardGrid, type DashboardGridHandle } from '../../components/dashboard/DashboardGrid';
 import { getDashboardDetail, type DashboardDetail as DashboardDetailDto } from '../../services/dashboard/dashboardService';
 import type { DashboardItem } from '../../components/dashboard/types';
-import { useProfile, displayName } from '../../services/auth/useProfile';
+import { useProfile } from '../../services/auth/useProfile';
 import { DashboardDetailsModal } from '../../components/dashboard/DashboardDetailsModal/DashboardDetailsModal';
 
 function NotFound() {
@@ -184,14 +184,7 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
               )}
             </div>
           }
-          profile={
-            <ProfileCard
-              variant="compact"
-              name={displayName(profile)}
-              role={profile?.role ?? ''}
-              isLoading={isProfileLoading}
-            />
-          }
+          profile={<ProfileMenu profile={profile} isLoading={isProfileLoading} />}
         />
       }
     >
