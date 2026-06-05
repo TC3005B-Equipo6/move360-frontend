@@ -267,7 +267,9 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
 
   // Flush pending changes on confirm: all moved items go in a single batch
   // layout PUT (coordinates), while content edits go in per-resource PATCHes
-  // (/indicator or /graph). Then clear the flags. See ADR 0002.
+  // (/indicator or /graph). The PATCH responses already carry the recomputed
+  // snapshot, so we reconcile each item in place from them — no extra refetch.
+  // Then clear the flags. See ADR 0002.
   const flushModified = useCallback(async () => {
     if (!persistToBackend) return;
     const persisted = items.filter((it) => it.resourceId != null);
@@ -280,24 +282,52 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
         coordinate: toCoord(it.col, it.row),
       }));
 
-    const contentPatches = persisted
-      .filter((it) => it.contentModified)
-      .map((it) =>
-        it.type === "indicator"
-          ? updateIndicator(it.resourceId!, buildUpdatePayload(it))
-          : updateGraph(it.resourceId!, buildUpdateGraphPayload(it.config as ChartConfig, itemTypeToSize(it.type))),
-      );
+    const contentItems = persisted.filter((it) => it.contentModified);
 
-    await Promise.all([
-      ...contentPatches,
+    // Per-item PATCH, keeping the recomputed snapshot keyed by item id.
+    const [contentResults] = await Promise.all([
+      Promise.all(
+        contentItems.map(async (it) => {
+          if (it.type === "indicator") {
+            const res = await updateIndicator(it.resourceId!, buildUpdatePayload(it));
+            return { id: it.id, kind: "indicator" as const, res };
+          }
+          const res = await updateGraph(
+            it.resourceId!,
+            buildUpdateGraphPayload(it.config as ChartConfig, itemTypeToSize(it.type)),
+          );
+          return { id: it.id, kind: "graph" as const, res };
+        }),
+      ),
       layoutItems.length > 0 ? saveLayout(dashboardId, layoutItems) : Promise.resolve(),
     ]);
 
-    if (layoutItems.length > 0 || contentPatches.length > 0) {
+    const byId = new Map(contentResults.map((r) => [r.id, r]));
+
+    if (layoutItems.length > 0 || contentItems.length > 0) {
       setItems((prev) =>
-        prev.map((it) =>
-          it.moved || it.contentModified ? { ...it, moved: false, contentModified: false } : it,
-        ),
+        prev.map((it) => {
+          const result = byId.get(it.id);
+          if (!result) {
+            // Moved-only item: just clear the flag.
+            return it.moved ? { ...it, moved: false } : it;
+          }
+          if (result.kind === "graph") {
+            const existing = it.config as ChartConfig;
+            const config = graphToChartConfig(result.res, result.res.type!, {
+              sourceName: existing.config.sourceName,
+              tableName: existing.config.tableName,
+            });
+            return { ...it, config, moved: false, contentModified: false };
+          }
+          const existing = it.config as IndicatorConfig;
+          const config: IndicatorConfig = {
+            ...existing,
+            data: result.res.data ?? 0,
+            deltaData: result.res.deltaData ?? existing.deltaData,
+          };
+          return { ...it, config, moved: false, contentModified: false };
+        }),
       );
     }
   }, [items, persistToBackend, dashboardId]);

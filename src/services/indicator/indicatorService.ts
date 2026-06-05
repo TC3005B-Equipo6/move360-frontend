@@ -124,8 +124,11 @@ export async function createIndicator(
 export async function updateIndicator(
   id: number,
   payload: UpdateIndicatorPayload,
-): Promise<void> {
-  await api.patch(`/indicator/${id}`, payload, { timeout: COMPUTE_TIMEOUT_MS });
+): Promise<CreateIndicatorResponse> {
+  const { data } = await api.patch<CreateIndicatorResponse>(`/indicator/${id}`, payload, {
+    timeout: COMPUTE_TIMEOUT_MS,
+  });
+  return data;
 }
 
 export async function deleteIndicator(id: number): Promise<void> {

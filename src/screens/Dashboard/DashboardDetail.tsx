@@ -36,22 +36,18 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
-  const [gridRevision, setGridRevision] = useState(0);
   const gridRef = useRef<DashboardGridHandle>(null);
 
   async function handleConfirm() {
     // Re-entry guard: el PATCH de query (p. ej. cambio de fuente) recomputa en el
-    // back y tarda; sin guard, clicks repetidos lanzan flush+refetch concurrentes
-    // que compiten y dejan un snapshot stale hasta recargar.
+    // back y tarda; sin guard, clicks repetidos lanzan flushes concurrentes.
     if (isConfirming) return;
     setIsConfirming(true);
     // Persiste cambios: layout en lote (PUT /layout) + ediciones de contenido.
+    // flushModified reconcilia cada item in-place con el snapshot que devuelve el
+    // PATCH, asi que no hace falta un refetch (getDashboardDetail) extra.
     try {
       await gridRef.current?.flushModified();
-      // Reconcilia con el backend tras persistir (snapshot recomputado).
-      const fresh = await getDashboardDetail(dashboardId);
-      setItems(fresh.items);
-      setGridRevision((revision) => revision + 1);
       setIsConfirmModalOpen(false);
       setIsEditing(false);
     } catch (e) {
@@ -146,7 +142,7 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
         </div>
       ) : (
         <DashboardGrid
-          key={`${dashboardId}:${gridRevision}`}
+          key={dashboardId}
           ref={gridRef}
           dashboardId={dashboardId}
           persistToBackend
