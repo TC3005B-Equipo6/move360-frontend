@@ -16,6 +16,8 @@ import { AddButton } from "../common/AddButton/AddButton";
 import { AddItemModal, type AddItemChoice } from "./AddItemModal";
 import { ChartFlowModal } from "./ChartFlowModal";
 import { DashboardItem } from "./DashboardItem";
+import { Modal } from "../common/Modal/Modal";
+import { Button } from "../common/Button/Button";
 import { CELL_SIZE, GRID_COLUMNS, GUTTER, ITEM_SIZES, type ItemType } from "./grid.config";
 import { findFirstFreeSlot } from "./layout/findFirstFreeSlot";
 import { fromRGL, toRGL } from "./layout/mapping";
@@ -40,6 +42,16 @@ import {
 import { itemTypeToSize, kindFromType, toCoord } from "./itemMapping";
 import type { DashboardItem as Item, ChartConfig, IndicatorConfig, IndicatorWidget } from "./types";
 import { IndicatorModal } from "../indicators/IndicatorModal/IndicatorModal";
+
+// localStorage flag for the "edit reflects on confirm" notice opt-out.
+const UPDATE_NOTICE_OPT_OUT = "dashboard:hideUpdateNotice";
+const isUpdateNoticeSuppressed = () => {
+  try {
+    return localStorage.getItem(UPDATE_NOTICE_OPT_OUT) === "1";
+  } catch {
+    return false;
+  }
+};
 
 interface Props {
   dashboardId?: string;
@@ -100,6 +112,12 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingChoice, setPendingChoice] = useState<AddItemChoice | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // Items being recomputed by the confirm flush — drives their loading skin.
+  const [loadingIds, setLoadingIds] = useState<Set<string>>(() => new Set());
+  // Info modal shown after editing a persisted item, since its data only
+  // refreshes on the global confirm. Suppressible via "no volver a mostrar".
+  const [showUpdateNotice, setShowUpdateNotice] = useState(false);
+  const [dontShowNotice, setDontShowNotice] = useState(false);
   const layoutBeforeDrag = useRef<LayoutItem[] | null>(null);
 
   // Local-only screens (Home/Test) mirror the grid into localStorage. Backed
@@ -155,10 +173,30 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
       .catch((e) => console.error("POST /indicator failed", e));
   };
 
+  // Shown after editing a persisted item: its data only refreshes on confirm.
+  const maybeShowUpdateNotice = (id: string) => {
+    const target = items.find((it) => it.id === id);
+    if (persistToBackend && target?.resourceId != null && !isUpdateNoticeSuppressed()) {
+      setShowUpdateNotice(true);
+    }
+  };
+
+  const dismissUpdateNotice = () => {
+    if (dontShowNotice) {
+      try {
+        localStorage.setItem(UPDATE_NOTICE_OPT_OUT, "1");
+      } catch {
+        /* ignore storage failures */
+      }
+    }
+    setShowUpdateNotice(false);
+  };
+
   // Edit: replace the indicator config and flag content modified (the PATCH
   // happens later in flushModified, on confirm — see ADR 0002).
   const handleIndicatorEdit = (widget: IndicatorWidget) => {
     const config: IndicatorConfig = widget;
+    maybeShowUpdateNotice(widget.id);
     setItems((prev) =>
       prev.map((it) => (it.id === widget.id ? { ...it, config, contentModified: true } : it)),
     );
@@ -198,6 +236,7 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
   // reposition as if placing a new item: keep the spot only when the larger
   // rect still fits there, otherwise drop into the first free slot.
   const handleChartEdit = ({ type, config }: { type: ItemType; config: ChartConfig }) => {
+    if (editingId) maybeShowUpdateNotice(editingId);
     setItems((prev) => {
       const current = prev.find((it) => it.id === editingId);
       if (!current) return prev;
@@ -284,23 +323,40 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
 
     const contentItems = persisted.filter((it) => it.contentModified);
 
-    // Per-item PATCH, keeping the recomputed snapshot keyed by item id.
-    const [contentResults] = await Promise.all([
-      Promise.all(
-        contentItems.map(async (it) => {
-          if (it.type === "indicator") {
-            const res = await updateIndicator(it.resourceId!, buildUpdatePayload(it));
-            return { id: it.id, kind: "indicator" as const, res };
-          }
-          const res = await updateGraph(
-            it.resourceId!,
-            buildUpdateGraphPayload(it.config as ChartConfig, itemTypeToSize(it.type)),
-          );
-          return { id: it.id, kind: "graph" as const, res };
-        }),
-      ),
-      layoutItems.length > 0 ? saveLayout(dashboardId, layoutItems) : Promise.resolve(),
-    ]);
+    // Show the loading skin on items being recomputed while their PATCH is in flight.
+    const contentIds = new Set(contentItems.map((it) => it.id));
+    if (contentIds.size) setLoadingIds((prev) => new Set([...prev, ...contentIds]));
+
+    type ContentResult =
+      | { id: string; kind: "indicator"; res: Awaited<ReturnType<typeof updateIndicator>> }
+      | { id: string; kind: "graph"; res: Awaited<ReturnType<typeof updateGraph>> };
+    let contentResults: ContentResult[];
+    try {
+      // Per-item PATCH, keeping the recomputed snapshot keyed by item id.
+      [contentResults] = await Promise.all([
+        Promise.all(
+          contentItems.map(async (it) => {
+            if (it.type === "indicator") {
+              const res = await updateIndicator(it.resourceId!, buildUpdatePayload(it));
+              return { id: it.id, kind: "indicator" as const, res };
+            }
+            const res = await updateGraph(
+              it.resourceId!,
+              buildUpdateGraphPayload(it.config as ChartConfig, itemTypeToSize(it.type)),
+            );
+            return { id: it.id, kind: "graph" as const, res };
+          }),
+        ),
+        layoutItems.length > 0 ? saveLayout(dashboardId, layoutItems) : Promise.resolve(),
+      ]);
+    } finally {
+      if (contentIds.size)
+        setLoadingIds((prev) => {
+          const next = new Set(prev);
+          contentIds.forEach((id) => next.delete(id));
+          return next;
+        });
+    }
 
     const byId = new Map(contentResults.map((r) => [r.id, r]));
 
@@ -364,15 +420,23 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
           onDragStart={handleDragStart}
           onDragStop={handleDragStop}
         >
-          {items.map((item) => (
-            <DashboardItem
-              key={item.id}
-              item={item}
-              onDelete={handleDelete}
-              onEdit={handleEditRequest}
-              readonly={readonly}
-            />
-          ))}
+          {items.map((item) => {
+            const isFlushing = loadingIds.has(item.id);
+            // An edit leaves the item showing stale/illustrative data until confirm
+            // recomputes it on the backend — show the skin instead of misleading data.
+            const isPending = Boolean(item.contentModified);
+            return (
+              <DashboardItem
+                key={item.id}
+                item={item}
+                onDelete={handleDelete}
+                onEdit={handleEditRequest}
+                readonly={readonly}
+                isLoading={isFlushing || isPending}
+                loadingLabel={isFlushing ? "Actualizando…" : isPending ? "Esperando confirmación" : undefined}
+              />
+            );
+          })}
         </GridLayout>
       </div>
 
@@ -403,6 +467,33 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
           onSave={handleChartEdit}
           chart={{ type: editingChart.type, config: editingChart.config as ChartConfig }}
         />
+      )}
+      {showUpdateNotice && (
+        <Modal
+          title="Actualización pendiente"
+          onClose={dismissUpdateNotice}
+          footer={
+            <div className="flex w-full items-center justify-between gap-3">
+              <label className="flex cursor-pointer items-center gap-2 text-body-sm font-medium text-content-secondary">
+                <input
+                  type="checkbox"
+                  checked={dontShowNotice}
+                  onChange={(e) => setDontShowNotice(e.target.checked)}
+                  className="h-4 w-4 cursor-pointer accent-[var(--primary)]"
+                />
+                No volver a mostrar
+              </label>
+              <Button label="Aceptar" variant="blue" size="medium" onPress={dismissUpdateNotice} />
+            </div>
+          }
+        >
+          <p className="m-0 text-body-lg font-semibold text-content-primary">
+            El cambio se aplicará cuando confirmes la edición del dashboard.
+          </p>
+          <p className="m-0 mt-2 text-body-sm font-medium text-content-secondary">
+            La gráfica o indicador se recalcula en el servidor al confirmar.
+          </p>
+        </Modal>
       )}
     </div>
   );

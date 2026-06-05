@@ -10,6 +10,10 @@ interface Props {
   onDelete: (id: string) => void;
   onEdit?: (id: string) => void;
   readonly?: boolean;
+  /** Render the item's loading skeleton (e.g. while a confirm flush recomputes it). */
+  isLoading?: boolean;
+  /** Message overlaid on the skeleton (e.g. "Esperando confirmación"). */
+  loadingLabel?: string;
   // RGL inyecta estas props vía cloneElement; las recibimos y reenviamos al DOM root.
   style?: CSSProperties;
   className?: string;
@@ -32,7 +36,7 @@ const getMetricLabel = (columns: string[]) => {
 };
 
 export const DashboardItem = forwardRef<HTMLDivElement, Props>(function DashboardItem(
-  { item, onDelete, onEdit, readonly = false, style, className, onMouseDown, onMouseUp, onTouchEnd, children },
+  { item, onDelete, onEdit, readonly = false, isLoading = false, loadingLabel, style, className, onMouseDown, onMouseUp, onTouchEnd, children },
   ref,
 ) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -68,6 +72,8 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
             relationship={cfg.relationship}
             deltaData={cfg.deltaData}
             unit={cfg.unit}
+            isLoading={isLoading}
+            loadingLabel={loadingLabel}
           />
           {!readonly && menuButton}
         </div>
@@ -86,6 +92,8 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
           subtitle={cfg.subtitle}
           delta={cfg.delta}
           metricLabel={getMetricLabel(cfg.config.metricColumns)}
+          isLoading={isLoading}
+          loadingLabel={loadingLabel}
         />
         {!readonly && menuButton}
       </div>

@@ -42,16 +42,27 @@ export interface CreateIndicatorPayload {
   coordinate: Coordinate;
 }
 
-// Content-only PATCH. Coordinate moves now go through the batch layout endpoint
-// (`PUT /dashboard/{id}/layout`), so this payload no longer carries coordinate.
-/** Body for `PATCH /indicator/{id}` — the backend only persists these fields. */
+// Content-only PATCH. Coordinate moves go through the batch layout endpoint
+// (`PUT /dashboard/{id}/layout`), so this payload never carries coordinate.
+// The backend now accepts the full editable indicator origin on PATCH (not just
+// identity), recomputing `data`/`deltaData` for query-affecting fields. We mirror
+// the graph pattern and send the whole origin every edit (no field diffing).
+/** Body for `PATCH /indicator/{id}` (mirrors `UpdateIndicatorDTO`). */
 export interface UpdateIndicatorPayload {
   title: string;
   subtitle?: string;
   relationship?: Relationship;
+  type?: IndicatorType;
+  operation?: IndicatorOperation;
+  startDate?: string;
+  endDate?: string;
+  sourceId?: number;
+  tableId?: number;
+  columnId?: number;
+  filters?: IndicatorFiltersPayload;
 }
 
-/** Response of `POST` / `PATCH` (mirrors `CreateIndicatorResponseDTO`). */
+/** Response of `POST` (mirrors `CreateIndicatorResponseDTO`). */
 export interface CreateIndicatorResponse {
   id: number;
   title: string;
@@ -60,6 +71,28 @@ export interface CreateIndicatorResponse {
   relationship: Relationship;
   deltaData: number | null;
   data: number | null;
+}
+
+/** Response of `GET` / `PATCH /indicator/{id}` (mirrors `GetIndicatorResponseDTO`).
+ * The grid only reads `data`/`deltaData` to reconcile after a recompute. */
+export interface IndicatorResponse {
+  itemId: string;
+  id: number;
+  dashboardId: string;
+  title: string;
+  subtitle: string | null;
+  type: IndicatorType;
+  data: number | null;
+  relationship: Relationship;
+  deltaData: number | null;
+  operation: IndicatorOperation;
+  startDate: string;
+  endDate: string;
+  coordinate: Coordinate;
+  sourceId: number;
+  tableId: number;
+  columnId: number | null;
+  filters: IndicatorFiltersPayload;
 }
 
 /** Flatten the UI's grouped filters into the backend's parallel arrays. */
@@ -75,6 +108,20 @@ export function flattenFilters(
     }
   }
   return { ids, values };
+}
+
+/** Inverse of `flattenFilters`: group the backend's parallel arrays back into the
+ * UI's `Record<filterGroupId, string[]>` so the edit modal can re-select them. */
+export function unflattenFilters(
+  payload: IndicatorFiltersPayload | null | undefined,
+): Record<number, string[]> {
+  const grouped: Record<number, string[]> = {};
+  const ids = payload?.ids ?? [];
+  const values = payload?.values ?? [];
+  for (let i = 0; i < ids.length; i++) {
+    (grouped[ids[i]] ??= []).push(values[i]);
+  }
+  return grouped;
 }
 
 /** Build the create body from a config + the dashboard id + the placed slot. */
@@ -102,13 +149,24 @@ export function buildCreatePayload(
   };
 }
 
-/** Build the content-only update body from a dashboard item. */
+/** Build the update body from a dashboard item. Sends the full editable origin
+ * (mirrors `buildCreatePayload`); the backend recomputes `data`/`deltaData` for
+ * query-affecting changes and leaves them untouched for identity-only edits. */
 export function buildUpdatePayload(item: DashboardItem): UpdateIndicatorPayload {
   const config = item.config as IndicatorConfig;
   return {
     title: config.title,
-    subtitle: config.subtitle,
+    subtitle: config.subtitle ?? "",
     relationship: config.relationship,
+    type: config.type,
+    operation: config.operation,
+    startDate: config.startDate,
+    endDate: config.endDate,
+    sourceId: config.sourceId,
+    tableId: config.tableId,
+    // SEMOVI has no column; the backend stores null for non-INEGI sources.
+    columnId: config.columnId ?? 0,
+    filters: flattenFilters(config.filters),
   };
 }
 
@@ -124,8 +182,8 @@ export async function createIndicator(
 export async function updateIndicator(
   id: number,
   payload: UpdateIndicatorPayload,
-): Promise<CreateIndicatorResponse> {
-  const { data } = await api.patch<CreateIndicatorResponse>(`/indicator/${id}`, payload, {
+): Promise<IndicatorResponse> {
+  const { data } = await api.patch<IndicatorResponse>(`/indicator/${id}`, payload, {
     timeout: COMPUTE_TIMEOUT_MS,
   });
   return data;

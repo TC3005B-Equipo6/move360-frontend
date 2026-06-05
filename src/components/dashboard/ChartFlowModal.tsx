@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type Ref, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -155,15 +155,19 @@ function SelectField({
   value,
   options,
   onChange,
+  error = false,
+  fieldRef,
 }: {
   id: string;
   label: string;
   value: string;
   options: { label: string; value: string }[];
   onChange: (value: string) => void;
+  error?: boolean;
+  fieldRef?: Ref<HTMLDivElement>;
 }) {
   return (
-    <div className="min-w-0">
+    <div ref={fieldRef} tabIndex={-1} className="min-w-0 scroll-mt-4 outline-none">
       <label htmlFor={id} className="mb-2 block text-body-sm font-semibold text-content-primary">
         {label}
       </label>
@@ -171,7 +175,11 @@ function SelectField({
         id={id}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-11 w-full cursor-pointer rounded-md border border-default bg-surface-raised px-3 text-body-sm text-content-primary outline-none transition-colors focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className={`h-11 w-full cursor-pointer rounded-md border bg-surface-raised px-3 text-body-sm text-content-primary outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+          error
+            ? "border-danger focus-visible:border-danger focus-visible:outline-danger"
+            : "border-default focus-visible:border-primary focus-visible:outline-primary"
+        }`}
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -179,6 +187,7 @@ function SelectField({
           </option>
         ))}
       </select>
+      {error && <span className="mt-1 block text-caption font-medium text-danger">Campo requerido</span>}
     </div>
   );
 }
@@ -188,18 +197,27 @@ function MonthField({
   label,
   value,
   onChange,
+  error = false,
+  errorText = "Campo requerido",
+  fieldRef,
 }: {
   id: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
+  error?: boolean;
+  errorText?: string;
+  fieldRef?: Ref<HTMLDivElement>;
 }) {
   return (
-    <div className="min-w-0">
+    <div ref={fieldRef} tabIndex={-1} className="min-w-0 scroll-mt-4 outline-none">
       <label htmlFor={id} className="mb-2 block text-body-sm font-semibold text-content-primary">
         {label}
       </label>
-      <MonthYearPicker id={id} value={value} onChange={onChange} size="sm" />
+      <div className={error ? "rounded-md ring-1 ring-danger" : undefined}>
+        <MonthYearPicker id={id} value={value} onChange={onChange} size="sm" />
+      </div>
+      {error && <span className="mt-1 block text-caption font-medium text-danger">{errorText}</span>}
     </div>
   );
 }
@@ -408,6 +426,37 @@ export const ChartFlowModal = ({ onClose, onSave, chart }: Props) => {
       endMonth >= startMonth,
   );
 
+  // Set on a failed Save attempt; drives the red highlight on missing fields.
+  // Flags read live state, so each clears as soon as its field is satisfied.
+  const [showErrors, setShowErrors] = useState(false);
+  const titleError = showErrors && !title.trim();
+  const dimensionError = showErrors && !dimensionColumn;
+  const metricsError = showErrors && (!metricColumns.length || !rankingMetricOk);
+  const startError = showErrors && !startMonth;
+  const endError = showErrors && (!endMonth || (Boolean(startMonth) && endMonth < startMonth));
+  const endErrorText = endMonth && startMonth && endMonth < startMonth ? "Debe ser posterior al inicio" : "Campo requerido";
+
+  // Refs to required fields, top-to-bottom, so a failed Save scrolls to the
+  // first missing one.
+  const titleRef = useRef<HTMLInputElement>(null);
+  const startRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+  const dimensionRef = useRef<HTMLDivElement>(null);
+  const metricsRef = useRef<HTMLDivElement>(null);
+
+  const scrollToFirstMissing = () => {
+    const target: HTMLElement | null =
+      !title.trim() ? titleRef.current
+      : !startMonth ? startRef.current
+      : !endMonth || endMonth < startMonth ? endRef.current
+      : !dimensionColumn ? dimensionRef.current
+      : !metricColumns.length || !rankingMetricOk ? metricsRef.current
+      : null;
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    target.focus?.({ preventScroll: true });
+  };
+
   const handleSizeChange = (nextSize: ChartSize) => {
     setSize(nextSize);
     const nextAllowedTypes = TYPE_BY_SIZE[nextSize];
@@ -441,7 +490,11 @@ export const ChartFlowModal = ({ onClose, onSave, chart }: Props) => {
   };
 
   const handleSave = () => {
-    if (!canSave || !currentSource || !currentTable) return;
+    if (!canSave || !currentSource || !currentTable) {
+      setShowErrors(true);
+      scrollToFirstMissing();
+      return;
+    }
 
     const series = metricColumns.map((column, index) => ({
       key: column,
@@ -492,14 +545,20 @@ export const ChartFlowModal = ({ onClose, onSave, chart }: Props) => {
                     Titulo
                   </label>
                   <input
+                    ref={titleRef}
                     id="chart-title"
                     type="text"
                     maxLength={40}
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
                     placeholder="Nombre de la grafica"
-                    className="h-11 w-full rounded-md border border-default bg-surface-raised px-3 text-body-sm text-content-primary outline-none transition-colors focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    className={`h-11 w-full rounded-md border bg-surface-raised px-3 text-body-sm text-content-primary outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                      titleError
+                        ? "border-danger focus-visible:border-danger focus-visible:outline-danger"
+                        : "border-default focus-visible:border-primary focus-visible:outline-primary"
+                    }`}
                   />
+                  {titleError && <span className="mt-1 block text-caption font-medium text-danger">Campo requerido</span>}
                 </div>
                 <div className="min-w-0">
                   <label htmlFor="chart-subtitle" className="mb-2 block text-body-sm font-semibold text-content-primary">
@@ -529,8 +588,8 @@ export const ChartFlowModal = ({ onClose, onSave, chart }: Props) => {
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                <MonthField id="chart-start" label="Inicio" value={startMonth} onChange={setStartMonth} />
-                <MonthField id="chart-end" label="Fin" value={endMonth} onChange={setEndMonth} />
+                <MonthField id="chart-start" label="Inicio" value={startMonth} onChange={setStartMonth} error={startError} fieldRef={startRef} />
+                <MonthField id="chart-end" label="Fin" value={endMonth} onChange={setEndMonth} error={endError} errorText={endErrorText} fieldRef={endRef} />
                 <OptionGroup label="Operacion" value={operation} options={OPERATION_OPTIONS} onChange={setOperation} />
               </div>
 
@@ -559,16 +618,25 @@ export const ChartFlowModal = ({ onClose, onSave, chart }: Props) => {
                 label="Dimension"
                 value={dimensionColumn}
                 onChange={setDimensionColumn}
+                error={dimensionError}
+                fieldRef={dimensionRef}
                 options={(currentTable?.dimensions ?? []).map((d) => ({
                   label: d.displayName,
                   value: d.columnName,
                 }))}
               />
 
-              <section className="rounded-lg border border-default bg-surface-sunken p-4">
+              <section ref={metricsRef} tabIndex={-1} className={`scroll-mt-4 rounded-lg border bg-surface-sunken p-4 outline-none ${metricsError ? "border-danger" : "border-default"}`}>
                 <h4 className="mb-3 text-body-sm font-semibold text-content-primary">
                   Metricas{effectiveType === "ranking" ? " (una)" : ""}
                 </h4>
+                {metricsError && (
+                  <p className="mb-3 mt-0 text-caption font-medium text-danger">
+                    {effectiveType === "ranking" && metricColumns.length > 1
+                      ? "Ranking acepta una sola metrica."
+                      : "Selecciona al menos una metrica."}
+                  </p>
+                )}
                 <div className="grid gap-2 sm:grid-cols-2">
                   {(currentTable?.metrics ?? []).map((metric) => (
                     <label
@@ -628,9 +696,14 @@ export const ChartFlowModal = ({ onClose, onSave, chart }: Props) => {
             </section>
           </div>
 
-          <div className="flex flex-col-reverse gap-3 border-t border-subtle pt-4 sm:flex-row sm:items-center sm:justify-end">
-            <Button label="Cancelar" variant="white" size="large" onPress={onClose} />
-            <Button label={isEditMode ? "Guardar cambios" : "Crear grafica"} size="large" disabled={!canSave} onPress={handleSave} />
+          <div className="flex flex-col-reverse gap-3 border-t border-subtle pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-body-sm font-medium text-danger">
+              {showErrors && !canSave ? "Completa los campos marcados en rojo." : ""}
+            </span>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
+              <Button label="Cancelar" variant="white" size="large" onPress={onClose} />
+              <Button label={isEditMode ? "Guardar cambios" : "Crear grafica"} size="large" onPress={handleSave} />
+            </div>
           </div>
         </div>
       )}
