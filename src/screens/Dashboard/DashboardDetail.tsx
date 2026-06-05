@@ -35,10 +35,16 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [gridRevision, setGridRevision] = useState(0);
   const gridRef = useRef<DashboardGridHandle>(null);
 
   async function handleConfirm() {
+    // Re-entry guard: el PATCH de query (p. ej. cambio de fuente) recomputa en el
+    // back y tarda; sin guard, clicks repetidos lanzan flush+refetch concurrentes
+    // que compiten y dejan un snapshot stale hasta recargar.
+    if (isConfirming) return;
+    setIsConfirming(true);
     // Persiste cambios: layout en lote (PUT /layout) + ediciones de contenido.
     try {
       await gridRef.current?.flushModified();
@@ -46,11 +52,14 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
       const fresh = await getDashboardDetail(dashboardId);
       setItems(fresh.items);
       setGridRevision((revision) => revision + 1);
+      setIsConfirmModalOpen(false);
+      setIsEditing(false);
     } catch (e) {
+      // Falla -> dejar el modal abierto en modo edicion para reintentar.
       console.error('Persist dashboard changes failed', e);
+    } finally {
+      setIsConfirming(false);
     }
-    setIsConfirmModalOpen(false);
-    setIsEditing(false);
   }
 
   useEffect(() => {
@@ -160,12 +169,26 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
       <Modal
         title="Confirmar cambios"
         message="¿Deseas guardar los cambios realizados en el dashboard?"
-        confirmText="Confirmar"
-        cancelText="Cancelar"
-        confirmVariant="blue"
-        onConfirm={handleConfirm}
-        onCancel={() => setIsConfirmModalOpen(false)}
+        showCloseIcon={!isConfirming}
         onClose={() => setIsConfirmModalOpen(false)}
+        footer={
+          <>
+            <Button
+              variant="white"
+              size="medium"
+              label="Cancelar"
+              disabled={isConfirming}
+              onPress={() => setIsConfirmModalOpen(false)}
+            />
+            <Button
+              variant="blue"
+              size="medium"
+              label="Confirmar"
+              isLoading={isConfirming}
+              onPress={handleConfirm}
+            />
+          </>
+        }
       />
     )}
   </>

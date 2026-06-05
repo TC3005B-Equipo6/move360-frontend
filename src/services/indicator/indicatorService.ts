@@ -1,4 +1,4 @@
-import api from "../api";
+import api, { COMPUTE_TIMEOUT_MS } from "../api";
 import type {
   DashboardItem,
   IndicatorConfig,
@@ -115,7 +115,9 @@ export function buildUpdatePayload(item: DashboardItem): UpdateIndicatorPayload 
 export async function createIndicator(
   payload: CreateIndicatorPayload,
 ): Promise<CreateIndicatorResponse> {
-  const { data } = await api.post<CreateIndicatorResponse>("/indicator", payload);
+  const { data } = await api.post<CreateIndicatorResponse>("/indicator", payload, {
+    timeout: COMPUTE_TIMEOUT_MS,
+  });
   return data;
 }
 
@@ -123,7 +125,7 @@ export async function updateIndicator(
   id: number,
   payload: UpdateIndicatorPayload,
 ): Promise<void> {
-  await api.patch(`/indicator/${id}`, payload);
+  await api.patch(`/indicator/${id}`, payload, { timeout: COMPUTE_TIMEOUT_MS });
 }
 
 export async function deleteIndicator(id: number): Promise<void> {

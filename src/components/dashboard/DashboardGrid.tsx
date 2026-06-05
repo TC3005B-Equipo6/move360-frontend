@@ -62,6 +62,17 @@ const GRID_WIDTH = GRID_COLUMNS * CELL_SIZE + (GRID_COLUMNS - 1) * GUTTER + 2 * 
 
 const compactor = getCompactor(null, true);
 
+/** Cell-rect overlap test between an existing item and a candidate rect. */
+function itemOverlaps(it: Item, col: number, row: number, w: number, h: number): boolean {
+  const { w: iw, h: ih } = ITEM_SIZES[it.type];
+  return !(
+    it.col + iw <= col ||
+    col + w <= it.col ||
+    it.row + ih <= row ||
+    row + h <= it.row
+  );
+}
+
 function computeReflowLayout(
   before: LayoutItem[],
   oldItem: LayoutItem,
@@ -183,10 +194,34 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
 
   // Edit: replace the graph config (and size, since the modal can resize) and
   // flag content modified. The PATCH happens later in flushModified, on confirm.
+  // If the size grew, the old slot may now collide with neighbors, so we
+  // reposition as if placing a new item: keep the spot only when the larger
+  // rect still fits there, otherwise drop into the first free slot.
   const handleChartEdit = ({ type, config }: { type: ItemType; config: ChartConfig }) => {
-    setItems((prev) =>
-      prev.map((it) => (it.id === editingId ? { ...it, type, config, contentModified: true } : it)),
-    );
+    setItems((prev) => {
+      const current = prev.find((it) => it.id === editingId);
+      if (!current) return prev;
+
+      let { col, row } = current;
+      let moved = current.moved ?? false;
+
+      if (current.type !== type) {
+        const { w, h } = ITEM_SIZES[type];
+        const others = prev.filter((it) => it.id !== editingId);
+        const fitsHere =
+          col + w <= GRID_COLUMNS && !others.some((it) => itemOverlaps(it, col, row, w, h));
+        if (!fitsHere) {
+          const slot = findFirstFreeSlot(others, w, h);
+          col = slot.col;
+          row = slot.row;
+          moved = true;
+        }
+      }
+
+      return prev.map((it) =>
+        it.id === editingId ? { ...it, type, config, col, row, moved, contentModified: true } : it,
+      );
+    });
     setEditingId(null);
   };
 

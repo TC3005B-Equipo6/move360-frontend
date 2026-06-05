@@ -1,4 +1,4 @@
-import api from "../api";
+import api, { COMPUTE_TIMEOUT_MS } from "../api";
 import type { ChartConfig, GraphDataRow } from "../../components/dashboard/types";
 import {
   chartTypeToGraphType,
@@ -224,12 +224,12 @@ export function buildUpdateGraphPayload(config: ChartConfig, size: GraphSize): U
 // --- CRUD -------------------------------------------------------------------
 
 export async function createGraph(payload: CreateGraphRequest): Promise<GraphResponse> {
-  const { data } = await api.post<GraphResponse>("/graph", payload);
+  const { data } = await api.post<GraphResponse>("/graph", payload, { timeout: COMPUTE_TIMEOUT_MS });
   return data;
 }
 
 export async function updateGraph(id: number, payload: UpdateGraphRequest): Promise<GraphResponse> {
-  const { data } = await api.patch<GraphResponse>(`/graph/${id}`, payload);
+  const { data } = await api.patch<GraphResponse>(`/graph/${id}`, payload, { timeout: COMPUTE_TIMEOUT_MS });
   return data;
 }
 
