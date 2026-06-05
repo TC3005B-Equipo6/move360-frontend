@@ -26,6 +26,39 @@ function NotFound() {
   );
 }
 
+// Initial-load skin: placeholder cards while the single GET /dashboard/{id}
+// (which carries every item's data) is in flight. Layout/count are unknown
+// until it resolves, so we render a generic mix of indicator + chart shapes.
+function DashboardSkeleton() {
+  return (
+    <div className="flex flex-col gap-6 p-2" aria-busy="true" aria-label="Cargando dashboard">
+      <div className="flex flex-wrap gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-[180px] w-[180px] rounded-md border border-subtle bg-surface-raised p-4 shadow-sm"
+          >
+            <div className="h-3 w-3/4 rounded bg-surface-sunken animate-pulse" />
+            <div className="mt-2 h-2.5 w-1/2 rounded bg-surface-sunken animate-pulse" />
+            <div className="mt-10 h-9 w-2/3 rounded bg-surface-sunken animate-pulse" />
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-4">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-[260px] w-[380px] max-w-full rounded-md border border-subtle bg-surface-raised p-4 shadow-sm"
+          >
+            <div className="h-3 w-1/2 rounded bg-surface-sunken animate-pulse" />
+            <div className="mt-4 h-[200px] w-full rounded-md bg-surface-sunken animate-pulse" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Keyed by dashboard id so navigating between dashboards remounts with fresh state.
 function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
   const { profile, isLoading: isProfileLoading } = useProfile();
@@ -163,9 +196,7 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
       }
     >
       {items === null ? (
-        <div className="flex h-full items-center justify-center">
-          <p className="m-0 text-body-sm font-medium text-content-muted">Cargando…</p>
-        </div>
+        <DashboardSkeleton />
       ) : (
         <DashboardGrid
           key={`${dashboardId}-${reloadKey}`}

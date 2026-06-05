@@ -40,6 +40,8 @@ export interface ChartProps {
   series?: SeriesItem[];
   /** Additive: render a loading skeleton instead of the chart. */
   isLoading?: boolean;
+  /** Additive: message overlaid on the skeleton (e.g. "Esperando confirmación"). */
+  loadingLabel?: string;
 }
 
 // Categorical series palette — sourced from design tokens (--chart-1..8).
@@ -170,6 +172,7 @@ export const Chart = ({
   size = "md",
   series,
   isLoading = false,
+  loadingLabel,
 }: ChartProps) => {
   const chartColors = getChartColors(title, data);
   const isEmpty = !data || data.length === 0;
@@ -331,8 +334,14 @@ export const Chart = ({
   const renderBody = () => {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center w-full" style={bodyHeightStyle}>
+        <div className="relative flex items-center justify-center w-full" style={bodyHeightStyle}>
           <div className="w-full h-full rounded-md bg-surface-sunken animate-pulse" />
+          {loadingLabel && (
+            <span className="absolute flex items-center gap-2 rounded-full bg-surface-overlay px-3 py-1.5 text-body-sm font-semibold text-content-secondary shadow-sm ring-1 ring-inset ring-border-subtle">
+              <span className="h-2 w-2 rounded-full bg-primary animate-pulse" aria-hidden="true" />
+              {loadingLabel}
+            </span>
+          )}
         </div>
       );
     }

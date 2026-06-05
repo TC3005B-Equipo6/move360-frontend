@@ -213,6 +213,11 @@ function FilterAccordion({
 const inputClass =
   "h-[52px] rounded-md border border-default px-5 text-body-lg text-content-primary outline-none transition-colors focus:border-primary";
 const selectClass = `${inputClass} disabled:opacity-50 disabled:cursor-not-allowed`;
+// Applied on top of input/select when a required field is missing after Save.
+const errorBorder = "!border-danger focus:!border-danger";
+
+const RequiredHint = ({ show }: { show: boolean }) =>
+  show ? <span className="text-caption font-medium text-danger">Campo requerido</span> : null;
 
 // The indicator backend stores `startDate`/`endDate` as LocalDate (YYYY-MM-DD),
 // but the UI restricts the picker to whole months (same as graphs). We map the
@@ -322,17 +327,61 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
 
   // Required to save: identity (title + subtitle), source + table, and the data
   // origin (INEGI column or SEMOVI filters). The backend rejects an indicator
-  // without them.
-  // Edit only persists title/subtitle/relationship (the PATCH body) and the
-  // backend never returns table/column/filters to rehydrate the origin — so
-  // origin can't gate saving in edit mode (it would stay disabled forever).
+  // without them. Edit now PATCHes the full origin (and the detail load echoes it
+  // back to prefill), so editing is gated on the same fields as creation.
+  // A valid period requires both months and end not before start.
+  const datesValid = Boolean(startDate && endDate && endDate >= startDate);
   const canSave = Boolean(
-    isEditMode
-      ? title.trim() && subtitle.trim()
-      : title.trim() && subtitle.trim() && sourceIndex !== null && tableIndex !== null && originValid,
+    title.trim() && subtitle.trim() && sourceIndex !== null && tableIndex !== null && originValid && datesValid,
   );
 
+  // Set on a failed Save attempt; drives the red highlight on missing fields.
+  // Each flag re-evaluates from live state, so a field clears its error as soon
+  // as it's filled — no need to reset showErrors.
+  const [showErrors, setShowErrors] = useState(false);
+  const titleError = showErrors && !title.trim();
+  const subtitleError = showErrors && !subtitle.trim();
+  const sourceError = showErrors && sourceIndex === null;
+  const tableError = showErrors && sourceIndex !== null && tableIndex === null;
+  const columnError = showErrors && isInegi && tableIndex !== null && columnIndex === null;
+  const filtersError = showErrors && isSemovi && tableIndex !== null && !filtersValid;
+  const startDateError = showErrors && !startDate;
+  const endDateError = showErrors && (!endDate || (Boolean(startDate) && endDate < startDate));
+  const endDateErrorText = endDate && startDate && endDate < startDate ? "Debe ser posterior al inicio" : "Campo requerido";
+
+  // Refs to the required fields, in top-to-bottom order, so a failed Save can
+  // scroll to (and focus) the first one that's missing.
+  const titleRef = useRef<HTMLInputElement>(null);
+  const subtitleRef = useRef<HTMLInputElement>(null);
+  const sourceRef = useRef<HTMLSelectElement>(null);
+  const tableRef = useRef<HTMLSelectElement>(null);
+  const columnRef = useRef<HTMLSelectElement>(null);
+  const filtersRef = useRef<HTMLDivElement>(null);
+  const startDateRef = useRef<HTMLDivElement>(null);
+  const endDateRef = useRef<HTMLDivElement>(null);
+
+  const focusFirstMissing = () => {
+    const target: HTMLElement | null =
+      !title.trim() ? titleRef.current
+      : !subtitle.trim() ? subtitleRef.current
+      : sourceIndex === null ? sourceRef.current
+      : tableIndex === null ? tableRef.current
+      : isInegi && columnIndex === null ? columnRef.current
+      : isSemovi && !filtersValid ? filtersRef.current
+      : !startDate ? startDateRef.current
+      : !endDate || endDate < startDate ? endDateRef.current
+      : null;
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    target.focus?.({ preventScroll: true });
+  };
+
   const handleSave = () => {
+    if (!canSave) {
+      setShowErrors(true);
+      focusFirstMissing();
+      return;
+    }
     // `data`/`deltaData` are computed by the backend from the query; we keep any
     // existing values when editing and otherwise leave them for the backend to fill.
     const newIndicator: IndicatorWidget = {
@@ -364,14 +413,15 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
       onClose={onClose}
       className="w-[950px] rounded-2xl"
       footer={
-        <>
-          <Button label="Cancelar" variant="white" onPress={onClose} />
-          <Button
-            label={isEditMode ? "Guardar cambios" : "Guardar"}
-            onPress={handleSave}
-            disabled={!canSave}
-          />
-        </>
+        <div className="flex w-full items-center justify-between gap-3">
+          <span className="text-body-sm font-medium text-danger">
+            {showErrors && !canSave ? "Completa los campos marcados en rojo." : ""}
+          </span>
+          <div className="flex items-center gap-3">
+            <Button label="Cancelar" variant="white" onPress={onClose} />
+            <Button label={isEditMode ? "Guardar cambios" : "Guardar"} onPress={handleSave} />
+          </div>
+        </div>
       }
     >
       <div className="flex flex-col gap-6 pt-2">
@@ -380,24 +430,28 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
           <div className="flex flex-col gap-2">
             <FieldLabel>Título</FieldLabel>
             <input
+              ref={titleRef}
               type="text"
               maxLength={40}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Nombre del indicador"
-              className={inputClass}
+              className={`${inputClass} ${titleError ? errorBorder : ""}`}
             />
+            <RequiredHint show={titleError} />
           </div>
           <div className="flex flex-col gap-2">
             <FieldLabel>Subtítulo</FieldLabel>
             <input
+              ref={subtitleRef}
               type="text"
               maxLength={60}
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
               placeholder="Contexto (ej. Febrero 2026 vs enero 2026)"
-              className={inputClass}
+              className={`${inputClass} ${subtitleError ? errorBorder : ""}`}
             />
+            <RequiredHint show={subtitleError} />
           </div>
         </div>
 
@@ -405,7 +459,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
           <div className="flex-1 flex flex-col gap-6">
             <div className="flex flex-col gap-3">
               <FieldLabel>Fuente</FieldLabel>
-              <select value={sourceIndex ?? ""} onChange={(e) => handleSourceChange(e.target.value)} className={selectClass}>
+              <select ref={sourceRef} value={sourceIndex ?? ""} onChange={(e) => handleSourceChange(e.target.value)} className={`${selectClass} ${sourceError ? errorBorder : ""}`}>
                 <option value="">Selecciona una fuente</option>
                 {sources.map((src, i) => (
                   <option key={src.name} value={i}>
@@ -413,15 +467,17 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                   </option>
                 ))}
               </select>
+              <RequiredHint show={sourceError} />
             </div>
 
             <div className="flex flex-col gap-3">
               <FieldLabel>Tabla</FieldLabel>
               <select
+                ref={tableRef}
                 value={tableIndex ?? ""}
                 onChange={(e) => handleTableChange(e.target.value)}
                 disabled={sourceIndex === null}
-                className={selectClass}
+                className={`${selectClass} ${tableError ? errorBorder : ""}`}
               >
                 <option value="">Selecciona una tabla</option>
                 {tables.map((tbl, i) => (
@@ -430,6 +486,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                   </option>
                 ))}
               </select>
+              <RequiredHint show={tableError} />
             </div>
 
             {/* Columna — INEGI only. Disabled for SEMOVI (it exposes filters instead). */}
@@ -438,10 +495,11 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                 Columna
               </FieldLabel>
               <select
+                ref={columnRef}
                 value={columnIndex ?? ""}
                 onChange={(e) => setColumnIndex(e.target.value === "" ? null : Number(e.target.value))}
                 disabled={!isInegi}
-                className={selectClass}
+                className={`${selectClass} ${columnError ? errorBorder : ""}`}
               >
                 <option value="">{isSemovi ? "No aplica para SEMOVI" : "Selecciona una columna"}</option>
                 {columns.map((col, i) => (
@@ -450,10 +508,11 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                   </option>
                 ))}
               </select>
+              <RequiredHint show={columnError} />
             </div>
 
             {/* Filtros — SEMOVI only. */}
-            <div className="flex flex-col gap-3">
+            <div ref={filtersRef} tabIndex={-1} className="flex flex-col gap-3 scroll-mt-4 outline-none">
               <FieldLabel help="Acota la afluencia por líneas, tipo de pago, etc. Debes elegir al menos 1 valor en cada grupo. Solo aplica para SEMOVI.">
                 Filtros
               </FieldLabel>
@@ -461,7 +520,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                 filters.length > 0 ? (
                   <FilterAccordion key={tableIndex} filters={filters} selected={selectedFilters} onChange={setSelectedFilters} />
                 ) : (
-                  <div className="rounded-md border border-dashed border-default px-5 py-6 text-body-sm text-content-muted">
+                  <div className={`rounded-md border border-dashed px-5 py-6 text-body-sm text-content-muted ${filtersError ? errorBorder : "border-default"}`}>
                     {tableIndex === null ? "Selecciona una tabla para ver sus filtros." : "Esta tabla no tiene filtros."}
                   </div>
                 )
@@ -470,6 +529,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
                   Los filtros solo aplican para SEMOVI.
                 </div>
               )}
+              <RequiredHint show={filtersError} />
             </div>
 
             <div className="flex flex-col gap-3">
@@ -515,19 +575,27 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
             </div>
 
             <div className="flex gap-4">
-              <div className="flex-1 flex flex-col gap-3">
+              <div ref={startDateRef} tabIndex={-1} className="flex-1 flex flex-col gap-3 scroll-mt-4 outline-none">
                 <FieldLabel>Mes de inicio</FieldLabel>
-                <MonthYearPicker
-                  value={toMonthInput(startDate)}
-                  onChange={(ym) => setStartDate(monthToStartDate(ym))}
-                />
+                <div className={startDateError ? "rounded-md ring-1 ring-danger" : undefined}>
+                  <MonthYearPicker
+                    value={toMonthInput(startDate)}
+                    onChange={(ym) => setStartDate(monthToStartDate(ym))}
+                  />
+                </div>
+                <RequiredHint show={startDateError} />
               </div>
-              <div className="flex-1 flex flex-col gap-3">
+              <div ref={endDateRef} tabIndex={-1} className="flex-1 flex flex-col gap-3 scroll-mt-4 outline-none">
                 <FieldLabel>Mes de fin</FieldLabel>
-                <MonthYearPicker
-                  value={toMonthInput(endDate)}
-                  onChange={(ym) => setEndDate(monthToEndDate(ym))}
-                />
+                <div className={endDateError ? "rounded-md ring-1 ring-danger" : undefined}>
+                  <MonthYearPicker
+                    value={toMonthInput(endDate)}
+                    onChange={(ym) => setEndDate(monthToEndDate(ym))}
+                  />
+                </div>
+                {endDateError && (
+                  <span className="text-caption font-medium text-danger">{endDateErrorText}</span>
+                )}
               </div>
             </div>
           </div>

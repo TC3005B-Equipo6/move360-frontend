@@ -18,6 +18,7 @@ import {
   graphToChartConfig,
   type GraphSnapshot,
 } from "../graph/graphService";
+import { unflattenFilters, type IndicatorFiltersPayload } from "../indicator/indicatorService";
 
 // --- Server-backed dashboard entity (CRUD) ---------------------------------
 //
@@ -165,6 +166,10 @@ interface RawDashboardIndicatorItem {
   startDate: string;
   endDate: string;
   sourceId: number;
+  // Full data origin echoed back so the edit modal can rehydrate the source.
+  tableId: number;
+  columnId: number | null;
+  filters: IndicatorFiltersPayload;
 }
 
 interface RawDashboardItem {
@@ -196,6 +201,11 @@ function toIndicatorConfig(raw: RawDashboardIndicatorItem, type: string): Indica
     startDate: raw.startDate,
     endDate: raw.endDate,
     sourceId: raw.sourceId,
+    tableId: raw.tableId,
+    // INEGI carries a column; SEMOVI carries filters. Un-flatten the backend's
+    // parallel arrays back into the UI's grouped `Record<filterId, string[]>`.
+    columnId: raw.columnId ?? undefined,
+    filters: unflattenFilters(raw.filters),
   };
 }
 
