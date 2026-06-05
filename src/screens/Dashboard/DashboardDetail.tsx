@@ -36,7 +36,31 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isDiscarding, setIsDiscarding] = useState(false);
+  // Bumped on discard to remount the grid with freshly-fetched items, dropping
+  // in-memory moves/content edits that never reached the backend.
+  const [reloadKey, setReloadKey] = useState(0);
   const gridRef = useRef<DashboardGridHandle>(null);
+
+  // Descartar: recarga del backend y sale de edición. Revierte movimientos y
+  // ediciones de contenido en memoria; creaciones/eliminaciones ya persistieron.
+  async function handleDiscard() {
+    if (isConfirming || isDiscarding) return;
+    setIsDiscarding(true);
+    try {
+      const { meta, items: loaded } = await getDashboardDetail(dashboardId);
+      setDashboard(meta);
+      setItems(loaded);
+      setReloadKey((k) => k + 1);
+      setIsConfirmModalOpen(false);
+      setIsEditing(false);
+    } catch (e) {
+      // Falla -> dejar el modal abierto para reintentar.
+      console.error('Discard dashboard changes failed', e);
+    } finally {
+      setIsDiscarding(false);
+    }
+  }
 
   async function handleConfirm() {
     // Re-entry guard: el PATCH de query (p. ej. cambio de fuente) recomputa en el
@@ -142,7 +166,7 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
         </div>
       ) : (
         <DashboardGrid
-          key={dashboardId}
+          key={`${dashboardId}-${reloadKey}`}
           ref={gridRef}
           dashboardId={dashboardId}
           persistToBackend
@@ -164,8 +188,7 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
     {isConfirmModalOpen && (
       <Modal
         title="Confirmar cambios"
-        message="¿Deseas guardar los cambios realizados en el dashboard?"
-        showCloseIcon={!isConfirming}
+        showCloseIcon={!isConfirming && !isDiscarding}
         onClose={() => setIsConfirmModalOpen(false)}
         footer={
           <>
@@ -173,19 +196,49 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
               variant="white"
               size="medium"
               label="Cancelar"
-              disabled={isConfirming}
+              disabled={isConfirming || isDiscarding}
               onPress={() => setIsConfirmModalOpen(false)}
+            />
+            <Button
+              variant="red"
+              size="medium"
+              label="Descartar cambios"
+              isLoading={isDiscarding}
+              disabled={isConfirming}
+              onPress={handleDiscard}
             />
             <Button
               variant="blue"
               size="medium"
               label="Confirmar"
               isLoading={isConfirming}
+              disabled={isDiscarding}
               onPress={handleConfirm}
             />
           </>
         }
-      />
+      >
+        <div className="flex flex-col gap-4">
+          <p className="m-0 text-body-lg font-semibold text-content-primary">
+            ¿Deseas guardar los cambios realizados en el dashboard?
+          </p>
+          <div className="rounded-lg bg-surface-sunken p-4 text-body-sm">
+            <p className="m-0 font-semibold text-content-primary">
+              Si descartas:
+            </p>
+            <ul className="m-0 mt-2 list-disc space-y-1 pl-5 text-content-secondary">
+              <li>
+                <span className="font-medium text-content-primary">Se revierten:</span>{' '}
+                movimientos de posición y ediciones de contenido aún no guardados.
+              </li>
+              <li>
+                <span className="font-medium text-content-primary">Se mantienen:</span>{' '}
+                elementos creados o eliminados (ya guardados en el servidor).
+              </li>
+            </ul>
+          </div>
+        </div>
+      </Modal>
     )}
   </>
   );
