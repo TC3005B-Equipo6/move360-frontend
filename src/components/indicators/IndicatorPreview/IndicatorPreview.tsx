@@ -37,7 +37,6 @@ export const IndicatorPreview = ({ title, subtitle, relationship, unit }: Indica
       <div className={`flex items-center gap-1 text-body-sm font-semibold tabular-nums ${sampleDeltaColor}`}>
         <span aria-hidden="true">▲</span>
         <span>X</span>
-        {unit && <span>{unit}</span>}
       </div>
     </div>
   );

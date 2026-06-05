@@ -96,7 +96,6 @@ export const Indicator = ({
         <div className={`flex items-center gap-1 text-body-sm font-semibold tabular-nums ${deltaColor}`}>
           {arrowGlyph && <span aria-hidden="true">{arrowGlyph}</span>}
           <span>{formatDelta(deltaData)}</span>
-          {unit && <span>{unit}</span>}
         </div>
       ) : (
         // Reserve the row so single- and delta-bearing cards align consistently in a grid.
