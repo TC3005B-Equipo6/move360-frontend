@@ -21,7 +21,7 @@ import { findFirstFreeSlot } from "./layout/findFirstFreeSlot";
 import { fromRGL, toRGL } from "./layout/mapping";
 import { resolveCollisions } from "./layout/resolveCollisions";
 import { detectSwapTarget } from "./layout/swapDetection";
-import { loadDashboardItems, saveDashboardItems } from "../../services/dashboard/dashboardService";
+import { loadDashboardItems, saveDashboardItems, saveLayout } from "../../services/dashboard/dashboardService";
 import {
   buildCreatePayload,
   buildUpdatePayload,
@@ -29,6 +29,15 @@ import {
   deleteIndicator,
   updateIndicator,
 } from "../../services/indicator/indicatorService";
+import {
+  buildCreateGraphPayload,
+  buildUpdateGraphPayload,
+  createGraph,
+  deleteGraph,
+  graphToChartConfig,
+  updateGraph,
+} from "../../services/graph/graphService";
+import { itemTypeToSize, kindFromType, toCoord } from "./itemMapping";
 import type { DashboardItem as Item, ChartConfig, IndicatorConfig, IndicatorWidget } from "./types";
 import { IndicatorModal } from "../indicators/IndicatorModal/IndicatorModal";
 
@@ -37,9 +46,11 @@ interface Props {
   readonly?: boolean;
   initialItems?: Item[];
   bottomBufferRows?: number;
-  /** When true, indicator changes sync to the backend (`dashboardId` must be a
-   * real UUID). Only `DashboardDetail` enables this; Home/Test stay local. */
-  persistIndicators?: boolean;
+  /** When true, item changes (indicators AND graphs) sync to the backend
+   * (`dashboardId` must be a real UUID) and items come from `initialItems`
+   * instead of localStorage. Only `DashboardDetail` enables this; Home/Test
+   * stay local. */
+  persistToBackend?: boolean;
 }
 
 /** Imperative handle: parent (the confirm button) flushes pending edits. */
@@ -50,6 +61,17 @@ export interface DashboardGridHandle {
 const GRID_WIDTH = GRID_COLUMNS * CELL_SIZE + (GRID_COLUMNS - 1) * GUTTER + 2 * GUTTER;
 
 const compactor = getCompactor(null, true);
+
+/** Cell-rect overlap test between an existing item and a candidate rect. */
+function itemOverlaps(it: Item, col: number, row: number, w: number, h: number): boolean {
+  const { w: iw, h: ih } = ITEM_SIZES[it.type];
+  return !(
+    it.col + iw <= col ||
+    col + w <= it.col ||
+    it.row + ih <= row ||
+    row + h <= it.row
+  );
+}
 
 function computeReflowLayout(
   before: LayoutItem[],
@@ -71,7 +93,7 @@ function computeReflowLayout(
 }
 
 export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function DashboardGrid(
-  { dashboardId = "demo", readonly = false, initialItems, bottomBufferRows = 1, persistIndicators = false },
+  { dashboardId = "demo", readonly = false, initialItems, bottomBufferRows = 1, persistToBackend = false },
   ref,
 ) {
   const [items, setItems] = useState<Item[]>(() => initialItems ?? loadDashboardItems(dashboardId).items);
@@ -80,9 +102,11 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
   const [editingId, setEditingId] = useState<string | null>(null);
   const layoutBeforeDrag = useRef<LayoutItem[] | null>(null);
 
+  // Local-only screens (Home/Test) mirror the grid into localStorage. Backed
+  // dashboards are server-sourced, so we never write them locally.
   useEffect(() => {
-    if (!readonly) saveDashboardItems(dashboardId, { id: dashboardId, items });
-  }, [dashboardId, items, readonly]);
+    if (!readonly && !persistToBackend) saveDashboardItems(dashboardId, { id: dashboardId, items });
+  }, [dashboardId, items, readonly, persistToBackend]);
 
   const occupiedRows = items.reduce(
     (max, it) => Math.max(max, it.row + ITEM_SIZES[it.type].h),
@@ -98,14 +122,6 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
 
   const closeConfigModal = () => setPendingChoice(null);
 
-  const placeItem = (type: ItemType, config: IndicatorConfig | ChartConfig) => {
-    const { w, h } = ITEM_SIZES[type];
-    const { col, row } = findFirstFreeSlot(items, w, h);
-    const newItem: Item = { id: crypto.randomUUID(), type, row, col, config };
-    setItems((prev) => [...prev, newItem]);
-    setPendingChoice(null);
-  };
-
   // Create: place the indicator locally, then (if persisting) POST it. The
   // backend computes `data`/`deltaData`; we patch them back onto the item.
   const handleIndicatorCreate = (widget: IndicatorWidget) => {
@@ -113,11 +129,11 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
     const { w, h } = ITEM_SIZES.indicator;
     const { col, row } = findFirstFreeSlot(items, w, h);
     const id = widget.id;
-    const newItem: Item = { id, type: "indicator", row, col, config, modified: false };
+    const newItem: Item = { id, type: "indicator", row, col, config };
     setItems((prev) => [...prev, newItem]);
     setPendingChoice(null);
 
-    if (!persistIndicators) return;
+    if (!persistToBackend) return;
     createIndicator(buildCreatePayload(config, dashboardId, col, row))
       .then((res) => {
         setItems((prev) =>
@@ -125,7 +141,7 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
             it.id === id
               ? {
                   ...it,
-                  indicatorId: res.id,
+                  resourceId: res.id,
                   config: {
                     ...(it.config as IndicatorConfig),
                     data: res.data ?? 0,
@@ -139,27 +155,89 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
       .catch((e) => console.error("POST /indicator failed", e));
   };
 
-  // Edit: replace the indicator config and flag it modified (the PATCH happens
-  // later in flushModified, on confirm — see ADR 0002).
+  // Edit: replace the indicator config and flag content modified (the PATCH
+  // happens later in flushModified, on confirm — see ADR 0002).
   const handleIndicatorEdit = (widget: IndicatorWidget) => {
     const config: IndicatorConfig = widget;
-    setItems((prev) => prev.map((it) => (it.id === widget.id ? { ...it, config, modified: true } : it)));
+    setItems((prev) =>
+      prev.map((it) => (it.id === widget.id ? { ...it, config, contentModified: true } : it)),
+    );
     setEditingId(null);
   };
 
+  // Create: place the graph locally, then (if persisting) POST it. The backend
+  // computes data/series/delta; we patch the returned snapshot onto the item.
   const handleChartSave = ({ type, config }: { type: ItemType; config: ChartConfig }) => {
-    placeItem(type, config);
+    const { w, h } = ITEM_SIZES[type];
+    const { col, row } = findFirstFreeSlot(items, w, h);
+    const id = crypto.randomUUID();
+    const newItem: Item = { id, type, row, col, config };
+    setItems((prev) => [...prev, newItem]);
+    setPendingChoice(null);
+
+    if (!persistToBackend) return;
+    const size = itemTypeToSize(type);
+    createGraph(buildCreateGraphPayload(config, size, dashboardId, col, row))
+      .then((res) => {
+        // res.type is present on the full GraphResponse. Keep the display-only
+        // labels captured by the modal; take computed data/series/delta from back.
+        const mapped = graphToChartConfig(res, res.type!, {
+          sourceName: config.config.sourceName,
+          tableName: config.config.tableName,
+        });
+        setItems((prev) =>
+          prev.map((it) => (it.id === id ? { ...it, resourceId: res.id, config: mapped } : it)),
+        );
+      })
+      .catch((e) => console.error("POST /graph failed", e));
+  };
+
+  // Edit: replace the graph config (and size, since the modal can resize) and
+  // flag content modified. The PATCH happens later in flushModified, on confirm.
+  // If the size grew, the old slot may now collide with neighbors, so we
+  // reposition as if placing a new item: keep the spot only when the larger
+  // rect still fits there, otherwise drop into the first free slot.
+  const handleChartEdit = ({ type, config }: { type: ItemType; config: ChartConfig }) => {
+    setItems((prev) => {
+      const current = prev.find((it) => it.id === editingId);
+      if (!current) return prev;
+
+      let { col, row } = current;
+      let moved = current.moved ?? false;
+
+      if (current.type !== type) {
+        const { w, h } = ITEM_SIZES[type];
+        const others = prev.filter((it) => it.id !== editingId);
+        const fitsHere =
+          col + w <= GRID_COLUMNS && !others.some((it) => itemOverlaps(it, col, row, w, h));
+        if (!fitsHere) {
+          const slot = findFirstFreeSlot(others, w, h);
+          col = slot.col;
+          row = slot.row;
+          moved = true;
+        }
+      }
+
+      return prev.map((it) =>
+        it.id === editingId ? { ...it, type, config, col, row, moved, contentModified: true } : it,
+      );
+    });
+    setEditingId(null);
   };
 
   const handleEditRequest = (id: string) => {
     const item = items.find((it) => it.id === id);
-    if (item?.type === "indicator") setEditingId(id);
+    if (item) setEditingId(id);
   };
 
   const handleDelete = (id: string) => {
     const item = items.find((it) => it.id === id);
-    if (persistIndicators && item?.type === "indicator" && item.indicatorId != null) {
-      deleteIndicator(item.indicatorId).catch((e) => console.error("DELETE /indicator failed", e));
+    if (persistToBackend && item?.resourceId != null) {
+      const request =
+        kindFromType(item.type) === "GRAPH"
+          ? deleteGraph(item.resourceId)
+          : deleteIndicator(item.resourceId);
+      request.catch((e) => console.error("DELETE item failed", e));
     }
     setItems((prev) => prev.filter((it) => it.id !== id));
   };
@@ -180,32 +258,87 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
       return next.map((it) => {
         const prior = prev.find((p) => p.id === it.id);
         if (prior && (prior.row !== it.row || prior.col !== it.col)) {
-          return { ...it, modified: true };
+          return { ...it, moved: true };
         }
         return it;
       });
     });
   };
 
-  // Flush all pending indicator edits (coordinate/title/subtitle/relationship)
-  // to the backend in one batch, then clear the flags. Called from the confirm
-  // button via the imperative handle.
+  // Flush pending changes on confirm: all moved items go in a single batch
+  // layout PUT (coordinates), while content edits go in per-resource PATCHes
+  // (/indicator or /graph). The PATCH responses already carry the recomputed
+  // snapshot, so we reconcile each item in place from them — no extra refetch.
+  // Then clear the flags. See ADR 0002.
   const flushModified = useCallback(async () => {
-    if (!persistIndicators) return;
-    const toUpdate = items.filter(
-      (it) => it.modified && it.type === "indicator" && it.indicatorId != null,
-    );
-    await Promise.all(toUpdate.map((it) => updateIndicator(it.indicatorId!, buildUpdatePayload(it))));
-    if (toUpdate.length > 0) {
-      setItems((prev) => prev.map((it) => (it.modified ? { ...it, modified: false } : it)));
+    if (!persistToBackend) return;
+    const persisted = items.filter((it) => it.resourceId != null);
+
+    const layoutItems = persisted
+      .filter((it) => it.moved)
+      .map((it) => ({
+        kind: kindFromType(it.type),
+        resourceId: it.resourceId!,
+        coordinate: toCoord(it.col, it.row),
+      }));
+
+    const contentItems = persisted.filter((it) => it.contentModified);
+
+    // Per-item PATCH, keeping the recomputed snapshot keyed by item id.
+    const [contentResults] = await Promise.all([
+      Promise.all(
+        contentItems.map(async (it) => {
+          if (it.type === "indicator") {
+            const res = await updateIndicator(it.resourceId!, buildUpdatePayload(it));
+            return { id: it.id, kind: "indicator" as const, res };
+          }
+          const res = await updateGraph(
+            it.resourceId!,
+            buildUpdateGraphPayload(it.config as ChartConfig, itemTypeToSize(it.type)),
+          );
+          return { id: it.id, kind: "graph" as const, res };
+        }),
+      ),
+      layoutItems.length > 0 ? saveLayout(dashboardId, layoutItems) : Promise.resolve(),
+    ]);
+
+    const byId = new Map(contentResults.map((r) => [r.id, r]));
+
+    if (layoutItems.length > 0 || contentItems.length > 0) {
+      setItems((prev) =>
+        prev.map((it) => {
+          const result = byId.get(it.id);
+          if (!result) {
+            // Moved-only item: just clear the flag.
+            return it.moved ? { ...it, moved: false } : it;
+          }
+          if (result.kind === "graph") {
+            const existing = it.config as ChartConfig;
+            const config = graphToChartConfig(result.res, result.res.type!, {
+              sourceName: existing.config.sourceName,
+              tableName: existing.config.tableName,
+            });
+            return { ...it, config, moved: false, contentModified: false };
+          }
+          const existing = it.config as IndicatorConfig;
+          const config: IndicatorConfig = {
+            ...existing,
+            data: result.res.data ?? 0,
+            deltaData: result.res.deltaData ?? existing.deltaData,
+          };
+          return { ...it, config, moved: false, contentModified: false };
+        }),
+      );
     }
-  }, [items, persistIndicators]);
+  }, [items, persistToBackend, dashboardId]);
 
   useImperativeHandle(ref, () => ({ flushModified }), [flushModified]);
 
-  const editingItem = items.find((it) => it.id === editingId && it.type === "indicator");
-  const editingWidget: IndicatorWidget | undefined = editingItem
-    ? { ...(editingItem.config as IndicatorConfig), id: editingItem.id }
+  const editingItem = items.find((it) => it.id === editingId);
+  const editingIndicator = editingItem?.type === "indicator" ? editingItem : undefined;
+  const editingChart = editingItem && editingItem.type !== "indicator" ? editingItem : undefined;
+  const editingWidget: IndicatorWidget | undefined = editingIndicator
+    ? { ...(editingIndicator.config as IndicatorConfig), id: editingIndicator.id }
     : undefined;
 
   return (
@@ -257,11 +390,18 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
       {!readonly && pendingChoice === "chart" && (
         <ChartFlowModal onClose={closeConfigModal} onSave={handleChartSave} />
       )}
-      {!readonly && editingItem && (
+      {!readonly && editingIndicator && (
         <IndicatorModal
           onClose={() => setEditingId(null)}
           onSave={handleIndicatorEdit}
           indicator={editingWidget}
+        />
+      )}
+      {!readonly && editingChart && (
+        <ChartFlowModal
+          onClose={() => setEditingId(null)}
+          onSave={handleChartEdit}
+          chart={{ type: editingChart.type, config: editingChart.config as ChartConfig }}
         />
       )}
     </div>

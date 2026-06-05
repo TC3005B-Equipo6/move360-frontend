@@ -1,5 +1,6 @@
 import type { ItemType } from "./grid.config";
 import type { Relationship } from "../indicators/Indicator/Indicator";
+import type { ChartType, GraphOperation } from "./itemMapping";
 
 // Vocabulary is aligned 1:1 with the backend Indicator DTO (same field names
 // and SCREAMING enum tokens), so create/update payloads are sent almost as-is.
@@ -53,20 +54,40 @@ export interface IndicatorWidget extends IndicatorConfig {
   id: string;
 }
 
+/** A row of computed graph data. `name` is the dimension label; every selected
+ * metric (and `${metric}_compare` in compare mode) appears as a keyed value. */
+export type GraphDataRow = {
+  name: string;
+  [metricOrCompareKey: string]: string | number | null;
+};
+
+// Aligned 1:1 with the backend Graph DTO (CreateGraphRequest / GraphResponse):
+// the builder fields are sent almost as-is. `data`/`series`/`delta` are computed
+// by the backend and rendered directly (never recomputed in the frontend).
 export interface ChartConfig {
   config: {
-    chartType: "bar" | "line" | "donut" | "ranking";
-    source: string;
-    datasetId: string;
-    columns: string[];
+    /** Backend `GraphType`, lower-cased for the recharts renderer. */
+    chartType: ChartType;
+    /** Backend numeric catalog indices (from `GET /graph/catalog`). */
+    sourceId: number;
+    tableId: number;
+    dimensionColumn: string;
+    metricColumns: string[];
+    operation: GraphOperation;
     compareEnabled: boolean;
-    compareTable: string;
-    startDate: string;
-    endDate: string;
+    compareTableId: number | null;
+    /** `YYYY-MM`. */
+    startMonth: string;
+    endMonth: string;
+    /** Display-only labels kept for the header/legend (not sent to the backend). */
+    sourceName?: string;
+    tableName?: string;
   };
+  /** User-authored heading (backend `title`). Falls back to the table name. */
+  title?: string;
   subtitle?: string;
   delta?: number;
-  data: Array<Record<string, string | number | undefined>>;
+  data: GraphDataRow[];
   series: {
     key: string;
     color: string;
@@ -80,11 +101,14 @@ export interface DashboardItem {
   row: number;
   col: number;
   config: IndicatorConfig | ChartConfig;
-  /** Backend indicator id (int). Only set once the indicator is persisted. */
-  indicatorId?: number;
-  /** True when a tracked attribute (coordinate, title, subtitle, relationship)
-   * changed since the last persist; drives the PATCH on confirm. */
-  modified?: boolean;
+  /** Backend resource id (int): indicator id for INDICATOR items, graph id for
+   * GRAPH items. Only set once the item is persisted (POST) or loaded. */
+  resourceId?: number;
+  /** Position changed since last persist -> goes in the batch layout PUT. */
+  moved?: boolean;
+  /** Content (title/subtitle/relationship or graph query) changed since last
+   * persist -> goes in a per-resource PATCH (/indicator or /graph). */
+  contentModified?: boolean;
 }
 
 export interface DashboardData {

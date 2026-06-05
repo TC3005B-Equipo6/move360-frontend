@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -13,27 +13,16 @@ import {
 } from "recharts";
 import { Modal } from "../common/Modal/Modal";
 import { Button } from "../common/Button/Button";
-import chartData from "./ChartDatasets.json";
-import type { ChartConfig } from "./types";
+import { MonthYearPicker } from "../common/MonthYearPicker/MonthYearPicker";
+import { getGraphCatalog, type CatalogSource, type CatalogTable } from "../../services/graph/graphService";
+import type { ChartConfig, GraphDataRow } from "./types";
+import type { ChartType, GraphOperation } from "./itemMapping";
 import type { ItemType } from "./grid.config";
 
 type ChartSize = "chartSm" | "chartMd" | "chartLg";
-type ChartType = "bar" | "line" | "ranking";
 
 interface PreviewRow {
   [key: string]: string | number | undefined;
-}
-
-interface Dataset {
-  id: string;
-  label: string;
-  columns: string[];
-  preview: PreviewRow[];
-}
-
-interface Source {
-  name: string;
-  datasets: Dataset[];
 }
 
 interface TooltipRow {
@@ -52,9 +41,10 @@ interface TooltipProps {
 interface Props {
   onClose: () => void;
   onSave: (result: { type: ItemType; config: ChartConfig }) => void;
+  /** When provided, the modal opens in edit mode prefilled from this graph. The
+   * grid `type` is a chart size (`chartSm|chartMd|chartLg`). */
+  chart?: { type: ItemType; config: ChartConfig };
 }
-
-const sources = chartData.sources as Source[];
 
 const SIZE_OPTIONS: { label: string; value: ChartSize }[] = [
   { label: "Pequena", value: "chartSm" },
@@ -66,6 +56,11 @@ const TYPE_OPTIONS: { label: string; value: ChartType }[] = [
   { label: "Barras", value: "bar" },
   { label: "Lineas", value: "line" },
   { label: "Ranking", value: "ranking" },
+];
+
+const OPERATION_OPTIONS: { label: string; value: GraphOperation }[] = [
+  { label: "Suma", value: "SUM" },
+  { label: "Promedio", value: "AVG" },
 ];
 
 const TYPE_BY_SIZE: Record<ChartSize, ChartType[]> = {
@@ -102,29 +97,12 @@ const formatCompactValue = (value: string | number) => {
   return Number.isFinite(numericValue) ? compactFormatter.format(numericValue) : String(value);
 };
 
-const getLabelColumn = (dataset?: Dataset, chartType: ChartType = "bar") => {
-  if (!dataset) return "";
-  const firstRow = dataset.preview[0] ?? {};
-  const stringColumns = dataset.columns.filter((column) => typeof firstRow[column] === "string");
-
-  if (chartType === "ranking") {
-    return stringColumns[1] ?? stringColumns[0] ?? dataset.columns[0] ?? "";
-  }
-
-  return stringColumns[0] ?? dataset.columns[0] ?? "";
-};
-
-const buildStructurePreviewRows = (selectedColumns: string[], labelColumn: string): PreviewRow[] =>
+const buildStructurePreviewRows = (selectedColumns: string[]): PreviewRow[] =>
   STRUCTURE_PREVIEW_LABELS.map((label, rowIndex) => {
-    const row: PreviewRow = {
-      name: label,
-      [labelColumn]: label,
-    };
-
+    const row: PreviewRow = { name: label };
     selectedColumns.forEach((column, columnIndex) => {
       row[column] = (rowIndex + 2) * (columnIndex + 3) * 100_000;
     });
-
     return row;
   });
 
@@ -221,13 +199,7 @@ function MonthField({
       <label htmlFor={id} className="mb-2 block text-body-sm font-semibold text-content-primary">
         {label}
       </label>
-      <input
-        id={id}
-        type="month"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-11 w-full rounded-md border border-default bg-surface-raised px-3 text-body-sm text-content-primary outline-none transition-colors focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-      />
+      <MonthYearPicker id={id} value={value} onChange={onChange} size="sm" />
     </div>
   );
 }
@@ -265,7 +237,7 @@ function PreviewChart({
   if (!selectedColumns.length || !chartDataRows.length) {
     return (
       <div className="flex h-full min-h-[220px] items-center justify-center rounded-md bg-surface-sunken text-body-sm font-semibold text-content-secondary">
-        Sin columnas seleccionadas
+        Sin metricas seleccionadas
       </div>
     );
   }
@@ -362,33 +334,79 @@ function PreviewChart({
   );
 }
 
-export const ChartFlowModal = ({ onClose, onSave }: Props) => {
-  const defaultSource = sources[0];
-  const defaultDataset = defaultSource?.datasets[0];
+export const ChartFlowModal = ({ onClose, onSave, chart }: Props) => {
+  const isEditMode = !!chart;
+  const initial = chart?.config.config;
 
-  const [size, setSize] = useState<ChartSize>("chartMd");
-  const [chartType, setChartType] = useState<ChartType>("bar");
-  const [source, setSource] = useState(defaultSource?.name ?? "");
-  const [datasetId, setDatasetId] = useState(defaultDataset?.id ?? "");
-  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
-  const [compareEnabled, setCompareEnabled] = useState(false);
-  const [compareTable, setCompareTable] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [sources, setSources] = useState<CatalogSource[]>([]);
+  const [catalogError, setCatalogError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const currentSource = sources.find((item) => item.name === source) ?? defaultSource;
-  const currentDataset = currentSource?.datasets.find((dataset) => dataset.id === datasetId) ?? currentSource?.datasets[0];
-  const currentDatasetId = currentDataset?.id ?? "";
+  const [title, setTitle] = useState(chart?.config.title ?? "");
+  const [subtitle, setSubtitle] = useState(chart?.config.subtitle ?? "");
+  const [size, setSize] = useState<ChartSize>(chart ? (chart.type as ChartSize) : "chartMd");
+  const [chartType, setChartType] = useState<ChartType>(initial?.chartType ?? "bar");
+  const [operation, setOperation] = useState<GraphOperation>(initial?.operation ?? "SUM");
+  const [sourceId, setSourceId] = useState<number | null>(initial?.sourceId ?? null);
+  const [tableId, setTableId] = useState<number | null>(initial?.tableId ?? null);
+  const [dimensionColumn, setDimensionColumn] = useState(initial?.dimensionColumn ?? "");
+  const [metricColumns, setMetricColumns] = useState<string[]>(initial?.metricColumns ?? []);
+  const [compareEnabled, setCompareEnabled] = useState(initial?.compareEnabled ?? false);
+  const [compareTableId, setCompareTableId] = useState<number | null>(initial?.compareTableId ?? null);
+  const [startMonth, setStartMonth] = useState(initial?.startMonth ?? "");
+  const [endMonth, setEndMonth] = useState(initial?.endMonth ?? "");
+
+  useEffect(() => {
+    let active = true;
+    getGraphCatalog()
+      .then((catalog) => {
+        if (!active) return;
+        setSources(catalog.sources);
+        // Edit mode keeps the graph's saved selection; only seed defaults on create.
+        if (isEditMode) return;
+        const firstSource = catalog.sources[0];
+        const firstTable = firstSource?.tables[0];
+        setSourceId(firstSource?.sourceId ?? null);
+        setTableId(firstTable?.tableId ?? null);
+        setDimensionColumn(firstTable?.defaultDimension ?? "");
+      })
+      .catch(() => {
+        if (active) setCatalogError(true);
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [isEditMode]);
+
+  const currentSource = useMemo(
+    () => sources.find((s) => s.sourceId === sourceId) ?? sources[0],
+    [sources, sourceId],
+  );
+  const currentTable: CatalogTable | undefined = useMemo(
+    () => currentSource?.tables.find((t) => t.tableId === tableId) ?? currentSource?.tables[0],
+    [currentSource, tableId],
+  );
+
   const allowedTypes = TYPE_BY_SIZE[size];
   const effectiveType = allowedTypes.includes(chartType) ? chartType : allowedTypes[0];
-  const labelColumn = getLabelColumn(currentDataset, effectiveType);
-  const chartDataRows = buildStructurePreviewRows(selectedColumns, labelColumn || "Categoria");
-  const compatibleTables = (currentSource?.datasets ?? []).filter((dataset) => {
-    if (dataset.id === currentDatasetId) return false;
-    return selectedColumns.some((column) => dataset.columns.includes(column));
-  });
+  const previewRows = buildStructurePreviewRows(metricColumns);
+  const compatibleTables = (currentSource?.tables ?? []).filter((t) => t.tableId !== currentTable?.tableId);
 
-  const canSave = Boolean(currentDataset && selectedColumns.length);
+  const rankingMetricOk = effectiveType !== "ranking" || metricColumns.length === 1;
+  const canSave = Boolean(
+    title.trim() &&
+      currentSource &&
+      currentTable &&
+      dimensionColumn &&
+      metricColumns.length &&
+      rankingMetricOk &&
+      startMonth &&
+      endMonth &&
+      endMonth >= startMonth,
+  );
 
   const handleSizeChange = (nextSize: ChartSize) => {
     setSize(nextSize);
@@ -396,73 +414,60 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
     if (!nextAllowedTypes.includes(chartType)) setChartType(nextAllowedTypes[0]);
   };
 
-  const handleSourceChange = (nextSourceName: string) => {
-    const nextSource = sources.find((item) => item.name === nextSourceName);
-    const nextDataset = nextSource?.datasets[0];
-
-    setSource(nextSourceName);
-    setDatasetId(nextDataset?.id ?? "");
-    setSelectedColumns([]);
-    setCompareTable("");
+  const handleSourceChange = (nextSourceId: string) => {
+    const nextSource = sources.find((s) => s.sourceId === Number(nextSourceId));
+    const nextTable = nextSource?.tables[0];
+    setSourceId(nextSource?.sourceId ?? null);
+    setTableId(nextTable?.tableId ?? null);
+    setDimensionColumn(nextTable?.defaultDimension ?? "");
+    setMetricColumns([]);
+    setCompareTableId(null);
   };
 
-  const handleDatasetChange = (nextDatasetId: string) => {
-    setDatasetId(nextDatasetId);
-    setSelectedColumns([]);
-    setCompareTable("");
+  const handleTableChange = (nextTableId: string) => {
+    const nextTable = currentSource?.tables.find((t) => t.tableId === Number(nextTableId));
+    setTableId(nextTable?.tableId ?? null);
+    setDimensionColumn(nextTable?.defaultDimension ?? "");
+    setMetricColumns([]);
+    setCompareTableId(null);
   };
 
-  const toggleColumn = (column: string) => {
-    setSelectedColumns((prev) =>
-      prev.includes(column) ? prev.filter((item) => item !== column) : [...prev, column],
-    );
+  const toggleMetric = (column: string) => {
+    setMetricColumns((prev) => {
+      // RANKING accepts exactly one metric: selecting replaces the previous one.
+      if (effectiveType === "ranking") return prev.includes(column) ? [] : [column];
+      return prev.includes(column) ? prev.filter((c) => c !== column) : [...prev, column];
+    });
   };
 
   const handleSave = () => {
-    if (!canSave) return;
+    if (!canSave || !currentSource || !currentTable) return;
 
-    const preview = currentDataset?.preview ?? [];
-    const formattedData = preview.map((row) => {
-      const rowData = row as Record<string, string | number | undefined>;
-
-      if (effectiveType === "ranking") {
-        const valueColumn = selectedColumns[0];
-
-        return {
-          name: rowData["Linea"] || rowData["LÃ­nea"] || rowData["Mes"] || rowData["AÃ±o"],
-          value: valueColumn ? rowData[valueColumn] : undefined,
-        };
-      }
-
-      const result: Record<string, string | number | undefined> = {
-        name: rowData["Mes"] || rowData["AÃ±o"],
-      };
-
-      selectedColumns.forEach((column) => {
-        result[column] = rowData[column];
-      });
-
-      return result;
-    });
-
-    const series = selectedColumns.map((column, index) => ({
+    const series = metricColumns.map((column, index) => ({
       key: column,
       label: column,
       color: colors[index % colors.length],
     }));
 
     const config: ChartConfig = {
+      title: title.trim(),
+      subtitle: subtitle.trim() || undefined,
       config: {
         chartType: effectiveType,
-        source,
-        datasetId: currentDatasetId,
-        columns: selectedColumns,
+        sourceId: currentSource.sourceId,
+        tableId: currentTable.tableId,
+        dimensionColumn,
+        metricColumns,
+        operation,
         compareEnabled,
-        compareTable,
-        startDate,
-        endDate,
+        compareTableId: compareEnabled ? compareTableId : null,
+        startMonth,
+        endMonth,
+        sourceName: currentSource.name,
+        tableName: currentTable.displayName,
       },
-      data: formattedData,
+      // Structural placeholder until the backend POST returns real data/series.
+      data: previewRows as GraphDataRow[],
       series,
     };
 
@@ -470,110 +475,165 @@ export const ChartFlowModal = ({ onClose, onSave }: Props) => {
   };
 
   return (
-    <Modal title="Nueva grafica" onClose={onClose} className="w-[92vw] max-w-[1180px] max-h-[84vh]">
-      <div className="flex min-h-0 flex-col gap-4">
-        <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="flex min-w-0 flex-col gap-4">
-            <div className="grid gap-3 lg:grid-cols-2">
-              <OptionGroup label="Tamano" value={size} options={SIZE_OPTIONS} onChange={handleSizeChange} />
-              <OptionGroup
-                key={size}
-                label="Tipo"
-                value={effectiveType}
-                options={TYPE_OPTIONS.filter((option) => allowedTypes.includes(option.value))}
-                onChange={setChartType}
-              />
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              <MonthField id="chart-start" label="Inicio" value={startDate} onChange={setStartDate} />
-              <MonthField id="chart-end" label="Fin" value={endDate} onChange={setEndDate} />
-              <SelectField
-                id="chart-source"
-                label="Fuente"
-                value={source}
-                onChange={handleSourceChange}
-                options={sources.map((item) => ({ label: item.name, value: item.name }))}
-              />
-            </div>
-
-            <SelectField
-              id="chart-table"
-              label="Tabla"
-              value={currentDatasetId}
-              onChange={handleDatasetChange}
-              options={(currentSource?.datasets ?? []).map((dataset) => ({
-                label: dataset.label,
-                value: dataset.id,
-              }))}
-            />
-
-            <section className="rounded-lg border border-default bg-surface-sunken p-4">
-              <h4 className="mb-3 text-body-sm font-semibold text-content-primary">Columnas</h4>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {(currentDataset?.columns ?? []).map((column) => (
-                  <label
-                    key={column}
-                    className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-subtle bg-surface-raised px-3 text-body-sm text-content-secondary transition-colors hover:text-content-primary"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedColumns.includes(column)}
-                      onChange={() => toggleColumn(column)}
-                      className="h-4 w-4 cursor-pointer accent-[var(--primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                    />
-                    <span className="min-w-0 truncate">{column}</span>
+    <Modal title={isEditMode ? "Editar grafica" : "Nueva grafica"} onClose={onClose} className="w-[92vw] max-w-[1180px] max-h-[84vh]">
+      {isLoading ? (
+        <p className="m-0 py-6 text-center text-body-sm font-medium text-content-muted">Cargando catalogo…</p>
+      ) : catalogError ? (
+        <p className="m-0 py-6 text-center text-body-sm font-medium text-content-secondary">
+          No se pudo cargar el catalogo de graficas.
+        </p>
+      ) : (
+        <div className="flex min-h-0 flex-col gap-4">
+          <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="flex min-w-0 flex-col gap-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="min-w-0">
+                  <label htmlFor="chart-title" className="mb-2 block text-body-sm font-semibold text-content-primary">
+                    Titulo
                   </label>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-lg border border-default bg-surface-raised p-4">
-              <label className="flex min-h-11 cursor-pointer items-center gap-3 text-body-sm font-semibold text-content-primary">
-                <input
-                  type="checkbox"
-                  checked={compareEnabled}
-                  onChange={(event) => setCompareEnabled(event.target.checked)}
-                  className="h-4 w-4 cursor-pointer accent-[var(--primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                />
-                Comparar con otra tabla
-              </label>
-              {compareEnabled && (
-                <div className="mt-3">
-                  <SelectField
-                    id="chart-compare"
-                    label="Tabla de comparacion"
-                    value={compareTable}
-                    onChange={setCompareTable}
-                    options={[
-                      { label: "Sin seleccion", value: "" },
-                      ...compatibleTables.map((dataset) => ({ label: dataset.label, value: dataset.id })),
-                    ]}
+                  <input
+                    id="chart-title"
+                    type="text"
+                    maxLength={40}
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                    placeholder="Nombre de la grafica"
+                    className="h-11 w-full rounded-md border border-default bg-surface-raised px-3 text-body-sm text-content-primary outline-none transition-colors focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   />
                 </div>
-              )}
+                <div className="min-w-0">
+                  <label htmlFor="chart-subtitle" className="mb-2 block text-body-sm font-semibold text-content-primary">
+                    Subtitulo
+                  </label>
+                  <input
+                    id="chart-subtitle"
+                    type="text"
+                    maxLength={60}
+                    value={subtitle}
+                    onChange={(event) => setSubtitle(event.target.value)}
+                    placeholder="Contexto (opcional)"
+                    className="h-11 w-full rounded-md border border-default bg-surface-raised px-3 text-body-sm text-content-primary outline-none transition-colors focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-2">
+                <OptionGroup label="Tamano" value={size} options={SIZE_OPTIONS} onChange={handleSizeChange} />
+                <OptionGroup
+                  key={size}
+                  label="Tipo"
+                  value={effectiveType}
+                  options={TYPE_OPTIONS.filter((option) => allowedTypes.includes(option.value))}
+                  onChange={setChartType}
+                />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <MonthField id="chart-start" label="Inicio" value={startMonth} onChange={setStartMonth} />
+                <MonthField id="chart-end" label="Fin" value={endMonth} onChange={setEndMonth} />
+                <OptionGroup label="Operacion" value={operation} options={OPERATION_OPTIONS} onChange={setOperation} />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <SelectField
+                  id="chart-source"
+                  label="Fuente"
+                  value={String(currentSource?.sourceId ?? "")}
+                  onChange={handleSourceChange}
+                  options={sources.map((s) => ({ label: s.name, value: String(s.sourceId) }))}
+                />
+                <SelectField
+                  id="chart-table"
+                  label="Tabla"
+                  value={String(currentTable?.tableId ?? "")}
+                  onChange={handleTableChange}
+                  options={(currentSource?.tables ?? []).map((t) => ({
+                    label: t.displayName,
+                    value: String(t.tableId),
+                  }))}
+                />
+              </div>
+
+              <SelectField
+                id="chart-dimension"
+                label="Dimension"
+                value={dimensionColumn}
+                onChange={setDimensionColumn}
+                options={(currentTable?.dimensions ?? []).map((d) => ({
+                  label: d.displayName,
+                  value: d.columnName,
+                }))}
+              />
+
+              <section className="rounded-lg border border-default bg-surface-sunken p-4">
+                <h4 className="mb-3 text-body-sm font-semibold text-content-primary">
+                  Metricas{effectiveType === "ranking" ? " (una)" : ""}
+                </h4>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(currentTable?.metrics ?? []).map((metric) => (
+                    <label
+                      key={metric.columnName}
+                      className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-subtle bg-surface-raised px-3 text-body-sm text-content-secondary transition-colors hover:text-content-primary"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={metricColumns.includes(metric.columnName)}
+                        onChange={() => toggleMetric(metric.columnName)}
+                        className="h-4 w-4 cursor-pointer accent-[var(--primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      />
+                      <span className="min-w-0 truncate">{metric.displayName}</span>
+                    </label>
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-lg border border-default bg-surface-raised p-4">
+                <label className="flex min-h-11 cursor-pointer items-center gap-3 text-body-sm font-semibold text-content-primary">
+                  <input
+                    type="checkbox"
+                    checked={compareEnabled}
+                    onChange={(event) => setCompareEnabled(event.target.checked)}
+                    className="h-4 w-4 cursor-pointer accent-[var(--primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  />
+                  Comparar con otra tabla
+                </label>
+                {compareEnabled && (
+                  <div className="mt-3">
+                    <SelectField
+                      id="chart-compare"
+                      label="Tabla de comparacion"
+                      value={String(compareTableId ?? "")}
+                      onChange={(v) => setCompareTableId(v ? Number(v) : null)}
+                      options={[
+                        { label: "Sin seleccion", value: "" },
+                        ...compatibleTables.map((t) => ({ label: t.displayName, value: String(t.tableId) })),
+                      ]}
+                    />
+                  </div>
+                )}
+              </section>
+            </div>
+
+            <section className="flex min-h-0 min-w-0 flex-col gap-4 rounded-lg border border-default bg-surface-raised p-4">
+              <div>
+                <h4 className="text-body font-semibold text-content-primary">Vista previa de estructura</h4>
+                <p className="text-body-sm text-content-secondary">
+                  {currentTable?.displayName ?? "Sin tabla"} - datos ilustrativos, sin consulta real
+                </p>
+              </div>
+
+              <div className="h-64 min-h-0 rounded-md border border-subtle bg-surface-overlay p-3 sm:h-72">
+                <PreviewChart chartType={effectiveType} chartDataRows={previewRows} selectedColumns={metricColumns} />
+              </div>
             </section>
           </div>
 
-          <section className="flex min-h-0 min-w-0 flex-col gap-4 rounded-lg border border-default bg-surface-raised p-4">
-            <div>
-              <h4 className="text-body font-semibold text-content-primary">Vista previa de estructura</h4>
-              <p className="text-body-sm text-content-secondary">
-                {currentDataset?.label ?? "Sin tabla"} - datos ilustrativos, sin consulta real
-              </p>
-            </div>
-
-            <div className="h-64 min-h-0 rounded-md border border-subtle bg-surface-overlay p-3 sm:h-72">
-              <PreviewChart chartType={effectiveType} chartDataRows={chartDataRows} selectedColumns={selectedColumns} />
-            </div>
-          </section>
+          <div className="flex flex-col-reverse gap-3 border-t border-subtle pt-4 sm:flex-row sm:items-center sm:justify-end">
+            <Button label="Cancelar" variant="white" size="large" onPress={onClose} />
+            <Button label={isEditMode ? "Guardar cambios" : "Crear grafica"} size="large" disabled={!canSave} onPress={handleSave} />
+          </div>
         </div>
-
-        <div className="flex flex-col-reverse gap-3 border-t border-subtle pt-4 sm:flex-row sm:items-center sm:justify-end">
-          <Button label="Cancelar" variant="white" size="large" onPress={onClose} />
-          <Button label="Crear grafica" size="large" disabled={!canSave} onPress={handleSave} />
-        </div>
-      </div>
+      )}
     </Modal>
   );
 };

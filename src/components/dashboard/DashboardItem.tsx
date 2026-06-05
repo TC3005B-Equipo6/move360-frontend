@@ -82,10 +82,10 @@ export const DashboardItem = forwardRef<HTMLDivElement, Props>(function Dashboar
           data={cfg.data}
           series={cfg.series}
           size={chartSizeMap[item.type]}
-          title={cfg.config.datasetId || cfg.config.source}
+          title={cfg.title || cfg.config.tableName || cfg.config.sourceName || ""}
           subtitle={cfg.subtitle}
           delta={cfg.delta}
-          metricLabel={getMetricLabel(cfg.config.columns)}
+          metricLabel={getMetricLabel(cfg.config.metricColumns)}
         />
         {!readonly && menuButton}
       </div>

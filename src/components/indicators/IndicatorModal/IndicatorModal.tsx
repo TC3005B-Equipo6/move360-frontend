@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Modal } from "../../common/Modal/Modal";
 import { Button } from "../../common/Button/Button";
+import { MonthYearPicker } from "../../common/MonthYearPicker/MonthYearPicker";
 import { IndicatorPreview } from "../IndicatorPreview/IndicatorPreview";
 import { icons } from "../../../icons";
 import {
@@ -213,6 +214,18 @@ const inputClass =
   "h-[52px] rounded-md border border-default px-5 text-body-lg text-content-primary outline-none transition-colors focus:border-primary";
 const selectClass = `${inputClass} disabled:opacity-50 disabled:cursor-not-allowed`;
 
+// The indicator backend stores `startDate`/`endDate` as LocalDate (YYYY-MM-DD),
+// but the UI restricts the picker to whole months (same as graphs). We map the
+// month picker to the first/last day of the chosen month.
+const toMonthInput = (isoDate: string) => (isoDate ? isoDate.slice(0, 7) : "");
+const monthToStartDate = (ym: string) => (ym ? `${ym}-01` : "");
+const monthToEndDate = (ym: string) => {
+  if (!ym) return "";
+  const [year, month] = ym.split("-").map(Number);
+  const lastDay = new Date(year, month, 0).getDate(); // day 0 of next month = last of this
+  return `${ym}-${String(lastDay).padStart(2, "0")}`;
+};
+
 export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
   const isEditMode = !!indicator;
 
@@ -310,8 +323,13 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
   // Required to save: identity (title + subtitle), source + table, and the data
   // origin (INEGI column or SEMOVI filters). The backend rejects an indicator
   // without them.
+  // Edit only persists title/subtitle/relationship (the PATCH body) and the
+  // backend never returns table/column/filters to rehydrate the origin — so
+  // origin can't gate saving in edit mode (it would stay disabled forever).
   const canSave = Boolean(
-    title.trim() && subtitle.trim() && sourceIndex !== null && tableIndex !== null && originValid,
+    isEditMode
+      ? title.trim() && subtitle.trim()
+      : title.trim() && subtitle.trim() && sourceIndex !== null && tableIndex !== null && originValid,
   );
 
   const handleSave = () => {
@@ -498,21 +516,17 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
 
             <div className="flex gap-4">
               <div className="flex-1 flex flex-col gap-3">
-                <FieldLabel>Fecha de inicio</FieldLabel>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className={inputClass}
+                <FieldLabel>Mes de inicio</FieldLabel>
+                <MonthYearPicker
+                  value={toMonthInput(startDate)}
+                  onChange={(ym) => setStartDate(monthToStartDate(ym))}
                 />
               </div>
               <div className="flex-1 flex flex-col gap-3">
-                <FieldLabel>Fecha de fin</FieldLabel>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className={inputClass}
+                <FieldLabel>Mes de fin</FieldLabel>
+                <MonthYearPicker
+                  value={toMonthInput(endDate)}
+                  onChange={(ym) => setEndDate(monthToEndDate(ym))}
                 />
               </div>
             </div>

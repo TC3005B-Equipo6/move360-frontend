@@ -7,7 +7,8 @@ import { IconButton } from '../../components/common/IconButton/IconButton';
 import { Button } from '../../components/common/Button/Button';
 import { Modal } from '../../components/common/Modal/Modal';
 import { DashboardGrid, type DashboardGridHandle } from '../../components/dashboard/DashboardGrid';
-import { getDashboard, type DashboardDetail as DashboardDetailDto } from '../../services/dashboard/dashboardService';
+import { getDashboardDetail, type DashboardDetail as DashboardDetailDto } from '../../services/dashboard/dashboardService';
+import type { DashboardItem } from '../../components/dashboard/types';
 import { useProfile, displayName } from '../../services/auth/useProfile';
 import { DashboardDetailsModal } from '../../components/dashboard/DashboardDetailsModal/DashboardDetailsModal';
 
@@ -29,28 +30,41 @@ function NotFound() {
 function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
   const { profile, isLoading: isProfileLoading } = useProfile();
   const [dashboard, setDashboard] = useState<DashboardDetailDto | null>(null);
+  const [items, setItems] = useState<DashboardItem[] | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const gridRef = useRef<DashboardGridHandle>(null);
 
   async function handleConfirm() {
-    // Persiste en lote los indicadores modificados (coordenada/título/subtítulo).
+    // Re-entry guard: el PATCH de query (p. ej. cambio de fuente) recomputa en el
+    // back y tarda; sin guard, clicks repetidos lanzan flushes concurrentes.
+    if (isConfirming) return;
+    setIsConfirming(true);
+    // Persiste cambios: layout en lote (PUT /layout) + ediciones de contenido.
+    // flushModified reconcilia cada item in-place con el snapshot que devuelve el
+    // PATCH, asi que no hace falta un refetch (getDashboardDetail) extra.
     try {
       await gridRef.current?.flushModified();
+      setIsConfirmModalOpen(false);
+      setIsEditing(false);
     } catch (e) {
-      console.error('PATCH /indicator failed', e);
+      // Falla -> dejar el modal abierto en modo edicion para reintentar.
+      console.error('Persist dashboard changes failed', e);
+    } finally {
+      setIsConfirming(false);
     }
-    setIsConfirmModalOpen(false);
-    setIsEditing(false);
   }
 
   useEffect(() => {
     let active = true;
-    getDashboard(dashboardId)
-      .then((data) => {
-        if (active) setDashboard(data);
+    getDashboardDetail(dashboardId)
+      .then(({ meta, items: loaded }) => {
+        if (!active) return;
+        setDashboard(meta);
+        setItems(loaded);
       })
       .catch(() => {
         if (active) setNotFound(true);
@@ -122,7 +136,20 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
         />
       }
     >
-      <DashboardGrid ref={gridRef} dashboardId={dashboardId} persistIndicators readonly={!isEditing} />
+      {items === null ? (
+        <div className="flex h-full items-center justify-center">
+          <p className="m-0 text-body-sm font-medium text-content-muted">Cargando…</p>
+        </div>
+      ) : (
+        <DashboardGrid
+          key={dashboardId}
+          ref={gridRef}
+          dashboardId={dashboardId}
+          persistToBackend
+          initialItems={items}
+          readonly={!isEditing}
+        />
+      )}
     </AppLayout>
     {isDetailsOpen && (
       <DashboardDetailsModal
@@ -138,12 +165,26 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
       <Modal
         title="Confirmar cambios"
         message="¿Deseas guardar los cambios realizados en el dashboard?"
-        confirmText="Confirmar"
-        cancelText="Cancelar"
-        confirmVariant="blue"
-        onConfirm={handleConfirm}
-        onCancel={() => setIsConfirmModalOpen(false)}
+        showCloseIcon={!isConfirming}
         onClose={() => setIsConfirmModalOpen(false)}
+        footer={
+          <>
+            <Button
+              variant="white"
+              size="medium"
+              label="Cancelar"
+              disabled={isConfirming}
+              onPress={() => setIsConfirmModalOpen(false)}
+            />
+            <Button
+              variant="blue"
+              size="medium"
+              label="Confirmar"
+              isLoading={isConfirming}
+              onPress={handleConfirm}
+            />
+          </>
+        }
       />
     )}
   </>
