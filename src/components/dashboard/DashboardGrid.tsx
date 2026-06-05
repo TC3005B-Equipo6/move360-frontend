@@ -422,9 +422,9 @@ export const DashboardGrid = forwardRef<DashboardGridHandle, Props>(function Das
         >
           {items.map((item) => {
             const isFlushing = loadingIds.has(item.id);
-            // Charts: an edit swaps real data for illustrative preview rows until
-            // confirm recomputes them — show the skin instead of misleading data.
-            const isPending = item.type !== "indicator" && Boolean(item.contentModified);
+            // An edit leaves the item showing stale/illustrative data until confirm
+            // recomputes it on the backend — show the skin instead of misleading data.
+            const isPending = Boolean(item.contentModified);
             return (
               <DashboardItem
                 key={item.id}

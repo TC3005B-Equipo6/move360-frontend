@@ -67,9 +67,11 @@ export const Indicator = ({
         <div className="h-9 w-2/3 rounded bg-surface-sunken animate-pulse" />
         <div className="h-3 w-1/3 rounded bg-surface-sunken animate-pulse" />
         {loadingLabel && (
-          <span className="absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 rounded-full bg-surface-overlay px-2 py-1 text-caption font-semibold text-content-secondary shadow-sm ring-1 ring-inset ring-border-subtle">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
-            {loadingLabel}
+          <span className="absolute inset-0 flex items-center justify-center p-3">
+            <span className="flex max-w-full items-center gap-2 rounded-2xl bg-surface-overlay px-3 py-1.5 text-caption font-semibold text-content-secondary shadow-sm ring-1 ring-inset ring-border-subtle">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary animate-pulse" aria-hidden="true" />
+              <span className="text-center [text-wrap:balance]">{loadingLabel}</span>
+            </span>
           </span>
         )}
       </div>

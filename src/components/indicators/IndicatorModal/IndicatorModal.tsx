@@ -147,6 +147,7 @@ function FilterAccordion({
         const chosen = selected[g.id] ?? [];
         const valid = isFilterGroupValid(g, selected);
         const isOpen = open.has(g.id);
+        const allSelected = g.values.length > 0 && chosen.length === g.values.length;
         return (
           <div key={g.id} className="rounded-md border border-default overflow-hidden">
             <button
@@ -181,6 +182,19 @@ function FilterAccordion({
                 {g.values.length === 0 ? (
                   <span className="text-body-sm text-content-muted italic">Sin valores disponibles</span>
                 ) : (
+                  <>
+                    <label className="mb-2.5 flex w-fit cursor-pointer items-center gap-2 text-body-sm font-semibold text-content-secondary hover:text-content-primary">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        ref={(el) => {
+                          if (el) el.indeterminate = chosen.length > 0 && !allSelected;
+                        }}
+                        onChange={() => onChange({ ...selected, [g.id]: allSelected ? [] : [...g.values] })}
+                        className="h-4 w-4 cursor-pointer accent-[var(--primary)]"
+                      />
+                      Seleccionar todos
+                    </label>
                   <div className="flex flex-wrap gap-2">
                     {g.values.map((v) => {
                       const on = chosen.includes(v);
@@ -200,6 +214,7 @@ function FilterAccordion({
                       );
                     })}
                   </div>
+                  </>
                 )}
               </div>
             )}
@@ -411,7 +426,7 @@ export const IndicatorModal = ({ onClose, onSave, indicator }: Props) => {
     <Modal
       title={isEditMode ? "Editar indicador" : "Crear indicador"}
       onClose={onClose}
-      className="w-[950px] rounded-2xl"
+      className="w-[980px] rounded-2xl"
       footer={
         <div className="flex w-full items-center justify-between gap-3">
           <span className="text-body-sm font-medium text-danger">
