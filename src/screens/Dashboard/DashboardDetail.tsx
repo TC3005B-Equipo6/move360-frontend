@@ -34,6 +34,7 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
   const [notFound, setNotFound] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isDiscarding, setIsDiscarding] = useState(false);
@@ -52,6 +53,7 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
       setDashboard(meta);
       setItems(loaded);
       setReloadKey((k) => k + 1);
+      setIsDiscardModalOpen(false);
       setIsConfirmModalOpen(false);
       setIsEditing(false);
     } catch (e) {
@@ -188,45 +190,69 @@ function DashboardDetailView({ dashboardId }: { dashboardId: string }) {
     {isConfirmModalOpen && (
       <Modal
         title="Confirmar cambios"
-        showCloseIcon={!isConfirming && !isDiscarding}
+        message="¿Deseas guardar los cambios realizados en el dashboard?"
+        showCloseIcon={!isConfirming}
         onClose={() => setIsConfirmModalOpen(false)}
+        footer={
+          <div className="flex w-full items-center justify-between gap-3">
+            <Button
+              variant="white"
+              size="medium"
+              label="Cancelar"
+              disabled={isConfirming}
+              onPress={() => setIsConfirmModalOpen(false)}
+            />
+            <div className="flex items-center gap-3">
+              <Button
+                variant="red"
+                size="medium"
+                label="Descartar"
+                disabled={isConfirming}
+                onPress={() => setIsDiscardModalOpen(true)}
+              />
+              <Button
+                variant="blue"
+                size="medium"
+                label="Confirmar"
+                isLoading={isConfirming}
+                onPress={handleConfirm}
+              />
+            </div>
+          </div>
+        }
+      />
+    )}
+    {isDiscardModalOpen && (
+      <Modal
+        title="Descartar cambios"
+        className="!w-[560px]"
+        showCloseIcon={!isDiscarding}
+        onClose={() => setIsDiscardModalOpen(false)}
         footer={
           <>
             <Button
               variant="white"
               size="medium"
               label="Cancelar"
-              disabled={isConfirming || isDiscarding}
-              onPress={() => setIsConfirmModalOpen(false)}
+              disabled={isDiscarding}
+              onPress={() => setIsDiscardModalOpen(false)}
             />
             <Button
               variant="red"
               size="medium"
-              label="Descartar cambios"
+              label="Descartar"
               isLoading={isDiscarding}
-              disabled={isConfirming}
               onPress={handleDiscard}
-            />
-            <Button
-              variant="blue"
-              size="medium"
-              label="Confirmar"
-              isLoading={isConfirming}
-              disabled={isDiscarding}
-              onPress={handleConfirm}
             />
           </>
         }
       >
         <div className="flex flex-col gap-4">
           <p className="m-0 text-body-lg font-semibold text-content-primary">
-            ¿Deseas guardar los cambios realizados en el dashboard?
+            ¿Seguro que quieres descartar los cambios?
           </p>
           <div className="rounded-lg bg-surface-sunken p-4 text-body-sm">
-            <p className="m-0 font-semibold text-content-primary">
-              Si descartas:
-            </p>
-            <ul className="m-0 mt-2 list-disc space-y-1 pl-5 text-content-secondary">
+            <ul className="m-0 list-disc space-y-1 pl-5 text-content-secondary">
               <li>
                 <span className="font-medium text-content-primary">Se revierten:</span>{' '}
                 movimientos de posición y ediciones de contenido aún no guardados.
